@@ -36,12 +36,13 @@ contract Developer {
         return projectList;
     }
 
-    function removeProjectFromProjectList(address projectAddress) private {
+    function removeProjectFromProjectList(address projectAddress) private returns (bool) {
         for (uint i = 0; i < projectList.length; i++) {
             if (projectList[i] == projectAddress) {
                 delete projectList[i];
-                return;
+                return true;
             }
         }
+        return false;
     }
 }
