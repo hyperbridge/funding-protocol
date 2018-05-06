@@ -32,17 +32,20 @@ contract Developer {
         }
     }
 
-    function getProjects() public view returns (address[]) {
+    function getProjectList() public view returns (address[]) {
         return projectList;
     }
 
-    function removeProjectFromProjectList(address projectAddress) private returns (bool) {
+    function removeProjectFromProjectList(address projectAddress) private {
         for (uint i = 0; i < projectList.length; i++) {
             if (projectList[i] == projectAddress) {
                 delete projectList[i];
-                return true;
+                for (uint j = i; j < projectList.length - 1; j++) {
+                    projectList[j] = projectList[j + 1];
+                }
+                projectList.length--;
+                return;
             }
         }
-        return false;
     }
 }

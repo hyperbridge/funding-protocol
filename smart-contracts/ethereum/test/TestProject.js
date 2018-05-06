@@ -2,21 +2,23 @@ const ProjectFactory = artifacts.require("ProjectFactory");
 const Project = artifacts.require("Project");
 
 contract('Project', function(accounts) {
+    let factory;
+
+    beforeEach(async () => {
+        factory = await ProjectFactory.deployed();
+    });
+
     it("should deploy a ProjectFactory contract", async () => {
         try {
-            let factory = await ProjectFactory.deployed();
-
             assert.ok(factory.address);
         } catch (e) {
-            console.log(e);
+            console.log(e.message);
             assert.fail();
         }
     });
 
     it("should be able to create Project with factory", async () => {
         try {
-            let factory = await ProjectFactory.deployed();
-
             let title = "Project Name";
             let description = "This is a project.";
             let about = "About this project";
@@ -37,7 +39,7 @@ contract('Project', function(accounts) {
             let deployedProjects = await factory.getDeployedProjects.call();
             assert.equal(deployedProjects.length, 1, "Incorrect number of deployed contracts.");
         } catch (e) {
-            console.log(e);
+            console.log(e.message);
             assert.fail();
         }
     });
@@ -45,8 +47,6 @@ contract('Project', function(accounts) {
     it("should be able to contribute to a project", async function() {
         try {
             const amountToContribute = 1000000;
-
-            let factory = await ProjectFactory.deployed();
 
             let title = "Project Name";
             let description = "This is a project.";
@@ -73,7 +73,7 @@ contract('Project', function(accounts) {
             assert.equal(newContributorListLength, initialContributerListLength + 1, "Contributor list length not correct.");
             assert.ok(project.contributors.call(accounts[1]));
         } catch (e) {
-            console.log(e);
+            console.log(e.message);
             assert.fail();
         }
     });
