@@ -3,8 +3,8 @@ pragma solidity ^0.4.23;
 contract ProjectFactory {
     address[] public deployedProjects;
 
-    function createProject(string title, string description, string about) public {
-        address newProject = new Project(title, description, about, msg.sender);
+    function createProject(string _title, string _description, string _about) public {
+        Project newProject = new Project(_title, _description, _about, msg.sender);
         deployedProjects.push(newProject);
     }
 
@@ -26,11 +26,11 @@ contract Project {
         _;
     }
 
-    constructor(string projectTitle, string projectDescription, string projectAbout, address projectDeveloper) public {
-        title = projectTitle;
-        description = projectDescription;
-        about = projectAbout;
-        developer = projectDeveloper;
+    constructor(string _title, string _description, string _about, address _developer) public {
+        title = _title;
+        description = _description;
+        about = _about;
+        developer = _developer;
     }
 
     function contribute() public payable {

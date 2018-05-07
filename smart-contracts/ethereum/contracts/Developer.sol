@@ -11,24 +11,24 @@ contract Developer {
         _;
     }
 
-    constructor(string devName) public {
+    constructor(string _name) public {
         owner = msg.sender;
-        name = devName;
+        name = _name;
     }
 
-    function addProject(address projectAddress) public restricted {
+    function addProject(address _project) public restricted {
         // If project has not already been added, then add it
-        if (!projects[projectAddress]) {
-            projects[projectAddress] = true;
-            projectList.push(projectAddress);
+        if (!projects[_project]) {
+            projects[_project] = true;
+            projectList.push(_project);
         }
     }
 
-    function removeProject(address projectAddress) public restricted {
+    function removeProject(address _project) public restricted {
         // If project has been added, then remove it
-        if (projects[projectAddress]) {
-            delete projects[projectAddress];
-            removeProjectFromProjectList(projectAddress);
+        if (projects[_project]) {
+            delete projects[_project];
+            removeProjectFromProjectList(_project);
         }
     }
 
@@ -36,9 +36,9 @@ contract Developer {
         return projectList;
     }
 
-    function removeProjectFromProjectList(address projectAddress) private {
+    function removeProjectFromProjectList(address _project) private {
         for (uint i = 0; i < projectList.length; i++) {
-            if (projectList[i] == projectAddress) {
+            if (projectList[i] == _project) {
                 delete projectList[i];
                 for (uint j = i; j < projectList.length - 1; j++) {
                     projectList[j] = projectList[j + 1];
