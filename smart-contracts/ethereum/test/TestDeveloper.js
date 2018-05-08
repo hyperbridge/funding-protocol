@@ -8,7 +8,7 @@ contract('Developer', function(accounts) {
     let project;
 
     beforeEach(async () => {
-        developer = await Developer.deployed();
+        developer = await Developer.new("Hyperbridge");
 
     });
 
@@ -41,13 +41,13 @@ contract('Developer', function(accounts) {
             let projectAddress = await factory.deployedProjects.call(0, {from: accounts[0]});
             project = await Project.at(projectAddress);
 
-            await developer.addProject(project.address);
+            await developer.addProject(project.address, {from: accounts[0]});
 
-            let isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(isInProjects);
+            let projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(projectIndex.toNumber());
 
             let projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 1, "projectList incorrect length.");
+            assert.equal(projectList.length, 2, "projectList incorrect length.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -69,19 +69,18 @@ contract('Developer', function(accounts) {
 
             await developer.addProject(project.address, {from: accounts[0]});
 
-            let isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(isInProjects);
+            let projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(projectIndex.toNumber());
 
             let projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 1, "projectList incorrect length.");
+            assert.equal(projectList.length, 2, "projectList incorrect length.");
 
             await developer.removeProject(project.address, {from: accounts[0]});
 
-            isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(!isInProjects);
+            projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(!projectIndex.toNumber());
 
-            projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 0, "projectList incorrect length.");
+            assert.equal(projectList[projectIndex], 0, "Project not deleted from projectList.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -104,11 +103,11 @@ contract('Developer', function(accounts) {
             await developer.addProject(project.address, {from: accounts[1]});
         } catch (e) {
             console.log(e.message);
-            let isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(!isInProjects);
+            let projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(!projectIndex.toNumber());
 
             let projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 0, "projectList incorrect length.");
+            assert.equal(projectList.length, 1, "projectList incorrect length.");
         }
     });
 
@@ -127,20 +126,20 @@ contract('Developer', function(accounts) {
 
             await developer.addProject(project.address, {from: accounts[0]});
 
-            let isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(isInProjects);
+            let projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(projectIndex.toNumber());
 
             let projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 1, "projectList incorrect length.");
+            assert.equal(projectList.length, 2, "projectList incorrect length.");
 
             await developer.removeProject(project.address, {from: accounts[1]});
         } catch (e) {
             console.log(e.message);
-            let isInProjects = await developer.projects.call(project.address, {from: accounts[0]});
-            assert.ok(isInProjects);
+            let projectIndex = await developer.projects.call(project.address, {from: accounts[0]});
+            assert.ok(projectIndex.toNumber());
 
             let projectList = await developer.getProjectList.call({from: accounts[0]});
-            assert.equal(projectList.length, 1, "projectList incorrect length.");
+            assert.equal(projectList.length, 2, "projectList incorrect length.");
         }
     });
 });
