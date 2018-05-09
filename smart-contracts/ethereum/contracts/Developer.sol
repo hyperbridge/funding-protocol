@@ -21,6 +21,7 @@ contract Developer {
 
     function addProject(address _project) public restricted {
         // TODO check if project has already been added
+        // TODO verify that _project is actually a Project (...how though?)
         projects[_project] = projectList.length;
         projectList.push(_project);
     }

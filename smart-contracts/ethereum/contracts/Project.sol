@@ -34,6 +34,7 @@ contract Project {
     }
 
     function contribute() public payable {
+        // TODO prevent double contributions? log total contribution instead of bool?
         contributors[msg.sender] = true;
         contributorList.push(msg.sender);
      }
