@@ -1,45 +1,38 @@
 pragma solidity ^0.4.23;
 
-contract ProjectFactory {
-    address[] public deployedProjects;
-
-    function createProject(string _title, string _description, string _about) public {
-        Project newProject = new Project(_title, _description, _about, msg.sender);
-        deployedProjects.push(newProject);
-    }
-
-    function getDeployedProjects() public view returns (address[]) {
-        return deployedProjects;
-    }
-}
-
 contract Project {
+    address public launchpad;
+    uint public id;
     string public title;
     string public description;
     string public about;
-    address public developer;
-    mapping(address => bool) public contributors;
-    address[] public contributorList;
+    uint public developerId;
+    mapping(address => uint) public contributions;
+    mapping(address => uint) public contributorMap; // mapping (address of contributor => index in contributors)
+    address[] public contributors;
 
-    modifier restricted() {
-        require(msg.sender == developer);
-        _;
-    }
-
-    constructor(string _title, string _description, string _about, address _developer) public {
+    constructor(address _launchpad, uint _id, string _title, string _description, string _about, uint _developerId) public {
+        launchpad = _launchpad;
+        id = _id;
         title = _title;
         description = _description;
         about = _about;
-        developer = _developer;
+        developerId = _developerId;
+
+        // reserve 0
+        contributors.push(0);
     }
 
-    function contribute() public payable {
-        // TODO prevent double contributions? log total contribution instead of bool?
-        contributors[msg.sender] = true;
-        contributorList.push(msg.sender);
-     }
+    function contribute(address _contributor) public payable {
+        contributions[_contributor] += msg.value;
 
-    function getContributorList() public view returns (address[]) {
-        return contributorList;
+        if (contributorMap[_contributor] == 0) {
+            contributorMap[_contributor] = contributors.length;
+            contributors.push(_contributor);
+        }
+    }
+
+    function getContributors() public view returns (address[]) {
+        return contributors;
     }
 }
