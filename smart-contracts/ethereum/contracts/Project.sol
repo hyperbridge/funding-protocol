@@ -1,6 +1,18 @@
 pragma solidity ^0.4.23;
 
 contract Project {
+    struct ProjectMilestone {
+        string title;
+        string description;
+        string[] conditions;
+        uint percentage; // TODO - Figure out how to represent this
+        bool isComplete;
+    }
+
+    struct ProjectTimeline {
+        ProjectMilestone[] milestones;
+    }
+
     address public fundingService;
     uint public id;
     string public title;
@@ -8,6 +20,9 @@ contract Project {
     string public about;
     uint public developerId;
     uint public contributionGoal;
+
+    ProjectTimeline timeline;
+    ProjectTimeline[] timelineHistory;
 
     constructor(address _fundingService, uint _id, string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public {
         fundingService = _fundingService;
