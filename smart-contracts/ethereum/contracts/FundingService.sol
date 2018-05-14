@@ -14,7 +14,6 @@ contract FundingService {
         address addr;
         mapping(address => bool) projectExists;
         address[] activeProjects;
-        address[] oldProjects;
     }
 
     address public owner;
@@ -26,6 +25,7 @@ contract FundingService {
     mapping(address => Contributor) public contributors;
 
     mapping(address => mapping(address => uint)) public projectContributionAmount; // project address => (contributor address => contribution amount)
+    mapping(address => mapping(address => bool)) public projectContributorExists; // project address => (contributor address => has contributed already?)
     mapping(address => address[]) public projectContributorList; // project address => Contributors[]
 
     mapping(address => uint) public projectMap; // address => id
@@ -73,7 +73,7 @@ contract FundingService {
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         uint newProjectId = projects.length;
 
-        Project newProject = new Project(this, newProjectId, _title, _description, _about, _contributionGoal, _developerId);
+        Project newProject = new Project(this, newProjectId, _title, _description, _about, _developerId, _contributionGoal);
 
         projectMap[newProject] = newProjectId;
         projects.push(newProject);
@@ -103,8 +103,7 @@ contract FundingService {
         if (contributors[msg.sender].addr == 0) {
             Contributor memory newContributor = Contributor({
                 addr: msg.sender,
-                activeProjects: new address[](0),
-                oldProjects: new address[](0)
+                activeProjects: new address[](0)
                 });
 
             // add contributor to global contributors mapping
@@ -122,7 +121,14 @@ contract FundingService {
         // add contribution amount to project
         projectContributionAmount[projectAddress][msg.sender] += msg.value;
 
-        // add to projectContributorList
-        projectContributorList[projectAddress].push(msg.sender);
+        // add to projectContributorList, if not already present
+        if (!projectContributorExists[projectAddress][msg.sender]) {
+            projectContributorExists[projectAddress][msg.sender] = true;
+            projectContributorList[projectAddress].push(msg.sender);
+        }
+    }
+
+    function getProjectContributorList(address _project) public view returns (address[]) {
+        return projectContributorList[_project];
     }
 }
