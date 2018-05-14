@@ -12,9 +12,9 @@ contract FundingService {
 
     struct Contributor {
         address addr;
-        mapping(Project => bool) projectExists;
-        Project[] activeProjects;
-        Project[] oldProjects;
+        mapping(address => bool) projectExists;
+        address[] activeProjects;
+        address[] oldProjects;
     }
 
     address public owner;
@@ -51,7 +51,7 @@ contract FundingService {
             addr: msg.sender,
             name: _name,
             projectIds: new uint[](0)
-        });
+            });
 
         developerIds.push(newDeveloper.id);
         developers[newDeveloper.id] = newDeveloper;
@@ -70,10 +70,10 @@ contract FundingService {
         return (dev.addr, dev.name, dev.projectIds);
     }
 
-    function createProject(string _title, string _description, string _about, uint _developerId) public devRestricted(_developerId) {
+    function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         uint newProjectId = projects.length;
 
-        Project newProject = new Project(this, newProjectId, _title, _description, _about, _developerId);
+        Project newProject = new Project(this, newProjectId, _title, _description, _about, _contributionGoal, _developerId);
 
         projectMap[newProject] = newProjectId;
         projects.push(newProject);
@@ -83,13 +83,13 @@ contract FundingService {
         dev.projectIds.push(newProjectId);
     }
 
-    function removeProject(uint _projectId, uint _developerId) public devRestricted(_developerId) {
-        Developer storage dev = developers[_developerId];
+    // function removeProject(uint _projectId, uint _developerId) public devRestricted(_developerId) {
+    //     Developer storage dev = developers[_developerId];
 
-        require(dev.projectIds[dev.projectIdIndex[_projectId]] == _projectId); // check that project belongs to developer
+    //     require(dev.projectIds[dev.projectIdIndex[_projectId]] == _projectId); // check that project belongs to developer
 
-        // TODO - What behaviour here? Refund money? Self destruct? Remove from registry/developer?
-    }
+    //     // TODO - What behaviour here? Refund money? Self destruct? Remove from registry/developer?
+    // }
 
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
@@ -100,12 +100,12 @@ contract FundingService {
         projectAddress.transfer(msg.value);
 
         // if contributor doesn't exist, create it
-        if (!contributors[msg.sender].addr) {
+        if (contributors[msg.sender].addr == 0) {
             Contributor memory newContributor = Contributor({
                 addr: msg.sender,
-                activeProjects: new Project[](0),
-                oldProjects: new Project[](0)
-            });
+                activeProjects: new address[](0),
+                oldProjects: new address[](0)
+                });
 
             // add contributor to global contributors mapping
             contributors[msg.sender] = newContributor;
