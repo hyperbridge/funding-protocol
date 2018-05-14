@@ -21,10 +21,6 @@ contract Project {
     uint public developerId;
     uint public contributionGoal;
 
-    mapping(address => uint) public contributions;
-    mapping(address => uint) public contributorMap; // mapping (address of contributor => index in contributors)
-    address[] public contributors;
-
     ProjectTimeline timeline;
     ProjectTimeline[] timelineHistory;
 
@@ -35,22 +31,6 @@ contract Project {
         description = _description;
         about = _about;
         developerId = _developerId;
-
-        // reserve 0
-        contributors.push(0);
-    }
-
-    function contribute(address _contributor) public payable {
-        contributions[_contributor] += msg.value;
-
-        if (contributorMap[_contributor] == 0) {
-            contributorMap[_contributor] = contributors.length;
-            contributors.push(_contributor);
-        }
-    }
-
-    function getContributors() public view returns (address[]) {
-        return contributors;
     }
 
     function addMilestone(string _title, string _description, string[] _conditions, uint _percentage) public {
@@ -68,4 +48,6 @@ contract Project {
     function finalizeTimeline(ProjectTimeline _tentativeTimeline) public {
         // check that milestones make sense (percentages add up, etc.)
     }
+
+    function() public payable { }
 }
