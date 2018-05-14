@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
 
-contract Launchpad {
+contract FundingService {
     struct Developer {
         uint id;
         address owner;
@@ -38,7 +38,7 @@ contract Launchpad {
             owner: msg.sender,
             name: _name,
             projectIds: new uint[](0)
-            });
+        });
 
         developerIds.push(newDeveloper.id);
         developers[newDeveloper.id] = newDeveloper;
