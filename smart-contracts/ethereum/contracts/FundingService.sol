@@ -1,7 +1,11 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
+import "./SafeMath.sol";
 
 contract FundingService {
+
+    using SafeMath for uint256;
+
     struct Developer {
         uint id;
         address addr;
@@ -83,14 +87,6 @@ contract FundingService {
         dev.projectIds.push(newProjectId);
     }
 
-    // function removeProject(uint _projectId, uint _developerId) public devRestricted(_developerId) {
-    //     Developer storage dev = developers[_developerId];
-
-    //     require(dev.projectIds[dev.projectIdIndex[_projectId]] == _projectId); // check that project belongs to developer
-
-    //     // TODO - What behaviour here? Refund money? Self destruct? Remove from registry/developer?
-    // }
-
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
 
@@ -119,7 +115,8 @@ contract FundingService {
         }
 
         // add contribution amount to project
-        projectContributionAmount[projectAddress][msg.sender] += msg.value;
+        uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
+        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
 
         // add to projectContributorList, if not already present
         if (!projectContributorExists[projectAddress][msg.sender]) {
