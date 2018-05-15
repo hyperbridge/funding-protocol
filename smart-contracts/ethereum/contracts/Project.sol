@@ -1,44 +1,23 @@
 pragma solidity ^0.4.23;
 
-contract ProjectFactory {
-    address[] public deployedProjects;
-
-    function createProject(string _title, string _description, string _about) public {
-        Project newProject = new Project(_title, _description, _about, msg.sender);
-        deployedProjects.push(newProject);
-    }
-
-    function getDeployedProjects() public view returns (address[]) {
-        return deployedProjects;
-    }
-}
-
 contract Project {
+    address public fundingService;
+    uint public id;
     string public title;
     string public description;
     string public about;
-    address public developer;
-    mapping(address => bool) public contributors;
-    address[] public contributorList;
+    uint public developerId;
+    uint public contributionGoal;
 
-    modifier restricted() {
-        require(msg.sender == developer);
-        _;
-    }
-
-    constructor(string _title, string _description, string _about, address _developer) public {
+    constructor(address _fundingService, uint _id, string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public {
+        fundingService = _fundingService;
+        id = _id;
         title = _title;
         description = _description;
         about = _about;
-        developer = _developer;
+        developerId = _developerId;
+        contributionGoal = _contributionGoal;
     }
 
-    function contribute() public payable {
-        contributors[msg.sender] = true;
-        contributorList.push(msg.sender);
-     }
-
-    function getContributorList() public view returns (address[]) {
-        return contributorList;
-    }
+    function() public payable { }
 }

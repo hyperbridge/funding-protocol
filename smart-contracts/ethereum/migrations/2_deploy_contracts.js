@@ -1,7 +1,5 @@
-const Developer = artifacts.require("Developer");
-const ProjectFactory = artifacts.require("ProjectFactory");
+const FundingService = artifacts.require("FundingService");
 
 module.exports = function(deployer) {
-    deployer.deploy(Developer, "Hyperbridge");
-    deployer.deploy(ProjectFactory);
+    deployer.deploy(FundingService);
 };
