@@ -1,7 +1,11 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
+import "./SafeMath.sol";
 
 contract FundingService {
+
+    using SafeMath for uint256;
+
     struct Developer {
         uint id;
         address addr;
@@ -25,7 +29,6 @@ contract FundingService {
     mapping(address => Contributor) public contributors;
 
     mapping(address => mapping(address => uint)) public projectContributionAmount; // project address => (contributor address => contribution amount)
-    mapping(address => mapping(address => bool)) public projectContributorExists; // project address => (contributor address => has contributed already?)
     mapping(address => address[]) public projectContributorList; // project address => Contributors[]
 
     mapping(address => uint) public projectMap; // address => id
@@ -46,6 +49,8 @@ contract FundingService {
     }
 
     function createDeveloper(string _name) public {
+        require(developerMap[msg.sender] == 0); // require that this account is not already a developer
+
         Developer memory newDeveloper = Developer({
             id: developerIds.length,
             addr: msg.sender,
@@ -83,14 +88,6 @@ contract FundingService {
         dev.projectIds.push(newProjectId);
     }
 
-    // function removeProject(uint _projectId, uint _developerId) public devRestricted(_developerId) {
-    //     Developer storage dev = developers[_developerId];
-
-    //     require(dev.projectIds[dev.projectIdIndex[_projectId]] == _projectId); // check that project belongs to developer
-
-    //     // TODO - What behaviour here? Refund money? Self destruct? Remove from registry/developer?
-    // }
-
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
 
@@ -118,14 +115,14 @@ contract FundingService {
             contributor.activeProjects.push(projectAddress);
         }
 
-        // add contribution amount to project
-        projectContributionAmount[projectAddress][msg.sender] += msg.value;
-
         // add to projectContributorList, if not already present
-        if (!projectContributorExists[projectAddress][msg.sender]) {
-            projectContributorExists[projectAddress][msg.sender] = true;
+        if (projectContributionAmount[projectAddress][msg.sender] == 0) {
             projectContributorList[projectAddress].push(msg.sender);
         }
+
+        // add contribution amount to project
+        uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
+        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
     }
 
     function getProjectContributorList(address _project) public view returns (address[]) {
