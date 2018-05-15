@@ -29,7 +29,6 @@ contract FundingService {
     mapping(address => Contributor) public contributors;
 
     mapping(address => mapping(address => uint)) public projectContributionAmount; // project address => (contributor address => contribution amount)
-    mapping(address => mapping(address => bool)) public projectContributorExists; // project address => (contributor address => has contributed already?)
     mapping(address => address[]) public projectContributorList; // project address => Contributors[]
 
     mapping(address => uint) public projectMap; // address => id
@@ -114,15 +113,14 @@ contract FundingService {
             contributor.activeProjects.push(projectAddress);
         }
 
+        // add to projectContributorList, if not already present
+        if (projectContributionAmount[projectAddress][msg.sender] == 0) {
+            projectContributorList[projectAddress].push(msg.sender);
+        }
+
         // add contribution amount to project
         uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
         projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
-
-        // add to projectContributorList, if not already present
-        if (!projectContributorExists[projectAddress][msg.sender]) {
-            projectContributorExists[projectAddress][msg.sender] = true;
-            projectContributorList[projectAddress].push(msg.sender);
-        }
     }
 
     function getProjectContributorList(address _project) public view returns (address[]) {
