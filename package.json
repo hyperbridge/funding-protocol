@@ -1,0 +1,19 @@
+{
+  "name": "funding-protocol",
+  "version": "1.0.0",
+  "description": "The Funding Protocol project is broken up into 3 areas:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperbridge/funding-protocol.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyperbridge/funding-protocol/issues"
+  },
+  "homepage": "https://github.com/hyperbridge/funding-protocol#readme"
+}
