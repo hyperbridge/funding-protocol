@@ -49,6 +49,8 @@ contract FundingService {
     }
 
     function createDeveloper(string _name) public {
+        require(developerMap[msg.sender] == 0); // require that this account is not already a developer
+
         Developer memory newDeveloper = Developer({
             id: developerIds.length,
             addr: msg.sender,
