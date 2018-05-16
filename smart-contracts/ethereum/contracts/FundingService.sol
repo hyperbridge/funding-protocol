@@ -73,6 +73,17 @@ contract FundingService {
         return (dev.addr, dev.name, dev.projectIds);
     }
 
+    function getDevelopers() public view returns (address[]) {
+        address[] memory addresses = new address[](developers.length - 1);
+
+        for (uint i = 1; i < developers.length; i++) {
+            Developer memory developer = developers[i];
+            addresses[i - 1] = (developer.addr);
+        }
+
+        return addresses;
+    }
+
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         uint newProjectId = projects.length;
 
