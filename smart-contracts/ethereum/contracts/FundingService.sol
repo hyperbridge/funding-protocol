@@ -23,8 +23,7 @@ contract FundingService {
     address public owner;
 
     mapping(address => uint) public developerMap; // address => id
-    mapping(uint => Developer) public developers; // id => Developer
-    uint[] public developerIds;
+    Developer[] public developers; // indexed by developer id
 
     mapping(address => Contributor) public contributors;
 
@@ -44,7 +43,7 @@ contract FundingService {
         owner = msg.sender;
 
         // reserve 0
-        developerIds.push(0);
+        developers.length++;
         projects.push(0);
     }
 
@@ -52,14 +51,13 @@ contract FundingService {
         require(developerMap[msg.sender] == 0); // require that this account is not already a developer
 
         Developer memory newDeveloper = Developer({
-            id: developerIds.length,
+            id: developers.length,
             addr: msg.sender,
             name: _name,
             projectIds: new uint[](0)
             });
 
-        developerIds.push(newDeveloper.id);
-        developers[newDeveloper.id] = newDeveloper;
+        developers.push(newDeveloper);
         developerMap[msg.sender] = newDeveloper.id;
 
         // reserve index 0 in developers projectIds
@@ -86,6 +84,10 @@ contract FundingService {
         Developer storage dev = developers[_developerId];
 
         dev.projectIds.push(newProjectId);
+    }
+
+    function getProjects() public view returns (address[]) {
+        return projects;
     }
 
     function contributeToProject(uint _projectId) public payable {
