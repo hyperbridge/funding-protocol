@@ -4,12 +4,15 @@ import Layout from "../components/Layout.js";
 import { Link } from "../routes";
 import contract from "truffle-contract";
 import fundingServiceJson from '../smart-contracts/ethereum/build/contracts/FundingService.json';
+import projectJson from '../smart-contracts/ethereum/build/contracts/Project.json';
 import Web3 from "web3";
 
 const provider = new Web3.providers.HttpProvider('http://localhost:7545');
 const web3 = new Web3(provider);
 const FundingService = contract(fundingServiceJson);
+const Project = contract(projectJson);
 FundingService.setProvider(provider);
+Project.setProvider(provider);
 
 // dirty hack for web3@1.0.0 support for localhost testrpc, see https://github.com/trufflesuite/truffle-contract/issues/56#issuecomment-331084530
 if (typeof FundingService.currentProvider.sendAsync !== "function") {
@@ -18,37 +21,37 @@ if (typeof FundingService.currentProvider.sendAsync !== "function") {
     };
 }
 
-export default class FundingIndex extends Component {
-    state = {
-        developersInfo: []
-    }
-
+export default class ProjectsIndex extends Component {
     static async getInitialProps() {
         const fundingService = await FundingService.deployed();
-        const developerAddresses = await fundingService.getDevelopers();
+        const projectAddresses = await fundingService.getProjects();
 
-        let developersInfo = await Promise.all(developerAddresses.map(async (address) => {
-            const id = await fundingService.developerMap(address);
-            const devInfo = await fundingService.developers(id);
+        let projectsInfo = await Promise.all(projectAddresses.filter((address) => {
+            if (address == 0) return false;
+            return true;
+        }).map(async (address) => {
+            const id = await fundingService.projectMap(address);
+            const project = await Project.at(address);
+            const title = await project.title();
             return {
-                address,
                 id,
-                name: devInfo[2]
+                address,
+                title,
             };
         }));
 
-        return { developersInfo };
+        return { projectsInfo };
     }
 
-    renderDevelopers() {
-        const items = this.props.developersInfo.map((devInfo) => {
+    renderProjects() {
+        const items = this.props.projectsInfo.map((projInfo) => {
             return {
-                header: devInfo.name,
+                header: projInfo.title,
                 description:
-                    <Link route={`/developers/${devInfo.id}`}>
-                        <a>View Developer</a>
+                    <Link route={`/projects/${projInfo.id}`}>
+                        <a>View Project</a>
                     </Link>,
-                meta: `ID: ${devInfo.id} --- ${devInfo.address}`,
+                meta: `ID: ${projInfo.id} --- ${projInfo.address}`,
                 fluid: true
             }
         });
@@ -60,18 +63,18 @@ export default class FundingIndex extends Component {
         return (
             <Layout>
                 <div>
-                    <h3>All Developers</h3>
-                    <Link route="/developers/new">
+                    <h3>All Projects</h3>
+                    <Link route="/projects/new">
                         <a>
                             <Button
                                 floated="right"
-                                content="Create Developer"
+                                content="Create Project"
                                 icon="add circle"
                                 primary
                             />
                         </a>
                     </Link>
-                    {this.renderDevelopers()}
+                    {this.renderProjects()}
                 </div>
             </Layout>
         )

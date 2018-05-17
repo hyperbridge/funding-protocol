@@ -59,11 +59,6 @@ contract FundingService {
 
         developers.push(newDeveloper);
         developerMap[msg.sender] = newDeveloper.id;
-
-        // reserve index 0 in developers projectIds
-        Developer storage createdDeveloper = developers[newDeveloper.id];
-        createdDeveloper.projectIds.push(0);
-        createdDeveloper.projectIdIndex[newDeveloper.id] = createdDeveloper.projectIds.length;
     }
 
     function getDeveloper(uint _id) public view returns (address addr, string name, uint[] projectIds) {
