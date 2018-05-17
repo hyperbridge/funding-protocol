@@ -35,7 +35,7 @@ export default class DeveloperNew extends Component {
 
             const accounts = await web3.eth.getAccounts();
 
-            await fundingService.createDeveloper(this.state.name, { from: accounts[2], gas: 3000000 });
+            await fundingService.createDeveloper(this.state.name, { from: accounts[0], gas: 3000000 });
 
             Router.pushRoute('/');
         } catch (err) {

@@ -39,7 +39,7 @@ export default class ProjectNew extends Component {
 
             const accounts = await web3.eth.getAccounts();
 
-            await fundingService.createProject(this.state.title, this.state.description, this.state.about, parseInt(this.state.developerId, 10), parseInt(this.state.contributionGoal, 10), { from: accounts[2], gas: 3000000 });
+            await fundingService.createProject(this.state.title, this.state.description, this.state.about, parseInt(this.state.developerId, 10), parseInt(this.state.contributionGoal, 10), { from: accounts[0], gas: 3000000 });
 
             Router.pushRoute('/projects');
         } catch (err) {

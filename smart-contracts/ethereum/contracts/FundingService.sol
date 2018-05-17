@@ -93,7 +93,13 @@ contract FundingService {
     }
 
     function getProjects() public view returns (address[]) {
-        return projects;
+        address[] memory addresses = new address[](projects.length - 1);
+
+        for (uint i = 1; i < projects.length; i++) {
+            addresses[i - 1] = projects[i];
+        }
+
+        return addresses;
     }
 
     function contributeToProject(uint _projectId) public payable {

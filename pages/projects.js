@@ -26,10 +26,7 @@ export default class ProjectsIndex extends Component {
         const fundingService = await FundingService.deployed();
         const projectAddresses = await fundingService.getProjects();
 
-        let projectsInfo = await Promise.all(projectAddresses.filter((address) => {
-            if (address == 0) return false;
-            return true;
-        }).map(async (address) => {
+        let projectsInfo = await Promise.all(projectAddresses.map(async (address) => {
             const id = await fundingService.projectMap(address);
             const project = await Project.at(address);
             const title = await project.title();
