@@ -48,8 +48,6 @@ contract('FundingService', function(accounts) {
            assert.equal(createdDeveloper[0].toNumber(), newDeveloperId, "Incorrect ID");
            assert.equal(createdDeveloper[1], devAccount, "Incorrect address");
            assert.equal(createdDeveloper[2], devName, "Incorrect name");
-
-           assert.equal(await fundingService.developerIds.call(1), 1, "FundingService.developerIDs incorrect.");
        } catch (e) {
            console.log(e.message);
            assert.fail();
