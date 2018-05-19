@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd test-client && node server.js",
-    "build": "cd smart-contracts/ethereum && truffle compile"
+    "build": "cd smart-contracts/ethereum && truffle compile",
+    "format": "yarn run prettier --write 'test-client/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -36,5 +37,9 @@
     "truffle-contract": "^3.0.5",
     "truffle-hdwallet-provider": "0.0.5",
     "web3": "^1.0.0-beta.26"
+  },
+  "devDependencies": {
+    "eslint-plugin-prettier": "^2.6.0",
+    "prettier": "1.12.1"
   }
 }

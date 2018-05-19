@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import { Card } from "semantic-ui-react"
+import { Card } from 'semantic-ui-react'
 import Layout from '../../components/Layout'
-import contract from "truffle-contract"
+import contract from 'truffle-contract'
 import fundingServiceJson from '../../../smart-contracts/ethereum/build/contracts/FundingService.json'
 import projectJson from '../../../smart-contracts/ethereum/build/contracts/Project.json'
-import Web3 from "web3"
+import Web3 from 'web3'
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
@@ -15,7 +15,7 @@ FundingService.setProvider(provider)
 Project.setProvider(provider)
 
 // dirty hack for web3@1.0.0 support for localhost testrpc, see https://github.com/trufflesuite/truffle-contract/issues/56#issuecomment-331084530
-if (typeof FundingService.currentProvider.sendAsync !== "function") {
+if (typeof FundingService.currentProvider.sendAsync !== 'function') {
     FundingService.currentProvider.sendAsync = function() {
         return FundingService.currentProvider.send.apply(FundingService.currentProvider, arguments)
     }
@@ -30,19 +30,21 @@ export default class DeveloperShow extends Component {
             return id.toNumber()
         })
 
-        const projects = await Promise.all(projectIds.map(async (id) => {
-            const projectAddress = await fundingService.projects(id)
-            const project = await Project.at(projectAddress)
-            const title = await project.title()
-            const description = await project.description()
+        const projects = await Promise.all(
+            projectIds.map(async (id) => {
+                const projectAddress = await fundingService.projects(id)
+                const project = await Project.at(projectAddress)
+                const title = await project.title()
+                const description = await project.description()
 
-            return {
-                id,
-                title,
-                address: projectAddress,
-                description
-            }
-        }))
+                return {
+                    id,
+                    title,
+                    address: projectAddress,
+                    description
+                }
+            })
+        )
 
         return {
             id: props.query.id,
@@ -70,7 +72,7 @@ export default class DeveloperShow extends Component {
             <Layout>
                 <h1>{this.props.name}</h1>
                 <h5>{this.props.address}</h5>
-                <hr/>
+                <hr />
                 <h3>{`${this.props.name}'s Projects`}</h3>
                 {this.renderProjects()}
             </Layout>

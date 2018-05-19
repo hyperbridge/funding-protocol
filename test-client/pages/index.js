@@ -1,10 +1,10 @@
-import React, { Component } from "react"
-import { Card, Button, Icon } from "semantic-ui-react"
-import Layout from "../components/Layout.js"
-import { Link } from "../routes"
-import contract from "truffle-contract"
+import React, { Component } from 'react'
+import { Card, Button, Icon } from 'semantic-ui-react'
+import Layout from '../components/Layout.js'
+import { Link } from '../routes'
+import contract from 'truffle-contract'
 import fundingServiceJson from '../../smart-contracts/ethereum/build/contracts/FundingService.json'
-import Web3 from "web3"
+import Web3 from 'web3'
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
@@ -13,7 +13,7 @@ const FundingService = contract(fundingServiceJson)
 FundingService.setProvider(provider)
 
 // dirty hack for web3@1.0.0 support for localhost testrpc, see https://github.com/trufflesuite/truffle-contract/issues/56#issuecomment-331084530
-if (typeof FundingService.currentProvider.sendAsync !== "function") {
+if (typeof FundingService.currentProvider.sendAsync !== 'function') {
     FundingService.currentProvider.sendAsync = function() {
         return FundingService.currentProvider.send.apply(FundingService.currentProvider, arguments)
     }
@@ -28,15 +28,17 @@ export default class FundingIndex extends Component {
         const fundingService = await FundingService.deployed()
         const developerAddresses = await fundingService.getDevelopers()
 
-        let developersInfo = await Promise.all(developerAddresses.map(async (address) => {
-            const id = await fundingService.developerMap(address)
-            const devInfo = await fundingService.developers(id)
-            return {
-                address,
-                id,
-                name: devInfo[2]
-            }
-        }))
+        let developersInfo = await Promise.all(
+            developerAddresses.map(async (address) => {
+                const id = await fundingService.developerMap(address)
+                const devInfo = await fundingService.developers(id)
+                return {
+                    address,
+                    id,
+                    name: devInfo[2]
+                }
+            })
+        )
 
         return { developersInfo }
     }
@@ -45,10 +47,11 @@ export default class FundingIndex extends Component {
         const items = this.props.developersInfo.map((devInfo) => {
             return {
                 header: devInfo.name,
-                description:
+                description: (
                     <Link route={`/developers/${devInfo.id}`}>
                         <a>View Developer</a>
-                    </Link>,
+                    </Link>
+                ),
                 meta: `ID: ${devInfo.id} --- ${devInfo.address}`,
                 fluid: true
             }
@@ -64,12 +67,7 @@ export default class FundingIndex extends Component {
                     <h3>All Developers</h3>
                     <Link route="/developers/new">
                         <a>
-                            <Button
-                                floated="right"
-                                content="Create Developer"
-                                icon="add circle"
-                                primary
-                            />
+                            <Button floated="right" content="Create Developer" icon="add circle" primary />
                         </a>
                     </Link>
                     {this.renderDevelopers()}
