@@ -2,19 +2,24 @@
   "name": "funding-protocol",
   "version": "1.0.0",
   "description": "The Funding Protocol project is broken up into 3 areas:",
+  "author": "Hyperbridge Technology",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node server.js"
+    "client": "node server.js",
+    "build": "cd smart-contracts/ethereum && truffle compile"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyperbridge/funding-protocol.git"
   },
-  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/hyperbridge/funding-protocol/issues"
+  },
+  "engines": {
+    "node": "~8.11.1",
+    "yarn": "^1.6.0"
   },
   "homepage": "https://github.com/hyperbridge/funding-protocol#readme",
   "dependencies": {
