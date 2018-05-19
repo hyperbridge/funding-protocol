@@ -1,21 +1,22 @@
-import React, { Component } from "react";
-import { Card, Button, Icon } from "semantic-ui-react";
-import Layout from "../components/Layout.js";
-import { Link } from "../routes";
-import contract from "truffle-contract";
-import fundingServiceJson from '../../smart-contracts/ethereum/build/contracts/FundingService.json';
-import Web3 from "web3";
+import React, { Component } from "react"
+import { Card, Button, Icon } from "semantic-ui-react"
+import Layout from "../components/Layout.js"
+import { Link } from "../routes"
+import contract from "truffle-contract"
+import fundingServiceJson from '../../smart-contracts/ethereum/build/contracts/FundingService.json'
+import Web3 from "web3"
 
-const provider = new Web3.providers.HttpProvider('http://localhost:8545');
-const web3 = new Web3(provider);
-const FundingService = contract(fundingServiceJson);
-FundingService.setProvider(provider);
+const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+const web3 = new Web3(provider)
+const FundingService = contract(fundingServiceJson)
+
+FundingService.setProvider(provider)
 
 // dirty hack for web3@1.0.0 support for localhost testrpc, see https://github.com/trufflesuite/truffle-contract/issues/56#issuecomment-331084530
 if (typeof FundingService.currentProvider.sendAsync !== "function") {
     FundingService.currentProvider.sendAsync = function() {
-        return FundingService.currentProvider.send.apply(FundingService.currentProvider, arguments);
-    };
+        return FundingService.currentProvider.send.apply(FundingService.currentProvider, arguments)
+    }
 }
 
 export default class FundingIndex extends Component {
@@ -24,20 +25,20 @@ export default class FundingIndex extends Component {
     }
 
     static async getInitialProps() {
-        const fundingService = await FundingService.deployed();
-        const developerAddresses = await fundingService.getDevelopers();
+        const fundingService = await FundingService.deployed()
+        const developerAddresses = await fundingService.getDevelopers()
 
         let developersInfo = await Promise.all(developerAddresses.map(async (address) => {
-            const id = await fundingService.developerMap(address);
-            const devInfo = await fundingService.developers(id);
+            const id = await fundingService.developerMap(address)
+            const devInfo = await fundingService.developers(id)
             return {
                 address,
                 id,
                 name: devInfo[2]
-            };
-        }));
+            }
+        }))
 
-        return { developersInfo };
+        return { developersInfo }
     }
 
     renderDevelopers() {
@@ -51,7 +52,7 @@ export default class FundingIndex extends Component {
                 meta: `ID: ${devInfo.id} --- ${devInfo.address}`,
                 fluid: true
             }
-        });
+        })
 
         return <Card.Group items={items} />
     }
