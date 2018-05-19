@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { Card } from "semantic-ui-react";
 import Layout from '../../components/Layout';
 import contract from "truffle-contract";
-import fundingServiceJson from '../../smart-contracts/ethereum/build/contracts/FundingService.json';
-import projectJson from '../../smart-contracts/ethereum/build/contracts/Project.json';
+import fundingServiceJson from '../../../smart-contracts/ethereum/build/contracts/FundingService.json';
+import projectJson from '../../../smart-contracts/ethereum/build/contracts/Project.json';
 import Web3 from "web3";
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545');
