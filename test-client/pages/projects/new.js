@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { Form, Button, Message } from 'semantic-ui-react'
-import Layout from '../../components/Layout.js'
-import contract from 'truffle-contract'
-import fundingServiceJson from '../../../smart-contracts/ethereum/build/contracts/FundingService.json'
 import Web3 from 'web3'
+import contract from 'truffle-contract'
+import Layout from '../../components/Layout.js'
+import fundingServiceJson from '../../../smart-contracts/ethereum/build/contracts/FundingService.json'
 import { Router } from '../../routes'
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')

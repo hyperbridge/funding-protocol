@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { Card, Button, Icon } from 'semantic-ui-react'
+import Web3 from 'web3'
+import contract from 'truffle-contract'
 import Layout from '../components/Layout.js'
 import { Link } from '../routes'
-import contract from 'truffle-contract'
 import fundingServiceJson from '../../smart-contracts/ethereum/build/contracts/FundingService.json'
 import projectJson from '../../smart-contracts/ethereum/build/contracts/Project.json'
-import Web3 from 'web3'
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
