@@ -2,18 +2,44 @@
   "name": "funding-protocol",
   "version": "1.0.0",
   "description": "The Funding Protocol project is broken up into 3 areas:",
+  "author": "Hyperbridge Technology",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client": "cd test-client && node server.js",
+    "build": "cd smart-contracts/ethereum && truffle compile",
+    "format": "yarn run prettier --write 'test-client/**/*.js'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyperbridge/funding-protocol.git"
   },
-  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/hyperbridge/funding-protocol/issues"
   },
-  "homepage": "https://github.com/hyperbridge/funding-protocol#readme"
+  "engines": {
+    "node": "~8.11.1",
+    "yarn": "^1.6.0"
+  },
+  "homepage": "https://github.com/hyperbridge/funding-protocol#readme",
+  "dependencies": {
+    "fs-extra": "^6.0.1",
+    "ganache-cli": "^6.1.0",
+    "mocha": "^5.1.1",
+    "next": "^6.0.2",
+    "next-routes": "^1.4.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "semantic-ui-css": "^2.3.1",
+    "semantic-ui-react": "^0.80.0",
+    "solc": "^0.4.23",
+    "truffle-contract": "^3.0.5",
+    "truffle-hdwallet-provider": "0.0.5",
+    "web3": "^1.0.0-beta.26"
+  },
+  "devDependencies": {
+    "eslint-plugin-prettier": "^2.6.0",
+    "prettier": "1.12.1"
+  }
 }
