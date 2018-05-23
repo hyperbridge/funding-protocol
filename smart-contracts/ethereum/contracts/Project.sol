@@ -1,4 +1,5 @@
 pragma solidity ^0.4.23;
+import "./FundingService.sol";
 
 contract Project {
     struct ProjectMilestone {
@@ -41,6 +42,16 @@ contract Project {
         developer = _developer;
         developerId = _developerId;
         contributionGoal = _contributionGoal;
+    }
+
+    function addMilestone(string milestoneTitle, string milestoneDescription) public devRestricted {
+        ProjectMilestone memory newMilestone = ProjectMilestone({
+            title: milestoneTitle,
+            description: milestoneDescription,
+            isComplete: false
+            });
+
+        pendingTimeline.milestones.push(newMilestone);
     }
 
     function() public payable { }
