@@ -73,8 +73,7 @@ contract FundingService {
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         uint newProjectId = projects.length;
 
-        Project newProject = new Project(this, newProjectId, _title, _description, _about, _contributionGoal, _developerId);
-
+        Project newProject = new Project(this, newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
         projectMap[newProject] = newProjectId;
         projects.push(newProject);
 
@@ -82,14 +81,6 @@ contract FundingService {
 
         dev.projectIds.push(newProjectId);
     }
-
-    // function removeProject(uint _projectId, uint _developerId) public devRestricted(_developerId) {
-    //     Developer storage dev = developers[_developerId];
-
-    //     require(dev.projectIds[dev.projectIdIndex[_projectId]] == _projectId); // check that project belongs to developer
-
-    //     // TODO - What behaviour here? Refund money? Self destruct? Remove from registry/developer?
-    // }
 
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
