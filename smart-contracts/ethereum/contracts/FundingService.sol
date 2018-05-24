@@ -1,7 +1,11 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
+import "./SafeMath.sol";
 
 contract FundingService {
+
+    using SafeMath for uint256;
+
     struct Developer {
         uint id;
         address addr;
@@ -14,14 +18,12 @@ contract FundingService {
         address addr;
         mapping(address => bool) projectExists;
         address[] activeProjects;
-        address[] oldProjects;
     }
 
     address public owner;
 
     mapping(address => uint) public developerMap; // address => id
-    mapping(uint => Developer) public developers; // id => Developer
-    uint[] public developerIds;
+    Developer[] public developers; // indexed by developer id
 
     mapping(address => Contributor) public contributors;
 
@@ -41,26 +43,22 @@ contract FundingService {
         owner = msg.sender;
 
         // reserve 0
-        developerIds.push(0);
+        developers.length++;
         projects.push(0);
     }
 
     function createDeveloper(string _name) public {
+        require(developerMap[msg.sender] == 0); // require that this account is not already a developer
+
         Developer memory newDeveloper = Developer({
-            id: developerIds.length,
+            id: developers.length,
             addr: msg.sender,
             name: _name,
             projectIds: new uint[](0)
             });
 
-        developerIds.push(newDeveloper.id);
-        developers[newDeveloper.id] = newDeveloper;
+        developers.push(newDeveloper);
         developerMap[msg.sender] = newDeveloper.id;
-
-        // reserve index 0 in developers projectIds
-        Developer storage createdDeveloper = developers[newDeveloper.id];
-        createdDeveloper.projectIds.push(0);
-        createdDeveloper.projectIdIndex[newDeveloper.id] = createdDeveloper.projectIds.length;
     }
 
     function getDeveloper(uint _id) public view returns (address addr, string name, uint[] projectIds) {
@@ -70,10 +68,22 @@ contract FundingService {
         return (dev.addr, dev.name, dev.projectIds);
     }
 
+    function getDevelopers() public view returns (address[]) {
+        address[] memory addresses = new address[](developers.length - 1);
+
+        for (uint i = 1; i < developers.length; i++) {
+            Developer memory developer = developers[i];
+            addresses[i - 1] = (developer.addr);
+        }
+
+        return addresses;
+    }
+
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         uint newProjectId = projects.length;
 
         Project newProject = new Project(this, newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
+
         projectMap[newProject] = newProjectId;
         projects.push(newProject);
 
@@ -95,6 +105,16 @@ contract FundingService {
         project.setStatusToPending();
     }
 
+    function getProjects() public view returns (address[]) {
+        address[] memory addresses = new address[](projects.length - 1);
+
+        for (uint i = 1; i < projects.length; i++) {
+            addresses[i - 1] = projects[i];
+        }
+
+        return addresses;
+    }
+
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
 
@@ -107,8 +127,7 @@ contract FundingService {
         if (contributors[msg.sender].addr == 0) {
             Contributor memory newContributor = Contributor({
                 addr: msg.sender,
-                activeProjects: new address[](0),
-                oldProjects: new address[](0)
+                activeProjects: new address[](0)
                 });
 
             // add contributor to global contributors mapping
@@ -123,10 +142,17 @@ contract FundingService {
             contributor.activeProjects.push(projectAddress);
         }
 
-        // add contribution amount to project
-        projectContributionAmount[projectAddress][msg.sender] += msg.value;
+        // add to projectContributorList, if not already present
+        if (projectContributionAmount[projectAddress][msg.sender] == 0) {
+            projectContributorList[projectAddress].push(msg.sender);
+        }
 
-        // add to projectContributorList
-        projectContributorList[projectAddress].push(msg.sender);
+        // add contribution amount to project
+        uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
+        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
+    }
+
+    function getProjectContributorList(address _project) public view returns (address[]) {
+        return projectContributorList[_project];
     }
 }
