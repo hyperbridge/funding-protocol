@@ -54,5 +54,39 @@ contract Project {
         pendingTimeline.milestones.push(newMilestone);
     }
 
+    function finalizeTimeline() public devRestricted {
+        // perform validation of milestones
+
+        if (timeline.milestones.length != 0) {
+            timelineHistory.push(timeline);
+        }
+
+        timeline = pendingTimeline;
+
+        delete(pendingTimeline.milestones);
+    }
+
+    function getPendingTimelineMilestoneLength() public view returns (uint) {
+        return pendingTimeline.milestones.length;
+    }
+
+    function getTimelineMilestoneLength() public view returns (uint) {
+        return timeline.milestones.length;
+    }
+
+    function getTimelineHistoryLength() public view returns (uint) {
+        return timelineHistory.length;
+    }
+
+    function getTimelineHistory() public view returns (uint[]) {
+        uint[] memory ret = new uint[](timelineHistory.length);
+
+        for (uint i = 0; i < timelineHistory.length; i++) {
+            ret[i] = timelineHistory[i].milestones.length;
+        }
+
+        return ret;
+    }
+
     function() public payable { }
 }
