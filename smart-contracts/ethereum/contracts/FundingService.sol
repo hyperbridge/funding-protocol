@@ -102,7 +102,7 @@ contract FundingService {
         // verify project
         require(project.getTimelineMilestoneLength() > 0);
 
-        project.setStatusToPending();
+        project.setStatus(1);
     }
 
     function getProjects() public view returns (address[]) {

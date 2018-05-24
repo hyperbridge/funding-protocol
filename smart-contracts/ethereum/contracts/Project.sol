@@ -91,8 +91,8 @@ contract Project {
         return ret;
     }
 
-    function setStatusToPending() public pure fundingServiceRestricted {
-        status = Statuses.Pending;
+    function setStatus(uint _status) public fundingServiceRestricted {
+        status = Statuses(_status);
     }
 
     function() public payable { }
