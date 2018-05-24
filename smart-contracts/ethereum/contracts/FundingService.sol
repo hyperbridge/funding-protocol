@@ -82,6 +82,19 @@ contract FundingService {
         dev.projectIds.push(newProjectId);
     }
 
+    function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
+        address projectAddress = projects[_projectId];
+
+        require(projectAddress != 0); // check that project exists
+
+        Project project = Project(projectAddress);
+
+        // verify project
+        require(project.getTimelineMilestoneLength() > 0);
+
+        project.setStatusToPending();
+    }
+
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
 

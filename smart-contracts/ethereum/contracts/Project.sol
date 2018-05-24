@@ -32,6 +32,11 @@ contract Project {
         _;
     }
 
+    modifier fundingServiceRestricted() {
+        require(msg.sender == fundingService);
+        _;
+    }
+
     constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
         fundingService = _fundingService;
         id = _id;
@@ -55,8 +60,6 @@ contract Project {
     }
 
     function finalizeTimeline() public devRestricted {
-        // perform validation of milestones
-
         if (timeline.milestones.length != 0) {
             timelineHistory.push(timeline);
         }
@@ -86,6 +89,10 @@ contract Project {
         }
 
         return ret;
+    }
+
+    function setStatusToPending() public pure fundingServiceRestricted {
+        status = Statuses.Pending;
     }
 
     function() public payable { }
