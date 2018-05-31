@@ -134,7 +134,11 @@ contract FundingService {
             uint percentageAcc = 0;
             for (uint j = 0; j < timelineLength; j++) {
                 // todo - is there a way to ignore multiple returns?
-                (string memory title, string memory description, uint percentage, bool isComplete) = _project.getTimelineMilestone(j);
+                string memory title;
+                string memory description;
+                uint percentage;
+                bool isComplete;
+                (title, description, percentage, isComplete) = _project.getTimelineMilestone(j);
                 percentageAcc = percentageAcc.add(percentage);
             }
             require(percentageAcc == 100);
@@ -155,7 +159,11 @@ contract FundingService {
                 continue;
             }
 
-            (uint contributorLimit, uint maxContribution, uint minContribution, string memory rewards) = _project.getContributionTier(i);
+            uint contributorLimit;
+            uint maxContribution;
+            uint minContribution;
+            string memory rewards;
+            (contributorLimit, maxContribution, minContribution, rewards) = _project.getContributionTier(i);
             require(minContribution == previousMaxContribution + 1);
             previousMaxContribution = maxContribution;
         }
