@@ -159,6 +159,7 @@ contract FundingService {
                 continue;
             }
 
+            // todo - is there a way to ignore multiple returns?
             uint contributorLimit;
             uint maxContribution;
             uint minContribution;
