@@ -95,14 +95,70 @@ contract FundingService {
     function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
         address projectAddress = projects[_projectId];
 
-        require(projectAddress != 0); // check that project exists
+        // check that project exists
+        require(projectAddress != address(0));
 
         Project project = Project(projectAddress);
 
-        // verify project
-        require(project.getTimelineMilestoneLength() > 0);
+        verifyProjectMilestones(project);
 
+        verifyProjectTiers(project);
+
+        // Set project status to "Pending"
         project.setStatus(1);
+    }
+
+    function verifyProjectMilestones(Project _project) private view {
+        // Get project terms
+        // 0: NoRefunds
+        // 1: NoTimeline
+        Project.Terms[] memory terms = _project.getTerms();
+
+        // Determine if project has a NoTimeline terms
+        bool hasNoTimeline = false;
+        for (uint i = 0; i < terms.length; i++) {
+            if (terms[i] == Project.Terms.NoTimeline) {
+                hasNoTimeline = true;
+                break;
+            }
+        }
+
+        // If project has a timeline, verify:
+        // - Milestones are present
+        // - Milestone percentages add up to 100
+        if (!hasNoTimeline) {
+            uint timelineLength = _project.getTimelineMilestoneLength();
+
+            require(timelineLength > 0);
+
+            uint percentageAcc = 0;
+            for (uint j = 0; j < timelineLength; j++) {
+                // todo - is there a way to ignore multiple returns?
+                (string memory title, string memory description, uint percentage, bool isComplete) = _project.getTimelineMilestone(j);
+                percentageAcc = percentageAcc.add(percentage);
+            }
+            require(percentageAcc == 100);
+        }
+    }
+
+    function verifyProjectTiers(Project _project) private view {
+        // Verify that project has contribution tiers
+        uint tiersLength = _project.getTiersLength();
+        require(tiersLength > 0);
+
+        // Verify that tier contribution limits align with each other
+        uint previousMaxContribution;
+        for (uint i = 0; i < tiersLength; i++) {
+            // initialize previousMaxContribution with first tier
+            if (i == 0) {
+                previousMaxContribution = maxContribution;
+                continue;
+            }
+
+            (uint contributorLimit, uint maxContribution, uint minContribution, string memory rewards) = _project.getContributionTier(i);
+            require(minContribution == previousMaxContribution + 1);
+            previousMaxContribution = maxContribution;
+        }
     }
 
     function getProjects() public view returns (address[]) {
@@ -119,9 +175,6 @@ contract FundingService {
         address projectAddress = projects[_projectId];
 
         require(projectAddress != 0); // check that project exists
-
-        // transfer money to project
-        projectAddress.transfer(msg.value);
 
         // if contributor doesn't exist, create it
         if (contributors[msg.sender].addr == 0) {
@@ -150,6 +203,9 @@ contract FundingService {
         // add contribution amount to project
         uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
         projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
+
+        // transfer money to project
+        projectAddress.transfer(msg.value);
     }
 
     function getProjectContributorList(address _project) public view returns (address[]) {
