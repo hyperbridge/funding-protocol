@@ -149,25 +149,6 @@ contract FundingService {
         // Verify that project has contribution tiers
         uint tiersLength = _project.getTiersLength();
         require(tiersLength > 0);
-
-        // Verify that tier contribution limits align with each other
-        uint previousMaxContribution;
-        for (uint i = 0; i < tiersLength; i++) {
-            // initialize previousMaxContribution with first tier
-            if (i == 0) {
-                previousMaxContribution = maxContribution;
-                continue;
-            }
-
-            // todo - is there a way to ignore multiple returns?
-            uint contributorLimit;
-            uint maxContribution;
-            uint minContribution;
-            string memory rewards;
-            (contributorLimit, maxContribution, minContribution, rewards) = _project.getContributionTier(i);
-            require(minContribution == previousMaxContribution + 1);
-            previousMaxContribution = maxContribution;
-        }
     }
 
     function getProjects() public view returns (address[]) {
