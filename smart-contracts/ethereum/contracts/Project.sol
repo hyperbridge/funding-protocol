@@ -9,10 +9,6 @@ contract Project {
         bool isComplete;
     }
 
-    struct ProjectTimeline {
-        ProjectMilestone[] milestones;
-    }
-
     struct ProjectTier {
         uint contributorLimit;
         uint minContribution;
@@ -36,9 +32,9 @@ contract Project {
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
     Terms[] terms;
-    ProjectTimeline timeline;
-    ProjectTimeline[] timelineHistory;
-    ProjectTimeline pendingTimeline;
+    ProjectMilestone[] timeline;
+    ProjectMilestone[][] timelineHistory;
+    ProjectMilestone[] pendingTimeline;
 
     modifier devRestricted() {
         require(msg.sender == developer);
@@ -72,7 +68,7 @@ contract Project {
             isComplete: false
             });
 
-        pendingTimeline.milestones.push(newMilestone);
+        pendingTimeline.push(newMilestone);
     }
 
     function editMilestone(
@@ -81,7 +77,7 @@ contract Project {
         string _milestoneDescription,
         uint _milestonePercentage)
     public devRestricted {
-        ProjectMilestone storage milestone = pendingTimeline.milestones[_index];
+        ProjectMilestone storage milestone = pendingTimeline[_index];
 
         milestone.title = _milestoneTitle;
         milestone.description = _milestoneDescription;
@@ -96,41 +92,31 @@ contract Project {
         bool milestoneIsComplete
     ) {
 
-        ProjectMilestone memory milestone = timeline.milestones[_index];
+        ProjectMilestone memory milestone = timeline[_index];
 
         return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
     function getPendingTimelineMilestoneLength() public view returns (uint) {
-        return pendingTimeline.milestones.length;
+        return pendingTimeline.length;
     }
 
     function getTimelineMilestoneLength() public view returns (uint) {
-        return timeline.milestones.length;
+        return timeline.length;
     }
 
     function getTimelineHistoryLength() public view returns (uint) {
         return timelineHistory.length;
     }
 
-    function getTimelineHistory() public view returns (uint[]) {
-        uint[] memory ret = new uint[](timelineHistory.length);
-
-        for (uint i = 0; i < timelineHistory.length; i++) {
-            ret[i] = timelineHistory[i].milestones.length;
-        }
-
-        return ret;
-    }
-
     function finalizeTimeline() public devRestricted {
-        if (timeline.milestones.length != 0) {
+        if (timeline.length != 0) {
             timelineHistory.push(timeline);
         }
 
         timeline = pendingTimeline;
 
-        delete(pendingTimeline.milestones);
+        delete(pendingTimeline);
     }
 
     function setStatus(uint _status) public fundingServiceRestricted {
