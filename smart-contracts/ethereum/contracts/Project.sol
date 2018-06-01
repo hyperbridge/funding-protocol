@@ -84,6 +84,19 @@ contract Project {
         milestone.percentage = _milestonePercentage;
     }
 
+    function getPendingTimelineMilestone(uint _index) public view
+    returns (
+        string milestoneTitle,
+        string milestoneDescription,
+        uint milestonePercentage,
+        bool milestoneIsComplete
+    ) {
+
+        ProjectMilestone memory milestone = pendingTimeline[_index];
+
+        return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
+    }
+
     function getTimelineMilestone(uint _index) public view
     returns (
         string milestoneTitle,
@@ -128,7 +141,7 @@ contract Project {
         delete(terms);
 
         // add terms
-        for (uint i = 0; i < terms.length; i++) {
+        for (uint i = 0; i < _terms.length; i++) {
             terms.push(Terms(_terms[i]));
         }
     }
@@ -163,8 +176,24 @@ contract Project {
         tier.rewards = _rewards;
     }
 
+    function getPendingTiersLength() public view returns (uint) {
+        return pendingContributionTiers.length;
+    }
+
     function getTiersLength() public view returns (uint) {
         return contributionTiers.length;
+    }
+
+    function getPendingContributionTier(uint _index) public view
+    returns (
+        uint tierContributorLimit,
+        uint tierMaxContribution,
+        uint tierMinContribution,
+        string tierRewards
+    ) {
+        ProjectTier memory tier = pendingContributionTiers[_index];
+
+        return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
     function getContributionTier(uint _index) public view
@@ -184,7 +213,6 @@ contract Project {
 
         delete(pendingContributionTiers);
     }
-
 
     function() public payable { }
 }

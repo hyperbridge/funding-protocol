@@ -1,0 +1,171 @@
+const FundingService = artifacts.require("FundingService");
+const Project = artifacts.require("Project");
+
+contract('Project', function(accounts) {
+    let fundingService;
+    let fundingServiceOwner;
+    let devName;
+    let devAccount;
+    let project;
+    let projectTitle;
+    let projectDescription;
+    let projectAbout;
+    let projectDevId;
+    let projectContributionGoal;
+
+    before(async () => {
+        fundingService = await FundingService.deployed();
+
+        devName = "Hyperbridge";
+        fundingServiceOwner = accounts[0];
+        devAccount = accounts[1];
+
+        await fundingService.createDeveloper(devName, { from: devAccount });
+
+        projectTitle = "Blockhub";
+        projectDescription = "This is a description of Blockhub.";
+        projectAbout = "These are the various features of Blockhub.";
+        projectDevId = await fundingService.developerMap.call(devAccount);
+        projectContributionGoal = 1000000;
+
+        await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
+
+        let projectAddress = await fundingService.projects.call(1);
+        project = Project.at(projectAddress);
+    });
+
+    it("should be able to add milestones", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 20, { from: devAccount });
+
+            let pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            assert.equal(pendingMilestoneLength.toNumber(), 1, "Pending milestone not added.");
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 30, { from: devAccount });
+
+            pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            assert.equal(pendingMilestoneLength.toNumber(), 2, "Second pending milestone not added.");
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 50, { from: devAccount });
+            pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            assert.equal(pendingMilestoneLength.toNumber(), 3, "Third pending milestone not added.");
+
+            await project.finalizeTimeline({ from: devAccount });
+            pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            assert.equal(pendingMilestoneLength.toNumber(), 0, "Finalizing timeline did not remove pending milestones.");
+
+            let timelineLength = await project.getTimelineMilestoneLength.call();
+            assert.equal(timelineLength.toNumber(), 3, "Finalizing timeline did not move pending milestones into timeline.");
+
+            let timelineHistoryLength = await project.getTimelineHistoryLength.call();
+            assert.equal(timelineHistoryLength, 0, "Timeline was added to history when it shouldn't have been.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should reject wrong account from adding milestones", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 20, { from: accounts[2] });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("should reject milestone with percentage > 100", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 101, { from: devAccount });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("should be able to edit a pending milestone", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 20, { from: devAccount });
+
+            let milestone = await project.getPendingTimelineMilestone.call(0, { from: devAccount });
+
+            assert.equal(milestone[0], milestoneTitle, "Title is wrong.");
+            assert.equal(milestone[1], milestoneDescription, "Description is wrong.");
+            assert.equal(milestone[2], 20, "Percentage is wrong.");
+
+            let newTitle = "New Milestone";
+            let newDescription = "New description";
+
+            await project.editMilestone(0, newTitle, newDescription, 30, { from: devAccount });
+
+            milestone = await project.getPendingTimelineMilestone.call(0, { from: devAccount });
+
+            assert.equal(milestone[0], newTitle, "Title is wrong.");
+            assert.equal(milestone[1], newDescription, "Description is wrong.");
+            assert.equal(milestone[2], 30, "Percentage is wrong.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should be able to set project terms", async () => {
+        try {
+            let newTerms = [0, 1];
+            await project.setTerms(newTerms, { from: devAccount });
+            let terms = await project.getTerms.call();
+            assert.equal(terms.length, newTerms.length, "Terms are incorrect length");
+            assert.equal(terms[0], newTerms[0], "First term is incorrect");
+            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+
+            newTerms = [0];
+            await project.setTerms(newTerms, { from: devAccount });
+            terms = await project.getTerms.call();
+            assert.equal(terms.length, newTerms.length, "Terms are incorrect length the second time");
+            assert.equal(terms[0], newTerms[0], "First term is incorrect");
+            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should be able to add tiers", async () => {
+        try {
+            const contributorLimit = 1000;
+            let maxContribution = 10000;
+            let minContribution = 1;
+            let rewards = "You'll get these things.";
+
+            await project.addTier(contributorLimit, maxContribution, minContribution, rewards, { from: devAccount });
+
+            let pendingTiersLength = await project.getPendingTiersLength.call();
+            assert.equal(pendingTiersLength.toNumber(), 1, "Pending tier was not added.");
+
+            await project.finalizeTiers({ from: devAccount });
+
+            let tiersLength = await project.getTiersLength.call();
+            pendingTiersLength = await project.getPendingTiersLength.call();
+
+            assert.equal(tiersLength.toNumber(), 1, "Finalizing tiers did not move pending into active.");
+            assert.equal(pendingTiersLength.toNumber(), 0, "Finalizing tiers did not clear pendingTiers.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+});
