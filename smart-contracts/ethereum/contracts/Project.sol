@@ -132,8 +132,8 @@ contract Project {
         delete(pendingTimeline);
     }
 
-    function setStatus(uint _status) public fundingServiceRestricted {
-        status = Statuses(_status);
+    function setStatus(Statuses _status) public fundingServiceRestricted {
+        status = _status;
     }
 
     function setTerms(uint[] _terms) public devRestricted {

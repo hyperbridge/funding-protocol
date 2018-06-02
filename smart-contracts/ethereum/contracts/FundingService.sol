@@ -105,7 +105,7 @@ contract FundingService {
         verifyProjectTiers(project);
 
         // Set project status to "Pending"
-        project.setStatus(1);
+        project.setStatus(Project.Statuses.Pending);
     }
 
     function verifyProjectMilestones(Project _project) private view {
