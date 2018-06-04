@@ -31,7 +31,8 @@ contract Project {
     uint public contributionGoal;
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
-    Term[] terms;
+    Term[] public terms;
+    mapping(uint => bool) public termIsActive;
     ProjectMilestone[] timeline;
     ProjectMilestone[][] timelineHistory;
     ProjectMilestone[] pendingTimeline;
@@ -137,13 +138,23 @@ contract Project {
     }
 
     function setTerms(uint[] _terms) public devRestricted {
-        // clear existing terms
-        delete(terms);
+        Term[] memory newTerms = new Term[](_terms.length);
 
-        // add terms
-        for (uint i = 0; i < _terms.length; i++) {
-            terms.push(Term(_terms[i]));
+        // set current terms to inactive
+        for (uint i = 0; i < terms.length; i++) {
+            termIsActive[uint(terms[i])] = false;
         }
+
+//        // clear existing terms list
+//        delete(terms);
+
+        // set new terms to active
+        for (uint j = 0; j < _terms.length; j++) {
+            termIsActive[_terms[j]] = true;
+            newTerms[j] = Term(_terms[j]);
+        }
+
+        terms = newTerms;
     }
 
     function getTerms() public view returns (Term[]) {

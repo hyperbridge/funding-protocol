@@ -129,15 +129,14 @@ contract('Project', function(accounts) {
             await project.setTerms(newTerms, { from: devAccount });
             let terms = await project.getTerms.call();
             assert.equal(terms.length, newTerms.length, "Terms are incorrect length");
-            assert.equal(terms[0], newTerms[0], "First term is incorrect");
-            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+            assert.equal(terms[0].toNumber(), newTerms[0], "First term is incorrect");
+            assert.equal(terms[1].toNumber(), newTerms[1], "Second term is incorrect");
 
             newTerms = [0];
             await project.setTerms(newTerms, { from: devAccount });
             terms = await project.getTerms.call();
             assert.equal(terms.length, newTerms.length, "Terms are incorrect length the second time");
-            assert.equal(terms[0], newTerms[0], "First term is incorrect");
-            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+            assert.equal(terms[0].toNumber(), newTerms[0], "First term is incorrect");
         } catch (e) {
             console.log(e.message);
             assert.fail();
