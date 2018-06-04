@@ -16,13 +16,13 @@ contract Project {
         string rewards;
     }
 
-    enum Statuses {Draft, Pending, Published, Removed, Rejected}
+    enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    enum Terms {NoRefunds, NoTimeline}
+    enum Term {NoRefunds, NoTimeline}
 
     address public fundingService;
     uint public id;
-    Statuses public status;
+    Status public status;
     string public title;
     string public description;
     string public about;
@@ -31,7 +31,7 @@ contract Project {
     uint public contributionGoal;
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
-    Terms[] terms;
+    Term[] terms;
     ProjectMilestone[] timeline;
     ProjectMilestone[][] timelineHistory;
     ProjectMilestone[] pendingTimeline;
@@ -49,7 +49,7 @@ contract Project {
     constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
         fundingService = _fundingService;
         id = _id;
-        status = Statuses.Draft;
+        status = Status.Draft;
         title = _title;
         description = _description;
         about = _about;
@@ -132,7 +132,7 @@ contract Project {
         delete(pendingTimeline);
     }
 
-    function setStatus(Statuses _status) public fundingServiceRestricted {
+    function setStatus(Status _status) public fundingServiceRestricted {
         status = _status;
     }
 
@@ -142,11 +142,11 @@ contract Project {
 
         // add terms
         for (uint i = 0; i < _terms.length; i++) {
-            terms.push(Terms(_terms[i]));
+            terms.push(Term(_terms[i]));
         }
     }
 
-    function getTerms() public view returns (Terms[]) {
+    function getTerms() public view returns (Term[]) {
         return terms;
     }
 

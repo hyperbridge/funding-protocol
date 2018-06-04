@@ -105,19 +105,19 @@ contract FundingService {
         verifyProjectTiers(project);
 
         // Set project status to "Pending"
-        project.setStatus(Project.Statuses.Pending);
+        project.setStatus(Project.Status.Pending);
     }
 
     function verifyProjectMilestones(Project _project) private view {
         // Get project terms
         // 0: NoRefunds
         // 1: NoTimeline
-        Project.Terms[] memory terms = _project.getTerms();
+        Project.Term[] memory terms = _project.getTerms();
 
         // Determine if project has a NoTimeline terms
         bool hasNoTimeline = false;
         for (uint i = 0; i < terms.length; i++) {
-            if (terms[i] == Project.Terms.NoTimeline) {
+            if (terms[i] == Project.Term.NoTimeline) {
                 hasNoTimeline = true;
                 break;
             }
