@@ -8,6 +8,8 @@ import "./SafeMath.sol";
 * Developer will dispense funds if report is approved 
 * Test Bounty Params: "Maple", "Greatest Bug In Existence", "http://dailyhive.com"
 * Test Report Params: "This is unacceptable", "https://hyperbridge.org/"
+* Test Project Params: "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1 , "Blockhub", "This is a description of Blockhub.", "These are the various features of Blockhub.", "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1000000 
+* Test FUnding Service Params: "a", "a" , "f", 1, 1000
 */
 contract Bounty {
 
@@ -25,8 +27,8 @@ contract Bounty {
     bool isComplete;
     bountyHunter[] bountyHunters;
 
-    mapping(address => string) allBountyHunterReports;
-    
+    mapping(address => string) individualBountyHunterReport;
+
     modifier devRestricted() {
         require(msg.sender == developer);
         _;
@@ -53,11 +55,15 @@ contract Bounty {
         });
 
         bountyHunters.push(newBountyHunter);
-        allBountyHunterReports[msg.sender] = _report;
+        individualBountyHunterReport[msg.sender] = _report;
     }
     
-    function viewBountyReport(address _bountyHunter) public view devRestricted returns (string) {
-        return allBountyHunterReports[_bountyHunter];
+    function viewBountyReport(address _bountyHunter) public view returns (string) {
+        return individualBountyHunterReport[_bountyHunter];
+    }
+    
+    function viewBountyValue() public view returns (uint) {
+        return bountyValue;
     }
     
     function releaseBounty(address _bountyHunter) public devRestricted {

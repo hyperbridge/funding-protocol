@@ -40,6 +40,8 @@ contract Project {
     ProjectTimeline[] timelineHistory;
     ProjectTimeline pendingTimeline;
 
+    Bounty[] bounties;
+
     modifier devRestricted() {
         require(msg.sender == developer);
         _;
@@ -199,6 +201,11 @@ contract Project {
         delete(pendingContributionTiers);
     }
 
+    function createBounty (string _bountyName) public devRestricted {
+        Bounty newBounty = new Bounty(_bountyName);
+
+        bounties.push(newBounty);
+    }
 
     function() public payable { }
 }
