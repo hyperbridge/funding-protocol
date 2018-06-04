@@ -105,19 +105,19 @@ contract FundingService {
         verifyProjectTiers(project);
 
         // Set project status to "Pending"
-        project.setStatus(1);
+        project.setStatus(Project.Status.Pending);
     }
 
     function verifyProjectMilestones(Project _project) private view {
         // Get project terms
         // 0: NoRefunds
         // 1: NoTimeline
-        Project.Terms[] memory terms = _project.getTerms();
+        Project.Term[] memory terms = _project.getTerms();
 
         // Determine if project has a NoTimeline terms
         bool hasNoTimeline = false;
         for (uint i = 0; i < terms.length; i++) {
-            if (terms[i] == Project.Terms.NoTimeline) {
+            if (terms[i] == Project.Term.NoTimeline) {
                 hasNoTimeline = true;
                 break;
             }
@@ -149,24 +149,6 @@ contract FundingService {
         // Verify that project has contribution tiers
         uint tiersLength = _project.getTiersLength();
         require(tiersLength > 0);
-
-        // Verify that tier contribution limits align with each other
-        uint previousMaxContribution;
-        for (uint i = 0; i < tiersLength; i++) {
-            // initialize previousMaxContribution with first tier
-            if (i == 0) {
-                previousMaxContribution = maxContribution;
-                continue;
-            }
-
-            uint contributorLimit;
-            uint maxContribution;
-            uint minContribution;
-            string memory rewards;
-            (contributorLimit, maxContribution, minContribution, rewards) = _project.getContributionTier(i);
-            require(minContribution == previousMaxContribution + 1);
-            previousMaxContribution = maxContribution;
-        }
     }
 
     function getProjects() public view returns (address[]) {

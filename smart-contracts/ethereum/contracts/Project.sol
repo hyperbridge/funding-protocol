@@ -9,10 +9,6 @@ contract Project {
         bool isComplete;
     }
 
-    struct ProjectTimeline {
-        ProjectMilestone[] milestones;
-    }
-
     struct ProjectTier {
         uint contributorLimit;
         uint minContribution;
@@ -20,13 +16,13 @@ contract Project {
         string rewards;
     }
 
-    enum Statuses {Draft, Pending, Published, Removed, Rejected}
+    enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    enum Terms {NoRefunds, NoTimeline}
+    enum Term {NoRefunds, NoTimeline}
 
     address public fundingService;
     uint public id;
-    Statuses public status;
+    Status public status;
     string public title;
     string public description;
     string public about;
@@ -35,10 +31,10 @@ contract Project {
     uint public contributionGoal;
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
-    Terms[] terms;
-    ProjectTimeline timeline;
-    ProjectTimeline[] timelineHistory;
-    ProjectTimeline pendingTimeline;
+    Term[] terms;
+    ProjectMilestone[] timeline;
+    ProjectMilestone[][] timelineHistory;
+    ProjectMilestone[] pendingTimeline;
 
     Bounty[] bounties;
 
@@ -55,7 +51,7 @@ contract Project {
     constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
         fundingService = _fundingService;
         id = _id;
-        status = Statuses.Draft;
+        status = Status.Draft;
         title = _title;
         description = _description;
         about = _about;
@@ -74,7 +70,7 @@ contract Project {
             isComplete: false
             });
 
-        pendingTimeline.milestones.push(newMilestone);
+        pendingTimeline.push(newMilestone);
     }
 
     function editMilestone(
@@ -83,11 +79,24 @@ contract Project {
         string _milestoneDescription,
         uint _milestonePercentage)
     public devRestricted {
-        ProjectMilestone storage milestone = pendingTimeline.milestones[_index];
+        ProjectMilestone storage milestone = pendingTimeline[_index];
 
         milestone.title = _milestoneTitle;
         milestone.description = _milestoneDescription;
         milestone.percentage = _milestonePercentage;
+    }
+
+    function getPendingTimelineMilestone(uint _index) public view
+    returns (
+        string milestoneTitle,
+        string milestoneDescription,
+        uint milestonePercentage,
+        bool milestoneIsComplete
+    ) {
+
+        ProjectMilestone memory milestone = pendingTimeline[_index];
+
+        return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
     function getTimelineMilestone(uint _index) public view
@@ -98,45 +107,35 @@ contract Project {
         bool milestoneIsComplete
     ) {
 
-        ProjectMilestone memory milestone = timeline.milestones[_index];
+        ProjectMilestone memory milestone = timeline[_index];
 
         return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
     function getPendingTimelineMilestoneLength() public view returns (uint) {
-        return pendingTimeline.milestones.length;
+        return pendingTimeline.length;
     }
 
     function getTimelineMilestoneLength() public view returns (uint) {
-        return timeline.milestones.length;
+        return timeline.length;
     }
 
     function getTimelineHistoryLength() public view returns (uint) {
         return timelineHistory.length;
     }
 
-    function getTimelineHistory() public view returns (uint[]) {
-        uint[] memory ret = new uint[](timelineHistory.length);
-
-        for (uint i = 0; i < timelineHistory.length; i++) {
-            ret[i] = timelineHistory[i].milestones.length;
-        }
-
-        return ret;
-    }
-
     function finalizeTimeline() public devRestricted {
-        if (timeline.milestones.length != 0) {
+        if (timeline.length != 0) {
             timelineHistory.push(timeline);
         }
 
         timeline = pendingTimeline;
 
-        delete(pendingTimeline.milestones);
+        delete(pendingTimeline);
     }
 
-    function setStatus(uint _status) public fundingServiceRestricted {
-        status = Statuses(_status);
+    function setStatus(Status _status) public fundingServiceRestricted {
+        status = _status;
     }
 
     function setTerms(uint[] _terms) public devRestricted {
@@ -144,12 +143,12 @@ contract Project {
         delete(terms);
 
         // add terms
-        for (uint i = 0; i < terms.length; i++) {
-            terms.push(Terms(_terms[i]));
+        for (uint i = 0; i < _terms.length; i++) {
+            terms.push(Term(_terms[i]));
         }
     }
 
-    function getTerms() public view returns (Terms[]) {
+    function getTerms() public view returns (Term[]) {
         return terms;
     }
 
@@ -179,8 +178,24 @@ contract Project {
         tier.rewards = _rewards;
     }
 
+    function getPendingTiersLength() public view returns (uint) {
+        return pendingContributionTiers.length;
+    }
+
     function getTiersLength() public view returns (uint) {
         return contributionTiers.length;
+    }
+
+    function getPendingContributionTier(uint _index) public view
+    returns (
+        uint tierContributorLimit,
+        uint tierMaxContribution,
+        uint tierMinContribution,
+        string tierRewards
+    ) {
+        ProjectTier memory tier = pendingContributionTiers[_index];
+
+        return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
     function getContributionTier(uint _index) public view
