@@ -101,6 +101,75 @@ contract('FundingService', function(accounts) {
         }
     });
 
+    it("should submit project for review", async () => {
+        try {
+            const projectAddress = await fundingService.projects.call(1);
+            const project = await Project.at(projectAddress);
+
+            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
+            await project.finalizeTimeline({ from: devAccount });
+
+            await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
+            await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+
+            const projectStatus = await project.status.call();
+
+            assert.equal(projectStatus, 1, "FundingService did not change valid project's status to Pending.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should reject project submitted for review with invalid milestones", async () => {
+        try {
+            await fundingService.createProject("New Title", "New Desc", "New About", projectDevId, 20000, {from: devAccount});
+
+            const projectAddress = await fundingService.projects.call(2);
+            const project = await Project.at(projectAddress);
+
+            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 21, { from: devAccount });
+            await project.finalizeTimeline({ from: devAccount });
+
+            await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
+            await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("should reject project submitted for review with no contribution tiers", async () => {
+        try {
+            await fundingService.createProject("New Title", "New Desc", "New About", projectDevId, 20000, {from: devAccount});
+
+            const projectAddress = await fundingService.projects.call(2);
+            const project = await Project.at(projectAddress);
+
+            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
+            await project.finalizeTimeline({ from: devAccount });
+
+            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
     it("new contributor should be able to contribute to a project", async function() {
         try {
             const amountToContribute = 1000;
