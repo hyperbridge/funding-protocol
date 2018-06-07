@@ -18,8 +18,6 @@ contract Project {
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    enum Term {NoRefunds, NoTimeline}
-
     address public fundingService;
     uint public id;
     Status public status;
@@ -31,8 +29,8 @@ contract Project {
     uint public contributionGoal;
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
-    Term[] public terms;
-    mapping(uint => bool) public termIsActive;
+    bool public noRefunds;
+    bool public noTimeline;
     ProjectMilestone[] timeline;
     ProjectMilestone[][] timelineHistory;
     ProjectMilestone[] pendingTimeline;
@@ -137,28 +135,12 @@ contract Project {
         status = _status;
     }
 
-    function setTerms(uint[] _terms) public devRestricted {
-        Term[] memory newTerms = new Term[](_terms.length);
-
-        // set current terms to inactive
-        for (uint i = 0; i < terms.length; i++) {
-            termIsActive[uint(terms[i])] = false;
-        }
-
-//        // clear existing terms list
-//        delete(terms);
-
-        // set new terms to active
-        for (uint j = 0; j < _terms.length; j++) {
-            termIsActive[_terms[j]] = true;
-            newTerms[j] = Term(_terms[j]);
-        }
-
-        terms = newTerms;
+    function setNoRefunds(bool val) public devRestricted {
+        noRefunds = val;
     }
 
-    function getTerms() public view returns (Term[]) {
-        return terms;
+    function setNoTimeline(bool val) public devRestricted {
+        noTimeline = val;
     }
 
     function addTier(uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) public devRestricted {
