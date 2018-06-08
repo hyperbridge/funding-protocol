@@ -28,7 +28,7 @@ contract FundingService {
     mapping(address => Contributor) public contributors;
 
     mapping(address => mapping(address => uint)) public projectContributionAmount; // project address => (contributor address => contribution amount)
-    mapping(address => address[]) public projectContributorList; // project address => Contributors[]
+    mapping(address => address[]) projectContributorList; // project address => Contributors[]
 
     mapping(address => uint) public projectMap; // address => id
     address[] public projects; // indexed by project id
@@ -104,8 +104,8 @@ contract FundingService {
 
         verifyProjectTiers(project);
 
-        // Set project status to "Pending"
-        project.setStatus(Project.Status.Pending);
+        // Set project status to "Pending" and change timeline to active
+        project.initializeTimeline();
     }
 
     function verifyProjectMilestones(address _project) private view {
@@ -126,7 +126,7 @@ contract FundingService {
                 string memory description;
                 uint percentage;
                 bool isComplete;
-                (title, description, percentage, isComplete) = project.getTimelineMilestone(j);
+                (title, description, percentage, isComplete) = project.getTimelineMilestone(j, false);
                 percentageAcc = percentageAcc.add(percentage);
             }
             require(percentageAcc == 100);
@@ -188,7 +188,7 @@ contract FundingService {
         projectAddress.transfer(msg.value);
     }
 
-    function getProjectContributorList(address _project) public view returns (address[]) {
-        return projectContributorList[_project];
+    function getProjectContributorList(address _projectAddress) public view returns (address[]) {
+        return projectContributorList[_projectAddress];
     }
 }
