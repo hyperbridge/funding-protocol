@@ -33,7 +33,9 @@ contract Project {
     struct MilestoneCompletionSubmission {
         uint timestamp;
         uint approvalCount;
-        uint milestoneIndex;
+        uint disapprovalCount;
+        string report;
+        bool isActive;
         mapping(address => bool) voters;
     }
 
@@ -53,9 +55,11 @@ contract Project {
     bool public noRefunds;
     bool public noTimeline;
     ProjectTimeline timeline;
+    uint public activeMilestoneIndex;
     ProjectTimeline[] timelineHistory;
     ProjectTimeline pendingTimeline;
     TimelineProposal timelineProposal;
+    MilestoneCompletionSubmission milestoneCompletionSubmission;
 
     modifier devRestricted() {
         require(msg.sender == developer);
@@ -151,6 +155,9 @@ contract Project {
         // Set timeline to active
         timeline.isActive = true;
 
+        // Set first milestone as active
+        activeMilestoneIndex = 0;
+
         // Change project status to "Pending"
         status = Status.Pending;
     }
@@ -170,6 +177,8 @@ contract Project {
     function proposeNewTimeline() public devRestricted {
         // Can only suggest new timeline if one already exists
         require(timeline.isActive);
+        // Can only suggest new timeline if there is not currently a vote on milestone completion
+        require(!milestoneCompletionSubmission.isActive);
 
         TimelineProposal memory newProposal = TimelineProposal({
             timestamp: now,
@@ -228,6 +237,65 @@ contract Project {
         timeline.isActive = true;
         delete(timelineProposal);
         delete(pendingTimeline);
+    }
+
+    function submitMilestoneCompletion(string _report) public devRestricted {
+        // Can only submit for milestone completion if timeline is active
+        require(timeline.isActive);
+        // Can only submit for milestone completion if there is not already a vote on milestone completion
+        require(!milestoneCompletionSubmission.isActive);
+        // Can only submit for milestone completion if there is not already a vote on a timeline proposal
+        require(!timelineProposal.isActive);
+
+        MilestoneCompletionSubmission memory newSubmission = MilestoneCompletionSubmission({
+            timestamp: now,
+            approvalCount: 0,
+            disapprovalCount: 0,
+            report: _report,
+            isActive: true
+            });
+
+        milestoneCompletionSubmission = newSubmission;
+    }
+
+    function voteOnMilestoneCompletion(bool approved) public contributorRestricted {
+        // MilestoneCompletionSubmission must be active
+        require(milestoneCompletionSubmission.isActive == true);
+
+        // Contributor must not have already voted
+        require(!milestoneCompletionSubmission.voters[msg.sender]);
+
+        if (approved) {
+            milestoneCompletionSubmission.approvalCount++;
+        } else {
+            milestoneCompletionSubmission.disapprovalCount++;
+        }
+        milestoneCompletionSubmission.voters[msg.sender] = true;
+    }
+
+    function finalizeMilestoneCompletion() public devRestricted {
+        // MilestoneCompletionSubmission must be active
+        require(milestoneCompletionSubmission.isActive == true);
+
+        FundingService fs = FundingService(fundingService);
+        uint numContributors = fs.getProjectContributorList(this).length;
+        uint numVoters = milestoneCompletionSubmission.approvalCount + milestoneCompletionSubmission.disapprovalCount;
+        bool isTwoWeeksLater = now >= milestoneCompletionSubmission.timestamp + 2 weeks;
+        uint votingThreshold = numVoters * 75 / 100;
+
+        // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
+        require((milestoneCompletionSubmission.approvalCount > numContributors * 75 / 100) ||
+            (isTwoWeeksLater && milestoneCompletionSubmission.approvalCount > votingThreshold));
+
+        timeline.milestones[activeMilestoneIndex].isComplete = true;
+        activeMilestoneIndex++;
+        developer.transfer(this.balance * timeline.milestones[activeMilestoneIndex].percentage / 100);
+
+        delete(milestoneCompletionSubmission);
+        delete(pendingTimeline);
+
+        // Push completed milestone
+        pendingTimeline.push(timeline.milestones[activeMilestoneIndex - 1]);
     }
 
     function setStatus(Status _status) public fundingServiceRestricted {
