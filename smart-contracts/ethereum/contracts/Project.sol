@@ -289,13 +289,13 @@ contract Project {
 
         timeline.milestones[activeMilestoneIndex].isComplete = true;
         activeMilestoneIndex++;
-        developer.transfer(this.balance * timeline.milestones[activeMilestoneIndex].percentage / 100);
+        developer.transfer(address(this).balance * timeline.milestones[activeMilestoneIndex].percentage / 100);
 
         delete(milestoneCompletionSubmission);
         delete(pendingTimeline);
 
         // Push completed milestone
-        pendingTimeline.push(timeline.milestones[activeMilestoneIndex - 1]);
+        pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex - 1]);
     }
 
     function setStatus(Status _status) public fundingServiceRestricted {
