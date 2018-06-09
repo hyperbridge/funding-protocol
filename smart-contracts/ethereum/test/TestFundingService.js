@@ -106,10 +106,9 @@ contract('FundingService', function(accounts) {
             const projectAddress = await fundingService.projects.call(1);
             const project = await Project.at(projectAddress);
 
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, false, { from: devAccount });
 
             await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
             await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
@@ -133,10 +132,9 @@ contract('FundingService', function(accounts) {
             const projectAddress = await fundingService.projects.call(2);
             const project = await Project.at(projectAddress);
 
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 21, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 21, false, { from: devAccount });
 
             await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
             await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
@@ -157,10 +155,9 @@ contract('FundingService', function(accounts) {
             const projectAddress = await fundingService.projects.call(2);
             const project = await Project.at(projectAddress);
 
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, false, { from: devAccount });
 
             await fundingService.submitProjectForReview(1, 1, { from: devAccount });
 

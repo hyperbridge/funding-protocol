@@ -101,7 +101,10 @@ contract Project {
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(timelineProposal.isActive);
+            require(!timelineProposal.isActive);
+            // There must be an active timeline already
+            require(timeline.isActive);
+
             pendingTimeline.milestones.push(newMilestone);
         } else {
             // Timeline must not already be active
@@ -110,7 +113,7 @@ contract Project {
         }
     }
 
-    function getTimelineMilestone(uint _index, bool _isPending) public view
+    function getMilestone(uint _index, bool _isPending) public view
     returns (
         string milestoneTitle,
         string milestoneDescription,
@@ -135,7 +138,7 @@ contract Project {
     public devRestricted {
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(timelineProposal.isActive);
+            require(!timelineProposal.isActive);
             ProjectMilestone storage milestone = pendingTimeline.milestones[_index];
         } else {
             // Timeline must not already be active

@@ -126,7 +126,7 @@ contract FundingService {
                 string memory description;
                 uint percentage;
                 bool isComplete;
-                (title, description, percentage, isComplete) = project.getTimelineMilestone(j, false);
+                (title, description, percentage, isComplete) = project.getMilestone(j, false);
                 percentageAcc = percentageAcc.add(percentage);
             }
             require(percentageAcc == 100);
