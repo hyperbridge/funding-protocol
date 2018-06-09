@@ -27,6 +27,7 @@ contract Project {
         uint approvalCount;
         uint disapprovalCount;
         bool isActive;
+        bool failed;
         mapping(address => bool) voters;
     }
 
@@ -234,12 +235,17 @@ contract Project {
         require((timelineProposal.approvalCount > numContributors * 75 / 100) ||
             (isTwoWeeksLater && timelineProposal.approvalCount > votingThreshold));
 
-        timeline.isActive = false;
-        timelineHistory.push(timeline);
-        timeline = pendingTimeline;
-        timeline.isActive = true;
-        delete(timelineProposal);
-        delete(pendingTimeline);
+        if (timelineProposal.approvalCount > votingThreshold) {
+            timeline.isActive = false;
+            timelineHistory.push(timeline);
+            timeline = pendingTimeline;
+            timeline.isActive = true;
+            delete(timelineProposal);
+            delete(pendingTimeline);
+        } else {
+            // TimelineProposal has failed
+            timelineProposal.failed = true;
+        }
     }
 
     function submitMilestoneCompletion(string _report) public devRestricted {
