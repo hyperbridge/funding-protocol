@@ -27,7 +27,7 @@ contract Project {
         uint approvalCount;
         uint disapprovalCount;
         bool isActive;
-        bool failed;
+        bool hasFailed;
         mapping(address => bool) voters;
     }
 
@@ -166,6 +166,10 @@ contract Project {
         status = Status.Pending;
     }
 
+    function getTimelineIsActive() public view returns (bool) {
+        return timeline.isActive;
+    }
+
     function getPendingTimelineMilestoneLength() public view returns (uint) {
         return pendingTimeline.milestones.length;
     }
@@ -189,22 +193,14 @@ contract Project {
             approvalCount: 0,
             disapprovalCount: 0,
             isActive: true,
-            failed: false
+            hasFailed: false
             });
 
         timelineProposal = newProposal;
     }
 
-    function getTimelineProposalIsActive() public view returns (bool) {
-        return timelineProposal.isActive;
-    }
-
-    function getTimelineIsActive() public view returns (bool) {
-        return timeline.isActive;
-    }
-
-    function hasVotedOnTimelineProposal() public view returns (bool) {
-        return timelineProposal.voters[msg.sender];
+    function getTimelineProposal() public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
+        return (timelineProposal.timestamp, timelineProposal.approvalCount, timelineProposal.disapprovalCount, timelineProposal.isActive, timelineProposal.hasFailed);
     }
 
     function voteOnTimelineProposal(bool approved) public contributorRestricted {
@@ -220,6 +216,10 @@ contract Project {
             timelineProposal.disapprovalCount++;
         }
         timelineProposal.voters[msg.sender] = true;
+    }
+
+    function hasVotedOnTimelineProposal() public view returns (bool) {
+        return timelineProposal.voters[msg.sender];
     }
 
     function finalizeTimelineProposal() public devRestricted {
@@ -245,7 +245,7 @@ contract Project {
             delete(pendingTimeline);
         } else {
             // TimelineProposal has failed
-            timelineProposal.failed = true;
+            timelineProposal.hasFailed = true;
         }
     }
 

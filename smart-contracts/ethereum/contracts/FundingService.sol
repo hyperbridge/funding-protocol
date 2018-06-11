@@ -39,6 +39,8 @@ contract FundingService {
         _;
     }
 
+    event ProjectCreated(address projectAddress, uint projectId);
+
     constructor() public {
         owner = msg.sender;
 
@@ -90,6 +92,8 @@ contract FundingService {
         Developer storage dev = developers[_developerId];
 
         dev.projectIds.push(newProjectId);
+
+        emit ProjectCreated(address(newProject), newProjectId);
     }
 
     function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
