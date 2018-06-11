@@ -514,3 +514,117 @@ contract('ProjectTimelineProposalVoting', function(accounts) {
         }
     });
 });
+
+contract('ProjectMilestoneCompletionVoting', function(accounts) {
+    let fundingService;
+    let fundingServiceOwner;
+    let devName;
+    let devAccount;
+    let project;
+    let projectId;
+    let projectTitle;
+    let projectDescription;
+    let projectAbout;
+    let projectDevId;
+    let projectContributionGoal;
+
+    before(async () => {
+        fundingService = await FundingService.deployed();
+
+        devName = "Hyperbridge";
+        fundingServiceOwner = accounts[0];
+        devAccount = accounts[1];
+        projectId = 0;
+
+        await fundingService.createDeveloper(devName, { from: devAccount });
+    });
+
+    beforeEach(async () => {
+        projectTitle = "Blockhub";
+        projectDescription = "This is a description of Blockhub.";
+        projectAbout = "These are the various features of Blockhub.";
+        projectDevId = await fundingService.developerMap.call(devAccount);
+        projectContributionGoal = 1000000;
+
+        await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
+
+        projectId++;
+
+        let projectAddress = await fundingService.projects.call(projectId);
+        project = await Project.at(projectAddress);
+    });
+
+    it("cannot submit for milestone completion if current timeline is inactive", async () => {
+        try {
+            await project.submitMilestoneCompletion("Report", { from: devAccount });
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("cannot submit milestone completion if there is currently a vote on milestone completion", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 100, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("cannot submit milestone completion if there is a timeline proposal active", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 100, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            await project.addMilestone("Milestone 2", "Milestone 2 description", 100, true, { from: devAccount });
+
+            await project.proposeNewTimeline({ from: devAccount });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("can submit milestone completion", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 100, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            const milestoneCompletionSubmission = await project.getMilestoneCompletionSubmission.call();
+
+            assert.equal(milestoneCompletionSubmission[4], true, "Milestone Completion Submission is not active.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+});

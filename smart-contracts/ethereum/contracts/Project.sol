@@ -37,6 +37,7 @@ contract Project {
         uint disapprovalCount;
         string report;
         bool isActive;
+        bool hasFailed;
         mapping(address => bool) voters;
     }
 
@@ -262,10 +263,15 @@ contract Project {
             approvalCount: 0,
             disapprovalCount: 0,
             report: _report,
-            isActive: true
+            isActive: true,
+            hasFailed: false
             });
 
         milestoneCompletionSubmission = newSubmission;
+    }
+
+    function getMilestoneCompletionSubmission() public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, string report, bool isActive, bool hasFailed) {
+        return (milestoneCompletionSubmission.timestamp, milestoneCompletionSubmission.approvalCount, milestoneCompletionSubmission.disapprovalCount, milestoneCompletionSubmission.report, milestoneCompletionSubmission.isActive, milestoneCompletionSubmission.hasFailed);
     }
 
     function voteOnMilestoneCompletion(bool approved) public contributorRestricted {
