@@ -188,7 +188,8 @@ contract Project {
             timestamp: now,
             approvalCount: 0,
             disapprovalCount: 0,
-            isActive: true
+            isActive: true,
+            failed: false
             });
 
         timelineProposal = newProposal;
