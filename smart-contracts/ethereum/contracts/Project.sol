@@ -289,6 +289,10 @@ contract Project {
         milestoneCompletionSubmission.voters[msg.sender] = true;
     }
 
+    function hasVotedOnMilestoneCompletion() public view returns (bool) {
+        return milestoneCompletionSubmission.voters[msg.sender];
+    }
+
     function finalizeMilestoneCompletion() public devRestricted {
         // MilestoneCompletionSubmission must be active
         require(milestoneCompletionSubmission.isActive == true);
@@ -305,7 +309,8 @@ contract Project {
 
         timeline.milestones[activeMilestoneIndex].isComplete = true;
         activeMilestoneIndex++;
-        developer.transfer(address(this).balance * timeline.milestones[activeMilestoneIndex].percentage / 100);
+
+        // todo - make funds available for developer to withdraw
 
         delete(milestoneCompletionSubmission);
         delete(pendingTimeline);
