@@ -108,26 +108,14 @@ contract FundingService {
         project.setStatus(Project.Status.Pending);
     }
 
-    function verifyProjectMilestones(Project _project) private view {
-        // Get project terms
-        // 0: NoRefunds
-        // 1: NoTimeline
-        Project.Term[] memory terms = _project.getTerms();
-
-        // Determine if project has a NoTimeline terms
-        bool hasNoTimeline = false;
-        for (uint i = 0; i < terms.length; i++) {
-            if (terms[i] == Project.Term.NoTimeline) {
-                hasNoTimeline = true;
-                break;
-            }
-        }
+    function verifyProjectMilestones(address _project) private view {
+        Project project = Project(_project);
 
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!hasNoTimeline) {
-            uint timelineLength = _project.getTimelineMilestoneLength();
+        if (project.noTimeline()) {
+            uint timelineLength = project.getTimelineMilestoneLength();
 
             require(timelineLength > 0);
 
@@ -138,16 +126,18 @@ contract FundingService {
                 string memory description;
                 uint percentage;
                 bool isComplete;
-                (title, description, percentage, isComplete) = _project.getTimelineMilestone(j);
+                (title, description, percentage, isComplete) = project.getTimelineMilestone(j);
                 percentageAcc = percentageAcc.add(percentage);
             }
             require(percentageAcc == 100);
         }
     }
 
-    function verifyProjectTiers(Project _project) private view {
+    function verifyProjectTiers(address _project) private view {
+        Project project = Project(_project);
+
         // Verify that project has contribution tiers
-        uint tiersLength = _project.getTiersLength();
+        uint tiersLength = project.getTiersLength();
         require(tiersLength > 0);
     }
 

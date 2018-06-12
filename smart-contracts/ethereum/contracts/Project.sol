@@ -19,8 +19,6 @@ contract Project {
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    enum Term {NoRefunds, NoTimeline}
-
     address public fundingService;
     uint public id;
     Status public status;
@@ -32,7 +30,8 @@ contract Project {
     uint public contributionGoal;
     ProjectTier[] contributionTiers;
     ProjectTier[] pendingContributionTiers;
-    Term[] terms;
+    bool public noRefunds;
+    bool public noTimeline;
     ProjectMilestone[] timeline;
     ProjectMilestone[][] timelineHistory;
     ProjectMilestone[] pendingTimeline;
@@ -139,18 +138,12 @@ contract Project {
         status = _status;
     }
 
-    function setTerms(uint[] _terms) public devRestricted {
-        // clear existing terms
-        delete(terms);
-
-        // add terms
-        for (uint i = 0; i < _terms.length; i++) {
-            terms.push(Term(_terms[i]));
-        }
+    function setNoRefunds(bool val) public devRestricted {
+        noRefunds = val;
     }
 
-    function getTerms() public view returns (Term[]) {
-        return terms;
+    function setNoTimeline(bool val) public devRestricted {
+        noTimeline = val;
     }
 
     function addTier(uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) public devRestricted {

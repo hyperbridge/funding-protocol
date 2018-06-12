@@ -125,19 +125,21 @@ contract('Project', function(accounts) {
 
     it("should be able to set project terms", async () => {
         try {
-            let newTerms = [0, 1];
-            await project.setTerms(newTerms, { from: devAccount });
-            let terms = await project.getTerms.call();
-            assert.equal(terms.length, newTerms.length, "Terms are incorrect length");
-            assert.equal(terms[0], newTerms[0], "First term is incorrect");
-            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+            await project.setNoTimeline(true, { from: devAccount });
+            let hasNoTimeline = await project.noTimeline.call();
+            assert.equal(hasNoTimeline, true, "noTimeline not set properly.");
 
-            newTerms = [0];
-            await project.setTerms(newTerms, { from: devAccount });
-            terms = await project.getTerms.call();
-            assert.equal(terms.length, newTerms.length, "Terms are incorrect length the second time");
-            assert.equal(terms[0], newTerms[0], "First term is incorrect");
-            assert.equal(terms[1], newTerms[1], "Second term is incorrect");
+            await project.setNoTimeline(false, { from: devAccount });
+            hasNoTimeline = await project.noTimeline.call();
+            assert.equal(hasNoTimeline, false, "noTimeline not set properly.");
+
+            await project.setNoRefunds(true, { from: devAccount });
+            let hasNoRefunds = await project.noRefunds.call();
+            assert.equal(hasNoRefunds, true, "noRefunds not set properly.");
+
+            await project.setNoRefunds(false, { from: devAccount });
+            hasNoRefunds = await project.noRefunds.call();
+            assert.equal(hasNoRefunds, false, "noRefunds not set properly.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
