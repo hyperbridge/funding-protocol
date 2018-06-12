@@ -1,5 +1,6 @@
 pragma solidity ^0.4.23;
 import "./FundingService.sol";
+import "./Bounty.sol"
 
 contract Project {
     struct ProjectMilestone {

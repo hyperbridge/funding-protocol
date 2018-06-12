@@ -20,11 +20,11 @@ contract Bounty {
     }   
 
     address developer;
-    string bountyName;
-    string bountyDescription;
-    string bountyLink;
-    uint bountyValue;
-    bool isComplete;
+    string public bountyName;
+    string public bountyDescription;
+    string public bountyLink;
+    uint public bountyValue;
+    bool public isComplete;
     bountyHunter[] bountyHunters;
 
     mapping(address => string) individualBountyHunterReport;
@@ -62,9 +62,6 @@ contract Bounty {
         return individualBountyHunterReport[_bountyHunter];
     }
     
-    function viewBountyValue() public view returns (uint) {
-        return bountyValue;
-    }
     
     function releaseBounty(address _bountyHunter) public devRestricted {
         _bountyHunter.transfer(bountyValue);
