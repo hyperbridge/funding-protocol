@@ -45,9 +45,10 @@ contract('FundingService', function(accounts) {
            assert.equal(newDeveloperId, 1, "New developer should be in developerMap with id = 1");
 
            const createdDeveloper = await fundingService.developers.call(newDeveloperId);
+
            assert.equal(createdDeveloper[0].toNumber(), newDeveloperId, "Incorrect ID");
-           assert.equal(createdDeveloper[1], devAccount, "Incorrect address");
-           assert.equal(createdDeveloper[2], devName, "Incorrect name");
+           assert.equal(createdDeveloper[2], devAccount, "Incorrect address");
+           assert.equal(createdDeveloper[3], devName, "Incorrect name");
        } catch (e) {
            console.log(e.message);
            assert.fail();
