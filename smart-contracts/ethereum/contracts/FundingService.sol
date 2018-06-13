@@ -82,11 +82,11 @@ contract FundingService {
         createdDeveloper.projectIds.push(0);
     }
 
-    function getDeveloper(uint _id) public view returns (address addr, string name, uint[] projectIds) {
+    function getDeveloper(uint _id) public view returns (int reputation, address addr, string name, uint[] projectIds) {
         require(developers[_id].id == _id); // check that developer exists
 
         Developer memory dev = developers[_id];
-        return (dev.addr, dev.name, dev.projectIds);
+        return (dev.reputation, dev.addr, dev.name, dev.projectIds);
     }
 
     function updateDeveloperReputation(uint _developerId, int _val) public validProjectOnly(_developerId) {
