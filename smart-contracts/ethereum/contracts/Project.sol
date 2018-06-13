@@ -43,6 +43,8 @@ contract Project {
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
+    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
+
     address public fundingService;
     uint public id;
     Status public status;
@@ -310,13 +312,16 @@ contract Project {
         timeline.milestones[activeMilestoneIndex].isComplete = true;
         activeMilestoneIndex++;
 
-        // todo - make funds available for developer to withdraw
+        // todo - transfer funds from vault (through funding service) to developer
 
         delete(milestoneCompletionSubmission);
         delete(pendingTimeline);
 
         // Push completed milestone
         pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex - 1]);
+
+        // Increase developer reputation
+        fs.updateDeveloperReputation(developerId, MILESTONE_COMPLETION_REP_CHANGE);
     }
 
     function setStatus(Status _status) public fundingServiceRestricted {
