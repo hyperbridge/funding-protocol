@@ -59,7 +59,7 @@ contract FundingVault {
 
   event ETHDeposited(uint amount);
 
-  function depositeETH() public payable activeOnly {
+  function depositeETH() public payable  fundingServiceOnly activeOnly {
 
     emit ETHDeposited(msg.value);
   }
