@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 import "./FundingService.sol";
-import "./Bounty.sol"
+import "./Bounty.sol";
 
 contract Project {
     struct ProjectMilestone {
@@ -210,8 +210,8 @@ contract Project {
         delete(pendingContributionTiers);
     }
 
-    function createBounty (string _bountyName) public devRestricted {
-        Bounty newBounty = new Bounty(_bountyName);
+    function createBounty (string _bountyName, string _bountyDescription, string _bountyLink) public devRestricted {
+        Bounty newBounty = new Bounty(_bountyName, _bountyDescription, _bountyLink);
 
         bounties.push(newBounty);
     }
