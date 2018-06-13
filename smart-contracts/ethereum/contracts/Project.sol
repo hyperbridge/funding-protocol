@@ -43,7 +43,7 @@ contract Project {
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
+    int public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
 
     address public fundingService;
     uint public id;
