@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.23 ;
 import "./FundingService.sol";
 
 contract Project {
@@ -43,7 +43,7 @@ contract Project {
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
-    int public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
+    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
 
     address public fundingService;
     uint public id;

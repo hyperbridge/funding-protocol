@@ -1,15 +1,11 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
-import "./SafeMath.sol";
 
 contract FundingService {
 
-    using SafeMath for uint256;
-    using SafeMath for int256;
-
     struct Developer {
         uint id;
-        int reputation;
+        uint reputation;
         address addr;
         string name;
         mapping(uint => uint) projectIdIndex; // mapping of project id to index in Developer.projectIds
@@ -82,19 +78,19 @@ contract FundingService {
         createdDeveloper.projectIds.push(0);
     }
 
-    function getDeveloper(uint _id) public view returns (int reputation, address addr, string name, uint[] projectIds) {
+    function getDeveloper(uint _id) public view returns (uint reputation, address addr, string name, uint[] projectIds) {
         require(developers[_id].id == _id); // check that developer exists
 
         Developer memory dev = developers[_id];
         return (dev.reputation, dev.addr, dev.name, dev.projectIds);
     }
 
-    function updateDeveloperReputation(uint _developerId, int _val) public validProjectOnly(_developerId) {
+    function updateDeveloperReputation(uint _developerId, uint _val) public validProjectOnly(_developerId) {
         Developer storage developer = developers[_developerId];
 
-        int currentRep = developer.reputation;
+        uint currentRep = developer.reputation;
 
-        developer.reputation = currentRep.add(_val);
+        developer.reputation = currentRep + _val;
     }
 
     function getDevelopers() public view returns (address[]) {
@@ -159,7 +155,7 @@ contract FundingService {
                 uint percentage;
                 bool isComplete;
                 (title, description, percentage, isComplete) = project.getMilestone(j, false);
-                percentageAcc = percentageAcc.add(percentage);
+                percentageAcc = percentageAcc + percentage;
             }
             require(percentageAcc == 100);
         }
@@ -214,7 +210,7 @@ contract FundingService {
 
         // add contribution amount to project
         uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
-        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
+        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount + msg.value;
 
         // transfer money to project
         projectAddress.transfer(msg.value);
