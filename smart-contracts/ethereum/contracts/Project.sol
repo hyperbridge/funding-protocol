@@ -3,19 +3,19 @@ import "./FundingService.sol";
 
 contract Project {
 
-    struct ProjectTimeline {
-        ProjectMilestone[] milestones;
+    struct Timeline {
+        Milestone[] milestones;
         bool isActive;
     }
 
-    struct ProjectMilestone {
+    struct Milestone {
         string title;
         string description;
         uint percentage;
         bool isComplete;
     }
 
-    struct ProjectTier {
+    struct ContributionTier {
         uint contributorLimit;
         uint minContribution;
         uint maxContribution;
@@ -54,14 +54,14 @@ contract Project {
     address public developer;
     uint public developerId;
     uint public contributionGoal;
-    ProjectTier[] contributionTiers;
-    ProjectTier[] pendingContributionTiers;
+    ContributionTier[] contributionTiers;
+    ContributionTier[] pendingContributionTiers;
     bool public noRefunds;
     bool public noTimeline;
-    ProjectTimeline timeline;
+    Timeline timeline;
     uint public activeMilestoneIndex;
-    ProjectTimeline[] timelineHistory;
-    ProjectTimeline pendingTimeline;
+    Timeline[] timelineHistory;
+    Timeline pendingTimeline;
     TimelineProposal timelineProposal;
     MilestoneCompletionSubmission milestoneCompletionSubmission;
 
@@ -96,7 +96,7 @@ contract Project {
     function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage, bool _isPending) public devRestricted {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
 
-        ProjectMilestone memory newMilestone = ProjectMilestone({
+        Milestone memory newMilestone = Milestone({
             title: _milestoneTitle,
             description: _milestoneDescription,
             percentage: _percentage,
@@ -124,7 +124,7 @@ contract Project {
         uint milestonePercentage,
         bool milestoneIsComplete
     ) {
-        ProjectMilestone memory milestone;
+        Milestone memory milestone;
         if (_isPending) {
             milestone = pendingTimeline.milestones[_index];
         } else {
@@ -143,7 +143,7 @@ contract Project {
         if (_isPending) {
             // There must not be an active timeline proposal
             require(!timelineProposal.isActive, "Pending milestones cannot be added while a timeline proposal vote is active.");
-            ProjectMilestone storage milestone = pendingTimeline.milestones[_index];
+            Milestone storage milestone = pendingTimeline.milestones[_index];
         } else {
             // Timeline must not already be active
             require(!timeline.isActive, "Milestone cannot be added to an active timeline.");
@@ -339,7 +339,7 @@ contract Project {
     }
 
     function addTier(uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) public devRestricted {
-        ProjectTier memory newTier = ProjectTier({
+        ContributionTier memory newTier = ContributionTier({
             contributorLimit: _contributorLimit,
             maxContribution: _maxContribution,
             minContribution: _minContribution,
@@ -356,12 +356,24 @@ contract Project {
         uint _minContribution,
         string _rewards)
     public devRestricted {
-        ProjectTier storage tier = pendingContributionTiers[_index];
+        ContributionTier storage tier = pendingContributionTiers[_index];
 
         tier.contributorLimit = _contributorLimit;
         tier.maxContribution = _maxContribution;
         tier.minContribution = _minContribution;
         tier.rewards = _rewards;
+    }
+
+    function getContributionTier(uint _index) public view
+    returns (
+        uint tierContributorLimit,
+        uint tierMaxContribution,
+        uint tierMinContribution,
+        string tierRewards
+    ) {
+        ContributionTier memory tier = contributionTiers[_index];
+
+        return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
     function getPendingTiersLength() public view returns (uint) {
@@ -379,19 +391,7 @@ contract Project {
         uint tierMinContribution,
         string tierRewards
     ) {
-        ProjectTier memory tier = pendingContributionTiers[_index];
-
-        return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
-    }
-
-    function getContributionTier(uint _index) public view
-    returns (
-        uint tierContributorLimit,
-        uint tierMaxContribution,
-        uint tierMinContribution,
-        string tierRewards
-    ) {
-        ProjectTier memory tier = contributionTiers[_index];
+        ContributionTier memory tier = pendingContributionTiers[_index];
 
         return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
