@@ -65,6 +65,7 @@ contract Bounty {
     
     function releaseBounty(address _bountyHunter) public devRestricted {
         _bountyHunter.transfer(bountyValue);
+        bountyValue = this.balance;
     }
     
     
