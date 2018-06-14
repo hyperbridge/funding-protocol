@@ -142,7 +142,7 @@ contract FundingService {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (project.noTimeline()) {
+        if (!project.noTimeline()) {
             uint timelineLength = project.getTimelineMilestoneLength();
 
             require(timelineLength > 0, "Project has no milestones.");
