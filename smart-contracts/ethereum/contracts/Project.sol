@@ -235,7 +235,7 @@ contract Project {
         bool isTwoWeeksLater = now >= timelineProposal.timestamp + 2 weeks;
         uint votingThreshold = numVoters * 75 / 100;
 
-        // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
+        // Proposal needs >75% total approval, or for 2 weeks to have passed and >75% approval among voters
         require((timelineProposal.approvalCount > numContributors * 75 / 100) ||
             (isTwoWeeksLater && timelineProposal.approvalCount > votingThreshold),
             "Conditions for finalizing timeline proposal have not yet been achieved.");
