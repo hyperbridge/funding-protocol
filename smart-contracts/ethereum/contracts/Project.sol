@@ -60,6 +60,7 @@ contract Project {
     bool public noTimeline;
     Timeline timeline;
     uint public activeMilestoneIndex;
+    Milestone[] completedMilestones;
     Timeline[] timelineHistory;
     Timeline pendingTimeline;
     TimelineProposal timelineProposal;
@@ -153,6 +154,11 @@ contract Project {
         milestone.title = _milestoneTitle;
         milestone.description = _milestoneDescription;
         milestone.percentage = _milestonePercentage;
+    }
+
+    function clearPendingTimeline() public devRestricted {
+        delete(pendingTimeline);
+        pendingTimeline.milestones = completedMilestones;
     }
 
     function initializeTimeline() public fundingServiceRestricted {
@@ -312,18 +318,23 @@ contract Project {
             "Conditions for finalizing milestone completion have not yet been achieved.");
 
         timeline.milestones[activeMilestoneIndex].isComplete = true;
+
+        // Updated completedMilestones, remove any pending milestones, and add the completed milestones to the start
+        // of the pending timeline. This is to ensure that any future timeline proposals take into account the milestones
+        // that have already been completed.
+        completedMilestones.push(timeline.milestones[activeMilestoneIndex]);
+        delete(pendingTimeline);
+        pendingTimeline.milestones = completedMilestones;
+
+        // Increment the active milestone
         activeMilestoneIndex++;
 
-        // todo - transfer funds from vault (through funding service) to developer
-
         delete(milestoneCompletionSubmission);
-        delete(pendingTimeline);
-
-        // Push completed milestone
-        pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex - 1]);
 
         // Increase developer reputation
         fs.updateDeveloperReputation(developerId, MILESTONE_COMPLETION_REP_CHANGE);
+
+        // todo - transfer funds from vault (through funding service) to developer
     }
 
     function setStatus(Status _status) public fundingServiceRestricted {
