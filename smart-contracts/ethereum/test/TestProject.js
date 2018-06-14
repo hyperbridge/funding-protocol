@@ -706,7 +706,16 @@ contract('ProjectMilestoneCompletionVoting', function(accounts) {
             await project.voteOnMilestoneCompletion(true, { from: accounts[5] });
             await project.voteOnMilestoneCompletion(true, { from: accounts[6] });
 
+            let developer = await fundingService.getDeveloper(projectDevId);
+            let initialReputation = developer[0];
+
             await project.finalizeMilestoneCompletion({ from: devAccount });
+
+            developer = await fundingService.getDeveloper(projectDevId);
+            const finalReputation = developer[0];
+            const repChange = await project.MILESTONE_COMPLETION_REP_CHANGE.call();
+
+            assert.equal(finalReputation.toNumber(), initialReputation.toNumber() + repChange.toNumber(), "Developer reputation not updated correctly following milestone completion.");
 
             const milestoneCompletionSubmission = await project.getMilestoneCompletionSubmission.call();
 
@@ -756,7 +765,7 @@ contract('ProjectMilestoneCompletionVoting', function(accounts) {
             await fundingService.contributeToProject(projectId, { from: accounts[5], value: 100 });
             await fundingService.contributeToProject(projectId, { from: accounts[6], value: 100 });
 
-            await project.submitMilestoneCompletion({ from: devAccount });
+            await project.submitMilestoneCompletion("Report!", { from: devAccount });
 
             await project.voteOnMilestoneCompletion(true, { from: accounts[2] });
             await project.voteOnMilestoneCompletion(true, { from: accounts[3] });

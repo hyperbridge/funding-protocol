@@ -1,13 +1,11 @@
 pragma solidity ^0.4.23;
 import "./Project.sol";
-import "./SafeMath.sol";
 
 contract FundingService {
 
-    using SafeMath for uint256;
-
     struct Developer {
         uint id;
+        uint reputation;
         address addr;
         string name;
         mapping(uint => uint) projectIdIndex; // mapping of project id to index in Developer.projectIds
@@ -39,6 +37,18 @@ contract FundingService {
         _;
     }
 
+    modifier validProjectOnly(uint _developerId) {
+        // Caller must be a project
+        uint projectId = projectMap[msg.sender];
+        require(projectId != 0);
+
+        // Caller must be a project created by the specified developer
+        Developer storage developer = developers[_developerId];
+        require(developer.projectIdIndex[projectId] != 0);
+
+        _;
+    }
+
     event ProjectCreated(address projectAddress, uint projectId);
 
     constructor() public {
@@ -54,6 +64,7 @@ contract FundingService {
 
         Developer memory newDeveloper = Developer({
             id: developers.length,
+            reputation: 0,
             addr: msg.sender,
             name: _name,
             projectIds: new uint[](0)
@@ -61,13 +72,25 @@ contract FundingService {
 
         developers.push(newDeveloper);
         developerMap[msg.sender] = newDeveloper.id;
+
+        // Reserve 0 in developer's projectIds
+        Developer storage createdDeveloper = developers[newDeveloper.id];
+        createdDeveloper.projectIds.push(0);
     }
 
-    function getDeveloper(uint _id) public view returns (address addr, string name, uint[] projectIds) {
+    function getDeveloper(uint _id) public view returns (uint reputation, address addr, string name, uint[] projectIds) {
         require(developers[_id].id == _id); // check that developer exists
 
         Developer memory dev = developers[_id];
-        return (dev.addr, dev.name, dev.projectIds);
+        return (dev.reputation, dev.addr, dev.name, dev.projectIds);
+    }
+
+    function updateDeveloperReputation(uint _developerId, uint _val) public validProjectOnly(_developerId) {
+        Developer storage developer = developers[_developerId];
+
+        uint currentRep = developer.reputation;
+
+        developer.reputation = currentRep + _val;
     }
 
     function getDevelopers() public view returns (address[]) {
@@ -86,11 +109,12 @@ contract FundingService {
 
         Project newProject = new Project(this, newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
 
-        projectMap[newProject] = newProjectId;
+        projectMap[address(newProject)] = newProjectId;
         projects.push(newProject);
 
         Developer storage dev = developers[_developerId];
 
+        dev.projectIdIndex[newProjectId] = dev.projectIds.length;
         dev.projectIds.push(newProjectId);
 
         emit ProjectCreated(address(newProject), newProjectId);
@@ -131,7 +155,7 @@ contract FundingService {
                 uint percentage;
                 bool isComplete;
                 (title, description, percentage, isComplete) = project.getMilestone(j, false);
-                percentageAcc = percentageAcc.add(percentage);
+                percentageAcc = percentageAcc + percentage;
             }
             require(percentageAcc == 100);
         }
@@ -186,7 +210,7 @@ contract FundingService {
 
         // add contribution amount to project
         uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
-        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount.add(msg.value);
+        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount + msg.value;
 
         // transfer money to project
         projectAddress.transfer(msg.value);
