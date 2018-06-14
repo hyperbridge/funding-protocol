@@ -32,19 +32,19 @@ contract FundingService {
     address[] public projects; // indexed by project id
 
     modifier devRestricted(uint _developerId) {
-        require(developers[_developerId].id == _developerId); // check that developer exists
-        require(msg.sender == developers[_developerId].addr);
+        require(developers[_developerId].id == _developerId, "Developer does not exist."); // check that developer exists
+        require(msg.sender == developers[_developerId].addr, "Address does not match specified developer.");
         _;
     }
 
     modifier validProjectOnly(uint _developerId) {
         // Caller must be a project
         uint projectId = projectMap[msg.sender];
-        require(projectId != 0);
+        require(projectId != 0, "Caller must be a project.");
 
         // Caller must be a project created by the specified developer
         Developer storage developer = developers[_developerId];
-        require(developer.projectIdIndex[projectId] != 0);
+        require(developer.projectIdIndex[projectId] != 0, "Caller must be a project created by the specified developer.");
 
         _;
     }
@@ -60,7 +60,7 @@ contract FundingService {
     }
 
     function createDeveloper(string _name) public {
-        require(developerMap[msg.sender] == 0); // require that this account is not already a developer
+        require(developerMap[msg.sender] == 0, "This account is already a developer."); // require that this account is not already a developer
 
         Developer memory newDeveloper = Developer({
             id: developers.length,
@@ -79,7 +79,7 @@ contract FundingService {
     }
 
     function getDeveloper(uint _id) public view returns (uint reputation, address addr, string name, uint[] projectIds) {
-        require(developers[_id].id == _id); // check that developer exists
+        require(developers[_id].id == _id, "Developer does not exist."); // check that developer exists
 
         Developer memory dev = developers[_id];
         return (dev.reputation, dev.addr, dev.name, dev.projectIds);
@@ -124,7 +124,7 @@ contract FundingService {
         address projectAddress = projects[_projectId];
 
         // check that project exists
-        require(projectAddress != address(0));
+        require(projectAddress != address(0), "Project does not exist.");
 
         Project project = Project(projectAddress);
 
@@ -145,7 +145,7 @@ contract FundingService {
         if (project.noTimeline()) {
             uint timelineLength = project.getTimelineMilestoneLength();
 
-            require(timelineLength > 0);
+            require(timelineLength > 0, "Project has no milestones.");
 
             uint percentageAcc = 0;
             for (uint j = 0; j < timelineLength; j++) {
@@ -157,7 +157,7 @@ contract FundingService {
                 (title, description, percentage, isComplete) = project.getMilestone(j, false);
                 percentageAcc = percentageAcc + percentage;
             }
-            require(percentageAcc == 100);
+            require(percentageAcc == 100, "Milestone percentages must add to 100.");
         }
     }
 
@@ -166,7 +166,7 @@ contract FundingService {
 
         // Verify that project has contribution tiers
         uint tiersLength = project.getTiersLength();
-        require(tiersLength > 0);
+        require(tiersLength > 0, "Project has no contribution tiers.");
     }
 
     function getProjects() public view returns (address[]) {
@@ -182,7 +182,7 @@ contract FundingService {
     function contributeToProject(uint _projectId) public payable {
         address projectAddress = projects[_projectId];
 
-        require(projectAddress != 0); // check that project exists
+        require(projectAddress != 0, "Project does not exist."); // check that project exists
 
         // if contributor doesn't exist, create it
         if (contributors[msg.sender].addr == 0) {

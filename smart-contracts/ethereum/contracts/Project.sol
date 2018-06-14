@@ -66,18 +66,18 @@ contract Project {
     MilestoneCompletionSubmission milestoneCompletionSubmission;
 
     modifier devRestricted() {
-        require(msg.sender == developer);
+        require(msg.sender == developer, "Caller is not the developer of this project.");
         _;
     }
 
     modifier contributorRestricted() {
         FundingService fs = FundingService(fundingService);
-        require(fs.projectContributionAmount(this, msg.sender) != 0);
+        require(fs.projectContributionAmount(this, msg.sender) != 0, "Caller is not a contributor to this project.");
         _;
     }
 
     modifier fundingServiceRestricted() {
-        require(msg.sender == fundingService);
+        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
         _;
     }
 
@@ -94,7 +94,7 @@ contract Project {
     }
 
     function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage, bool _isPending) public devRestricted {
-        require(_percentage <= 100);
+        require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
 
         ProjectMilestone memory newMilestone = ProjectMilestone({
             title: _milestoneTitle,
@@ -105,14 +105,14 @@ contract Project {
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!timelineProposal.isActive);
+            require(!timelineProposal.isActive, "Pending milestones cannot be added while a timeline proposal vote is active.");
             // There must be an active timeline already
-            require(timeline.isActive);
+            require(timeline.isActive, "Pending milestones cannot be added when there is not a timeline currently active.");
 
             pendingTimeline.milestones.push(newMilestone);
         } else {
             // Timeline must not already be active
-            require(!timeline.isActive);
+            require(!timeline.isActive, "Milestone cannot be added to an active timeline.");
             timeline.milestones.push(newMilestone);
         }
     }
@@ -142,11 +142,11 @@ contract Project {
     public devRestricted {
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!timelineProposal.isActive);
+            require(!timelineProposal.isActive, "Pending milestones cannot be added while a timeline proposal vote is active.");
             ProjectMilestone storage milestone = pendingTimeline.milestones[_index];
         } else {
             // Timeline must not already be active
-            require(!timeline.isActive);
+            require(!timeline.isActive, "Milestone cannot be added to an active timeline.");
             milestone = timeline.milestones[_index];
         }
 
@@ -157,7 +157,7 @@ contract Project {
 
     function initializeTimeline() public fundingServiceRestricted {
         // Check that there isn't already an active timeline
-        require(!timeline.isActive);
+        require(!timeline.isActive, "Timeline has already been initialized.");
 
         // Set timeline to active
         timeline.isActive = true;
@@ -187,9 +187,9 @@ contract Project {
 
     function proposeNewTimeline() public devRestricted {
         // Can only suggest new timeline if one already exists
-        require(timeline.isActive);
+        require(timeline.isActive, "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
-        require(!milestoneCompletionSubmission.isActive);
+        require(!milestoneCompletionSubmission.isActive, "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
         TimelineProposal memory newProposal = TimelineProposal({
             timestamp: now,
@@ -208,10 +208,10 @@ contract Project {
 
     function voteOnTimelineProposal(bool approved) public contributorRestricted {
         // TimelineProposal must be active
-        require(timelineProposal.isActive == true);
+        require(timelineProposal.isActive == true, "No timeline proposal active.");
 
         // Contributor must not have already voted
-        require(!timelineProposal.voters[msg.sender]);
+        require(!timelineProposal.voters[msg.sender], "This contributor address has already voted.");
 
         if (approved) {
             timelineProposal.approvalCount++;
@@ -227,7 +227,7 @@ contract Project {
 
     function finalizeTimelineProposal() public devRestricted {
         // TimelineProposal must be active
-        require(timelineProposal.isActive == true);
+        require(timelineProposal.isActive == true, "There is no timeline proposal active.");
 
         FundingService fs = FundingService(fundingService);
         uint numContributors = fs.getProjectContributorList(this).length;
@@ -237,7 +237,8 @@ contract Project {
 
         // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
         require((timelineProposal.approvalCount > numContributors * 75 / 100) ||
-            (isTwoWeeksLater && timelineProposal.approvalCount > votingThreshold));
+            (isTwoWeeksLater && timelineProposal.approvalCount > votingThreshold),
+            "Conditions for finalizing timeline proposal have not yet been achieved.");
 
         if (timelineProposal.approvalCount > votingThreshold) {
             timeline.isActive = false;
@@ -254,11 +255,11 @@ contract Project {
 
     function submitMilestoneCompletion(string _report) public devRestricted {
         // Can only submit for milestone completion if timeline is active
-        require(timeline.isActive);
+        require(timeline.isActive, "There is no active timeline.");
         // Can only submit for milestone completion if there is not already a vote on milestone completion
-        require(!milestoneCompletionSubmission.isActive);
+        require(!milestoneCompletionSubmission.isActive, "There is already a vote on milestone completion active.");
         // Can only submit for milestone completion if there is not already a vote on a timeline proposal
-        require(!timelineProposal.isActive);
+        require(!timelineProposal.isActive, "Cannot submit milestone completion if there is an active vote to change the timeline.");
 
         MilestoneCompletionSubmission memory newSubmission = MilestoneCompletionSubmission({
             timestamp: now,
@@ -278,10 +279,10 @@ contract Project {
 
     function voteOnMilestoneCompletion(bool approved) public contributorRestricted {
         // MilestoneCompletionSubmission must be active
-        require(milestoneCompletionSubmission.isActive == true);
+        require(milestoneCompletionSubmission.isActive == true, "No vote on milestone completion active.");
 
         // Contributor must not have already voted
-        require(!milestoneCompletionSubmission.voters[msg.sender]);
+        require(!milestoneCompletionSubmission.voters[msg.sender], "This contributor address has already voted.");
 
         if (approved) {
             milestoneCompletionSubmission.approvalCount++;
@@ -297,7 +298,7 @@ contract Project {
 
     function finalizeMilestoneCompletion() public devRestricted {
         // MilestoneCompletionSubmission must be active
-        require(milestoneCompletionSubmission.isActive == true);
+        require(milestoneCompletionSubmission.isActive == true, "No vote on milestone completion active.");
 
         FundingService fs = FundingService(fundingService);
         uint numContributors = fs.getProjectContributorList(this).length;
@@ -307,7 +308,8 @@ contract Project {
 
         // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
         require((milestoneCompletionSubmission.approvalCount > numContributors * 75 / 100) ||
-            (isTwoWeeksLater && milestoneCompletionSubmission.approvalCount > votingThreshold));
+            (isTwoWeeksLater && milestoneCompletionSubmission.approvalCount > votingThreshold),
+            "Conditions for finalizing milestone completion have not yet been achieved.");
 
         timeline.milestones[activeMilestoneIndex].isComplete = true;
         activeMilestoneIndex++;
