@@ -1,5 +1,7 @@
 pragma solidity ^0.4.23;
+
 import "./Project.sol";
+import "./ProjectFactory.sol";
 
 contract FundingService {
 
@@ -19,6 +21,8 @@ contract FundingService {
     }
 
     address public owner;
+
+    address public projectFactory;
 
     mapping(address => uint) public developerMap; // address => id
     Developer[] public developers; // indexed by developer id
@@ -49,6 +53,11 @@ contract FundingService {
         _;
     }
 
+    modifier ownerOnly() {
+        require(msg.sender == owner);
+        _;
+    }
+
     event ProjectCreated(address projectAddress, uint projectId);
 
     constructor() public {
@@ -57,6 +66,10 @@ contract FundingService {
         // reserve 0
         developers.length++;
         projects.push(0);
+    }
+
+    function registerProjectFactory(address _factoryAddr) public ownerOnly {
+        projectFactory = _factoryAddr;
     }
 
     function createDeveloper(string _name) public {
@@ -105,11 +118,15 @@ contract FundingService {
     }
 
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
+        require(projectFactory != address(0), "No project factory registered.");
+
+        ProjectFactory factory = ProjectFactory(projectFactory);
+
         uint newProjectId = projects.length;
 
-        Project newProject = new Project(this, newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
+        address newProject = factory.createProject(newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
 
-        projectMap[address(newProject)] = newProjectId;
+        projectMap[newProject] = newProjectId;
         projects.push(newProject);
 
         Developer storage dev = developers[_developerId];
@@ -117,7 +134,7 @@ contract FundingService {
         dev.projectIdIndex[newProjectId] = dev.projectIds.length;
         dev.projectIds.push(newProjectId);
 
-        emit ProjectCreated(address(newProject), newProjectId);
+        emit ProjectCreated(newProject, newProjectId);
     }
 
     function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
