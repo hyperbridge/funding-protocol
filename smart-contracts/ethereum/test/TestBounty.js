@@ -18,9 +18,13 @@ contract('Bounty', (accounts) => {
 
     it("should be initialized with the right parameters", async () => {
         try {
+            let testProjectAddress = "0xca35b7d915458ef540ade6068dfe2f44e8fa733c";
+            let testBountyId = 1;
             let testBountyName = "Maple";
             let testBountyDescription = "Greatest Bug In Existence";
             let testBountyLink = "http://dailyhive.com";
+            assert.equal(await bountyInstance.projectAddress.call(), testProjectAddress, "Project Address is wrong");
+            assert.equal(await bountyInstance.bountyId.call(), testBountyId, "Bounty Id is wrong");
             assert.equal(await bountyInstance.bountyName.call(), testBountyName, "Bounty name is wrong");
             assert.equal(await bountyInstance.bountyDescription.call(), testBountyDescription, "Bounty description is wrong");
             assert.equal(await bountyInstance.bountyLink.call(), testBountyLink, "Bounty Link is wrong");

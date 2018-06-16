@@ -33,13 +33,8 @@ export default class BountyShow extends Component {
         const bountyName = await bountyInstance.bountyName()
         const project = await Project.at(address)
         const title = await project.title()
-        const description = await project.description()
-        const about = await project.about()
-        const devId = await project.developerId()
-        const developerInfo = await fundingService.getDeveloper(devId)
-        const developerAddress = developerInfo[0]
-        const developerName = developerInfo[1]
-
+        const description = await bountyInstance.description()
+        
         return {
             id: props.query.id,
             title,

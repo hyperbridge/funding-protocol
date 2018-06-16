@@ -6,9 +6,10 @@ import "./SafeMath.sol";
 /*Developer will set bounty (non-Smart Contract related bounty)
 * Bounty Hunter will report bug or test suggestions 
 * Developer will dispense funds if report is approved 
-* Test Bounty Params: "Maple", "Greatest Bug In Existence", "http://dailyhive.com"
+* Test Bounty Params: "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1 , "Maple", "Greatest Bug In Existence", "http://dailyhive.com"
 * Test Report Params: "This is unacceptable", "https://hyperbridge.org/"
-* Test Project Params: "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1 , "Blockhub", "This is a description of Blockhub.", "These are the various features of Blockhub.", "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1000000 
+* Remix Test Project Params: "Blockhub", "This is a description of Blockhub.", "These are the various features of Blockhub.", 1, 1000000 
+* Remix Test Bounty Params: "Maple", "Greatest Bug In Existence", "http://dailyhive.com"
 * Test FUnding Service Params: "a", "a" , "f", 1, 1000
 */
 contract Bounty {
@@ -18,6 +19,10 @@ contract Bounty {
         string report;
         string link;
     }   
+
+    //For Tracking the bounty to the project it is associated with
+    address public projectAddress;
+    uint public bountyId;
 
     address developer;
     string public bountyName;
@@ -35,7 +40,10 @@ contract Bounty {
     }
     
     
-    constructor(string _bountyName, string _bountyDescription, string _bountyLink) public {
+    constructor(address _projectAddress, uint _bountyId, string _bountyName, string _bountyDescription, string _bountyLink) public {
+        projectAddress =  _projectAddress;
+        bountyId = _bountyId;
+
         bountyName = _bountyName;
         bountyDescription = _bountyDescription;
         bountyLink = _bountyLink;

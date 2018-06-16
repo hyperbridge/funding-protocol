@@ -6,5 +6,6 @@ routes
     .add('/projects/new', '/projects/new')
     .add('/developers/:id', '/developers/show')
     .add('/projects/:id', '/projects/show')
+    .add('/bounties', '/bounties/showBounties')
 
 module.exports = routes

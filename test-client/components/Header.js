@@ -12,7 +12,7 @@ export default () => (
             <Link route="/">
                 <a className="item">Developers</a>
             </Link>
-            <Link route="Bounties">
+            <Link route="/bounty">
                 <a className="item">Bounties</a>
             </Link>
         </Menu.Menu>

@@ -6,6 +6,6 @@ module.exports = function(deployer) {
 };
 
 // module.exports = function(deployer) {
-//     deployer.deploy(Bounty, "Maple", "Greatest Bug In Existence", "http://dailyhive.com");
+//     deployer.deploy(Bounty, "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 1 , "Maple", "Greatest Bug In Existence", "http://dailyhive.com");
 // };
 

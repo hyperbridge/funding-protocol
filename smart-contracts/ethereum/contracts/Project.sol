@@ -36,7 +36,10 @@ contract Project {
     ProjectMilestone[][] timelineHistory;
     ProjectMilestone[] pendingTimeline;
 
-    Bounty[] bounties;
+    mapping(address => uint) public bountyMap; // address => id
+    address[] public bounties; // indexed by Bounty id
+
+
 
     modifier devRestricted() {
         require(msg.sender == developer);
@@ -59,6 +62,7 @@ contract Project {
         developerId = _developerId;
         contributionGoal = _contributionGoal;
     }
+    
 
     function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage) public devRestricted {
         require(_percentage <= 100);
@@ -211,9 +215,16 @@ contract Project {
     }
 
     function createBounty (string _bountyName, string _bountyDescription, string _bountyLink) public devRestricted {
-        Bounty newBounty = new Bounty(_bountyName, _bountyDescription, _bountyLink);
+        uint newBountyId = bounties.length;
 
+        Bounty newBounty = new Bounty(this, newBountyId, _bountyName, _bountyDescription, _bountyLink);
+
+        bountyMap[newBounty] = newBountyId;
         bounties.push(newBounty);
+    }
+
+    function getBounties() public view returns (address[]) {
+        return bounties;
     }
 
     function() public payable { }
