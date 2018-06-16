@@ -1,6 +1,4 @@
 pragma solidity ^0.4.23;
-//import "./FundingService.sol";
-//import "./Project.sol";
 import "./SafeMath.sol";
 
 /*Developer will set bounty (non-Smart Contract related bounty)
@@ -10,12 +8,12 @@ import "./SafeMath.sol";
 * Test Report Params: "This is unacceptable", "https://hyperbridge.org/"
 * Remix Test Project Params: "Blockhub", "This is a description of Blockhub.", "These are the various features of Blockhub.", 1, 1000000 
 * Remix Test Bounty Params: "Maple", "Greatest Bug In Existence", "http://dailyhive.com"
-* Test FUnding Service Params: "a", "a" , "f", 1, 1000
+* Test Funding Service Params: "a", "a" , "f", 1, 1000
 */
 contract Bounty {
 
-    struct bountyHunter {
-        address id;
+    struct BountyHunter {
+        address addr;
         string report;
         string link;
     }   
@@ -28,9 +26,9 @@ contract Bounty {
     string public bountyName;
     string public bountyDescription;
     string public bountyLink;
-    uint public bountyValue;
+    uint public bountyValue = 0;
     bool public isComplete;
-    bountyHunter[] bountyHunters;
+    BountyHunter[] BountyHunters;
 
     mapping(address => string) individualBountyHunterReport;
 
@@ -52,27 +50,27 @@ contract Bounty {
     }
 
     function setBountyValue() public payable devRestricted{
-        bountyValue = msg.value;
+        bountyValue = bountyValue + msg.value;
     }
 
     function makeReport(string _report, string _link) public {
-        bountyHunter memory newBountyHunter = bountyHunter({
-            id: msg.sender,
+        BountyHunter memory newBountyHunter = BountyHunter({
+            addr: msg.sender,
             report: _report,
             link: _link
         });
 
-        bountyHunters.push(newBountyHunter);
+        BountyHunters.push(newBountyHunter);
         individualBountyHunterReport[msg.sender] = _report;
     }
     
-    function viewBountyReport(address _bountyHunter) public view returns (string) {
-        return individualBountyHunterReport[_bountyHunter];
+    function viewBountyReport(address _BountyHunter) public view returns (string) {
+        return individualBountyHunterReport[_BountyHunter];
     }
     
     
-    function releaseBounty(address _bountyHunter) public devRestricted {
-        _bountyHunter.transfer(bountyValue);
+    function releaseBounty(address _BountyHunter) public devRestricted {
+        _BountyHunter.transfer(bountyValue);
         bountyValue = this.balance;
     }
     
