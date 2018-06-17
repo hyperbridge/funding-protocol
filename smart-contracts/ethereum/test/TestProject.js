@@ -1,37 +1,50 @@
 const FundingService = artifacts.require("FundingService");
 const Project = artifacts.require("Project");
+const ProjectFactory = artifacts.require("ProjectFactory");
 
 contract('ProjectMilestones', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
     let project;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
+    let projectAddress;
+    let projectId;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
 
+        await fundingService.registerProjectFactory(projectFactory.address);
+
         await fundingService.createDeveloper(devName, { from: devAccount });
 
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
         projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+    });
+
+    beforeEach(async () => {
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
-        let projectAddress = await fundingService.projects.call(1);
-        project = Project.at(projectAddress);
+        watcher.stopWatching();
+
+        project = await Project.at(projectAddress);
     });
 
     it("should be able to add initial milestones", async () => {
@@ -122,7 +135,7 @@ contract('ProjectMilestones', function(accounts) {
             await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
             await project.finalizeTiers({ from: devAccount });
 
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             await project.addMilestone(milestoneTitle, milestoneDescription, 100, true, { from: devAccount });
 
@@ -150,36 +163,48 @@ contract('ProjectMilestones', function(accounts) {
 });
 
 contract('ProjectTerms', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
     let project;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
+    let projectAddress;
+    let projectId;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
 
+        await fundingService.registerProjectFactory(projectFactory.address);
+
         await fundingService.createDeveloper(devName, { from: devAccount });
 
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
         projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+    });
+
+    beforeEach(async () => {
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
-        let projectAddress = await fundingService.projects.call(1);
-        project = Project.at(projectAddress);
+        watcher.stopWatching();
+
+        project = await Project.at(projectAddress);
     });
 
     it("should be able to set project terms", async () => {
@@ -207,37 +232,48 @@ contract('ProjectTerms', function(accounts) {
 });
 
 contract('ProjectTiers', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
     let project;
+    let projectAddress;
     let projectId;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
 
+        await fundingService.registerProjectFactory(projectFactory.address);
+
         await fundingService.createDeveloper(devName, { from: devAccount });
 
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
         projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+    });
+
+    beforeEach(async () => {
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
-        let projectAddress = await fundingService.projects.call(1);
-        project = Project.at(projectAddress);
+        watcher.stopWatching();
+
+        project = await Project.at(projectAddress);
     });
 
     it("should be able to add tiers", async () => {
@@ -267,41 +303,47 @@ contract('ProjectTiers', function(accounts) {
 });
 
 contract('ProjectTimelineProposalVoting', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
     let project;
+    let projectAddress;
     let projectId;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
-        projectId = 0;
+
+        await fundingService.registerProjectFactory(projectFactory.address);
 
         await fundingService.createDeveloper(devName, { from: devAccount });
+
+        projectDevId = await fundingService.developerMap.call(devAccount);
     });
 
     beforeEach(async () => {
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
-        projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
-        projectId++;
+        watcher.stopWatching();
 
-        let projectAddress = await fundingService.projects.call(projectId);
         project = await Project.at(projectAddress);
     });
 
@@ -323,7 +365,7 @@ contract('ProjectTimelineProposalVoting', function(accounts) {
             await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
             await project.finalizeTiers({ from: devAccount });
 
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
 
@@ -516,41 +558,47 @@ contract('ProjectTimelineProposalVoting', function(accounts) {
 });
 
 contract('ProjectMilestoneCompletionVoting', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
     let project;
+    let projectAddress;
     let projectId;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
-        projectId = 0;
+
+        await fundingService.registerProjectFactory(projectFactory.address);
 
         await fundingService.createDeveloper(devName, { from: devAccount });
+
+        projectDevId = await fundingService.developerMap.call(devAccount);
     });
 
     beforeEach(async () => {
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
-        projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
-        projectId++;
+        watcher.stopWatching();
 
-        let projectAddress = await fundingService.projects.call(projectId);
         project = await Project.at(projectAddress);
     });
 
@@ -572,7 +620,7 @@ contract('ProjectMilestoneCompletionVoting', function(accounts) {
             await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
             await project.finalizeTiers({ from: devAccount });
 
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
 
