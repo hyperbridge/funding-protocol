@@ -16,7 +16,7 @@ contract FundingVault is Pausable {
     constructor(address _fundingService) public {
         setFundingServiceContract(_fundingService);
     }
-    
+
     function () public payable {
         revert();
     }
@@ -44,15 +44,15 @@ contract FundingVault is Pausable {
         _receiver.transfer(_amount);
     }
 
-    event TokenWithdrawn(address ERC20, address receiver, uint amount);
+    event TokenWithdrawn(address tokenAddress, address receiver, uint amount);
 
-    function withdrawToken(address _ERC20Adress, uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
+    function withdrawToken(address _tokenAddress, uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
         require(_receiver != address(0));
         require(_amount > 0);
-        ERC20 token = ERC20(_ERC20Adress);
+        ERC20 token = ERC20(_tokenAddress);
         require (token.balanceOf(this) >= _amount);
 
-        emit TokenWithdrawn(_ERC20Adress, _receiver, _amount);
+        emit TokenWithdrawn(_tokenAddress, _receiver, _amount);
 
         require(token.transfer(_receiver, _amount));
     }
