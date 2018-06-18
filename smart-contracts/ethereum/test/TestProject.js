@@ -229,6 +229,43 @@ contract('ProjectTerms', function(accounts) {
             assert.fail();
         }
     });
+
+    it("should prevent addition of milestone if noTimeline is set.", async () => {
+        try {
+            await project.setNoTimeline(true, { from: devAccount });
+
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 100, false, { from: devAccount });
+
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+            let timelineMilestoneLength = await project.getTimelineMilestoneLength.call();
+            assert.equal(timelineMilestoneLength.toNumber(), 0, "Milestone added when it shouldn't have been.");
+        }
+    });
+
+    it("should remove timeline if noTimeline term is set.", async () => {
+        try {
+            let milestoneTitle = "Milestone 1";
+            let milestoneDescription = "Milestone description.";
+
+            await project.addMilestone(milestoneTitle, milestoneDescription, 100, false, { from: devAccount });
+
+            let timelineMilestoneLength = await project.getTimelineMilestoneLength.call();
+            assert.equal(timelineMilestoneLength.toNumber(), 1, "Milestone not added.");
+
+            await project.setNoTimeline(true, { from: devAccount });
+
+            timelineMilestoneLength = await project.getTimelineMilestoneLength.call();
+            assert.equal(timelineMilestoneLength.toNumber(), 0, "Timeline not cleared when setting noTimeline.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
 });
 
 contract('ProjectTiers', function(accounts) {

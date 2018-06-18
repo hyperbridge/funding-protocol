@@ -96,6 +96,7 @@ contract Project {
 
     function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage, bool _isPending) public devRestricted {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
+        require(!noTimeline, "Cannot add a milestone to a project with no timeline.");
 
         Milestone memory newMilestone = Milestone({
             title: _milestoneTitle,
@@ -348,6 +349,9 @@ contract Project {
 
     function setNoTimeline(bool val) public devRestricted {
         require(status == Status.Draft, "This action can only be performed on a draft project.");
+        if (val) {
+            delete(timeline);
+        }
         noTimeline = val;
     }
 

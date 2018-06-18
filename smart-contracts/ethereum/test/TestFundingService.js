@@ -182,6 +182,27 @@ contract('FundingService', function(accounts) {
         }
     });
 
+    it("should accept project submitted for review with no milestones if it has noTimeline term set", async () => {
+        try {
+            await project.setNoTimeline(true, { from: devAccount });
+
+            await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
+            await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            const projectStatus = await project.status.call();
+            const projectTimelineIsActive = await project.getTimelineIsActive.call();
+
+            assert.equal(projectStatus, 1, "FundingService did not change valid project's status to Pending.");
+            assert.ok(projectTimelineIsActive);
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
     it("new contributor should be able to contribute to a project", async function() {
         try {
             const amountToContribute = 1000;
