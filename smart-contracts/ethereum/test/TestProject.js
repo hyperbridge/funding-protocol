@@ -160,6 +160,51 @@ contract('ProjectMilestones', function(accounts) {
             assert.fail();
         }
     });
+
+    it("should retain milestones with funds released in any pending timeline", async () => {
+        try {
+            await project.addMilestone("Milestone 1", "Description 1", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 2", "Description 2", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 3", "Description 3", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 4", "Description 4", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 5", "Description 5", 20, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            await fundingService.contributeToProject(projectId, { from: accounts[2], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[3], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[4], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[5], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[6], value: 100 });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            await project.voteOnMilestoneCompletion(true, { from: accounts[2] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[3] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[4] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[5] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[6] });
+
+            await project.finalizeMilestoneCompletion({ from: devAccount });
+
+            let pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            const pendingMilestone1 = await project.getMilestone(0, true);
+            const pendingMilestone2 = await project.getMilestone(1, true);
+            assert.equal(pendingMilestoneLength, 2, "Pending timeline is wrong length.");
+            assert.equal(pendingMilestone1[0], "Milestone 1", "First pending milestone is incorrect.");
+            assert.equal(pendingMilestone2[0], "Milestone 2", "Second pending milestone is incorrect.");
+
+            await project.clearPendingTimeline.call({ from: devAccount });
+
+            pendingMilestoneLength = await project.getPendingTimelineMilestoneLength.call();
+            assert.equal(pendingMilestoneLength, 2, "Pending timeline is wrong length.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
 });
 
 contract('ProjectTerms', function(accounts) {
@@ -587,6 +632,88 @@ contract('ProjectTimelineProposalVoting', function(accounts) {
             await project.voteOnTimelineProposal(false, { from: accounts[6] });
 
             await project.finalizeTimelineProposal({ from: devAccount });
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+
+    it("should allow new timeline proposal if pending timeline adds up to 100 percent of funds.", async () => {
+        try {
+            await project.addMilestone("Milestone 1", "Description 1", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 2", "Description 2", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 3", "Description 3", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 4", "Description 4", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 5", "Description 5", 20, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            await fundingService.contributeToProject(projectId, { from: accounts[2], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[3], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[4], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[5], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[6], value: 100 });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            await project.voteOnMilestoneCompletion(true, { from: accounts[2] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[3] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[4] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[5] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[6] });
+
+            await project.finalizeMilestoneCompletion({ from: devAccount });
+
+            await project.addMilestone("New Milestone 2", "New Description 2", 30, true, { from: devAccount });
+            await project.addMilestone("New Milestone 3", "New Description 3", 30, true, { from: devAccount });
+
+            await project.proposeNewTimeline({ from: devAccount });
+
+            const timelineProposal = await project.getTimelineProposal.call();
+
+            assert.equal(timelineProposal[3], true, "Timeline Proposal is not active.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should prevent new timeline proposal if pending timeline doesn't add up to 100 percent of funds.", async () => {
+        try {
+            await project.addMilestone("Milestone 1", "Description 1", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 2", "Description 2", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 3", "Description 3", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 4", "Description 4", 20, false, { from: devAccount });
+            await project.addMilestone("Milestone 5", "Description 5", 20, false, { from: devAccount });
+            await project.addTier(1000, 500, 10, "Rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            await fundingService.contributeToProject(projectId, { from: accounts[2], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[3], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[4], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[5], value: 100 });
+            await fundingService.contributeToProject(projectId, { from: accounts[6], value: 100 });
+
+            await project.submitMilestoneCompletion("This milestone is done.", { from: devAccount });
+
+            await project.voteOnMilestoneCompletion(true, { from: accounts[2] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[3] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[4] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[5] });
+            await project.voteOnMilestoneCompletion(true, { from: accounts[6] });
+
+            await project.finalizeMilestoneCompletion({ from: devAccount });
+
+            await project.addMilestone("New Milestone 2", "New Description 2", 30, true, { from: devAccount });
+            await project.addMilestone("New Milestone 3", "New Description 3", 31, true, { from: devAccount });
+
+            await project.proposeNewTimeline({ from: devAccount });
+
             assert.fail();
         } catch (e) {
             console.log(e.message);

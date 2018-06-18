@@ -142,13 +142,17 @@ contract Project {
         string _milestoneDescription,
         uint _milestonePercentage)
     public devRestricted {
+        require(_milestonePercentage <= 100, "Milestone percentage cannot be greater than 100.");
+
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!timelineProposal.isActive, "Pending milestones cannot be added while a timeline proposal vote is active.");
+            require(!timelineProposal.isActive, "Pending milestones cannot be edited while a timeline proposal vote is active.");
+
             Milestone storage milestone = pendingTimeline.milestones[_index];
         } else {
             // Timeline must not already be active
-            require(!timeline.isActive, "Milestone cannot be added to an active timeline.");
+            require(!timeline.isActive, "Milestone cannot be edited in an active timeline.");
+
             milestone = timeline.milestones[_index];
         }
 
@@ -158,8 +162,12 @@ contract Project {
     }
 
     function clearPendingTimeline() public devRestricted {
+        // There must not be an active timeline proposal
+        require(!timelineProposal.isActive, "Pending milestones cannot be edited while a timeline proposal vote is active.");
+
         delete(pendingTimeline);
         pendingTimeline.milestones = completedMilestones;
+        pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex]);
     }
 
     function initializeTimeline() public fundingServiceRestricted {
@@ -192,11 +200,28 @@ contract Project {
         return timelineHistory.length;
     }
 
+    function verifyPendingTimelinePercentages() private view {
+        // If project has a timeline, verify:
+        // - Milestones are present
+        // - Milestone percentages add up to 100
+        if (!noTimeline) {
+            require(pendingTimeline.milestones.length > 0, "Pending timeline is empty.");
+
+            uint percentageAcc = 0;
+            for (uint i = 0; i < pendingTimeline.milestones.length; i++) {
+                percentageAcc += pendingTimeline.milestones[i].percentage;
+            }
+            require(percentageAcc == 100, "Milestone percentages must add to 100.");
+        }
+    }
+
     function proposeNewTimeline() public devRestricted {
         // Can only suggest new timeline if one already exists
         require(timeline.isActive, "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
         require(!milestoneCompletionSubmission.isActive, "New timeline cannot be proposed if there is an active vote on milestone completion.");
+
+        verifyPendingTimelinePercentages();
 
         TimelineProposal memory newProposal = TimelineProposal({
             timestamp: now,
@@ -320,22 +345,29 @@ contract Project {
 
         timeline.milestones[activeMilestoneIndex].isComplete = true;
 
-        // Updated completedMilestones, remove any pending milestones, and add the completed milestones to the start
-        // of the pending timeline. This is to ensure that any future timeline proposals take into account the milestones
-        // that have already been completed.
+        // Update completedMilestones, remove any pending milestones, and add the completed milestones + current active
+        // milestone to the start of the pending timeline. This is to ensure that any future timeline proposals take
+        // into account the milestones that have already released their funds.
         completedMilestones.push(timeline.milestones[activeMilestoneIndex]);
+
         delete(pendingTimeline);
         pendingTimeline.milestones = completedMilestones;
-
-        // Increment the active milestone
-        activeMilestoneIndex++;
 
         delete(milestoneCompletionSubmission);
 
         // Increase developer reputation
         fs.updateDeveloperReputation(developerId, MILESTONE_COMPLETION_REP_CHANGE);
 
-        // todo - transfer funds from vault (through funding service) to developer
+        // Increment active milestone and release funds if this was not the last milestone
+        if (activeMilestoneIndex < timeline.milestones.length - 1) {
+            // Increment the active milestone
+            activeMilestoneIndex++;
+
+            // Add currently active milestone to pendingTimeline
+            pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex]);
+
+            // todo - transfer funds from vault (through funding service) to developer
+        }
     }
 
     function setStatus(Status _status) public fundingServiceRestricted {
