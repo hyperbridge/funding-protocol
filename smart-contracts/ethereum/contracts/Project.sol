@@ -342,10 +342,12 @@ contract Project {
     }
 
     function setNoRefunds(bool val) public devRestricted {
+        require(status == Status.Draft, "This action can only be performed on a draft project.");
         noRefunds = val;
     }
 
     function setNoTimeline(bool val) public devRestricted {
+        require(status == Status.Draft, "This action can only be performed on a draft project.");
         noTimeline = val;
     }
 
