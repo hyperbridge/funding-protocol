@@ -2,24 +2,19 @@ const FundingVault = artifacts.require("FundingVault");
 
 const BigNumber = web3.BigNumber;
 
-
 const should = require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
 
-/**
- * @param FundingServiceAddress  is only random address for now since we are
-  building vault as an independnet entity
- */
 contract('FundingVault', function([owner, fundingServiceAddress, randomAddress]) {
 
     let fundingVault;
     let value;
 
     before(async () => {
-          fundingVault = await FundingVault.new(owner, fundingServiceAddress);
+          fundingVault = await FundingVault.new(fundingServiceAddress);
           value = 1000;
     });
 
@@ -29,7 +24,7 @@ contract('FundingVault', function([owner, fundingServiceAddress, randomAddress])
 
     it("should allow fundingService contract to deposite ETH", async () => {
 
-        await fundingVault.depositeETH({value: value, from: fundingServiceAddress}).should.be.fulfilled;
+        await fundingVault.depositEth({value: value, from: fundingServiceAddress}).should.be.fulfilled;
 
         balance = await fundingVault.getBalance();
         balance.should.be.bignumber.equal(value);
@@ -37,19 +32,19 @@ contract('FundingVault', function([owner, fundingServiceAddress, randomAddress])
 
     it("should rejects non fundingService address from depositing ETH", async () => {
 
-        await fundingVault.depositeETH({ value: value, from: randomAddress}).should.be.rejectedWith('revert');
+        await fundingVault.depositEth({value: value, from: randomAddress}).should.be.rejectedWith('revert'); //TODO add test constants such as REVERT
     });
 
     it("should allow fundingService contract to withdraw ETH", async () => {
         oldBalance = await fundingVault.getBalance({from: randomAddress});
-        await fundingVault.withdrawETH(value, fundingServiceAddress, {from: fundingServiceAddress}).should.be.fulfilled;
+        await fundingVault.withdrawEth(value, fundingServiceAddress, {from: fundingServiceAddress}).should.be.fulfilled;
 
         newBalance = await fundingVault.getBalance({from: randomAddress});
         newBalance.should.be.bignumber.equal(oldBalance-value);
     });
 
     it("should rejects non fundingService address from withdrawing ETH", async () => {
-        await fundingVault.withdrawETH(value, randomAddress, {from: randomAddress}).should.be.rejected;
+        await fundingVault.withdrawEth(value, randomAddress, {from: randomAddress}).should.be.rejected;
     });
 
     it("should allow owner to set fundingService contract address", async () => {
@@ -60,4 +55,7 @@ contract('FundingVault', function([owner, fundingServiceAddress, randomAddress])
         await fundingVault.setFundingServiceContract(randomAddress, {from: randomAddress}).should.be.rejected;
     });
 
+    it("should rejects the traditional(fallback) depositing of ETH", async () => {
+        await fundingVault.send({value: value, from: randomAddress}).should.be.rejected;
+    });
 });

@@ -1,95 +1,64 @@
 pragma solidity ^0.4.24;
 
+import "./ERC20.sol";
+import "./ERC20Basic.sol";
+import "./Pausable.sol";
 
-// TODO move ERC20 interface to a separate file
+contract FundingVault is Pausable {
 
-contract ERC20Basic {
-  uint256 public totalSupply;
-  function balanceOf(address who) public constant returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
-  event Transfer(address indexed from, address indexed to, uint256 value);
-}
-
-contract ERC20 is ERC20Basic {
-  function allowance(address owner, address spender) public constant returns (uint256);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address spender, uint256 value) public returns (bool);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
-}
+    modifier fundingServiceOnly() {
+        require (msg.sender == fundingService);
+        _;
+    }
+    address fundingService;
 
 
+    constructor(address _fundingService) public {
+        setFundingServiceContract(_fundingService);
+    }
+    
+    function () public payable {
+        revert();
+    }
 
-contract FundingVault {
+    function setFundingServiceContract(address _fundingService) public onlyOwner {
+        fundingService = _fundingService;
+    }
 
-  modifier ownerOnly() {
-    require (msg.sender == owner);
-    _;
-  }
+    event EthDeposited(uint amount);
 
-  modifier fundingServiceOnly() {
-    require (msg.sender == fundingService);
-    _;
-  }
+    function depositEth() public payable fundingServiceOnly whenNotPaused {
 
-  modifier activeOnly() {
-    require(active == true);
-    _;
-  }
+        emit EthDeposited(msg.value);
+    }
 
-  address fundingService;
+    event EthWithdrawn(address receiver, uint amount);
 
-  address owner;
+    function withdrawEth(uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
+        require(_receiver != address(0));
+        require(_amount > 0);
+        require(getBalance() >= _amount);
 
-  //TODO import pausable?
-  bool active;
+        emit EthWithdrawn(_receiver, _amount);
 
-  constructor(address _owner, address _fundingService) public {
-    owner = _owner;
-    setFundingServiceContract(_fundingService);
-    setActive(true);
-  }
+        _receiver.transfer(_amount);
+    }
 
-  function setFundingServiceContract(address _fundingService) public ownerOnly {
-    fundingService = _fundingService;
-  }
+    event TokenWithdrawn(address ERC20, address receiver, uint amount);
 
-  function setActive(bool val) public ownerOnly {
-    active = val;
-  }
+    function withdrawToken(address _ERC20Adress, uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
+        require(_receiver != address(0));
+        require(_amount > 0);
+        ERC20 token = ERC20(_ERC20Adress);
+        require (token.balanceOf(this) >= _amount);
 
-  event ETHDeposited(uint amount);
+        emit TokenWithdrawn(_ERC20Adress, _receiver, _amount);
 
-  function depositeETH() public payable  fundingServiceOnly activeOnly {
+        require(token.transfer(_receiver, _amount));
+    }
 
-    emit ETHDeposited(msg.value);
-  }
-
-  event ETHWithdrawn(address receiver, uint amount);
-
-  function withdrawETH(uint _amount, address _receiver) public  fundingServiceOnly activeOnly {
-    require(_receiver != address(0));
-    require(_amount > 0);
-    require(getBalance() >= _amount);
-
-    emit ETHWithdrawn(_receiver, _amount);
-
-    _receiver.transfer(_amount);
-  }
-
-  event ERC20Withdrawn(address ERC20, address receiver, uint amount);
-
-  function withdrawERC20(address _ERC20Adress, uint _amount, address _receiver) public fundingServiceOnly activeOnly {
-      require(_amount > 0);
-      ERC20 token = ERC20(_ERC20Adress);
-      require (token.balanceOf(this) > _amount);
-
-      emit ERC20Withdrawn(_ERC20Adress, _receiver, _amount);
-
-      require(token.transfer(_receiver,_amount));
-  }
-
-  function getBalance() public view returns(uint) {
-    return address(this).balance;
-  }
+    function getBalance() public view returns(uint) {
+        return address(this).balance;
+    }
 
 }
