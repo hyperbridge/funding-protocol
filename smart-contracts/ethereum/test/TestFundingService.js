@@ -1,33 +1,59 @@
 const FundingService = artifacts.require("FundingService");
 const Project = artifacts.require("Project");
+const ProjectFactory = artifacts.require("ProjectFactory");
 
 contract('FundingService', function(accounts) {
+    let projectFactory;
     let fundingService;
     let fundingServiceOwner;
-    let devName;
     let devAccount;
-    let projectTitle;
-    let projectDescription;
-    let projectAbout;
+    let project;
+    let projectAddress;
+    let projectId;
     let projectDevId;
-    let projectContributionGoal;
+    const devName = "Hyperbridge";
+    const projectTitle = "Blockhub";
+    const projectDescription = "This is a description of Blockhub.";
+    const projectAbout = "These are the various features of Blockhub.";
+    const projectContributionGoal = 1000000;
 
     before(async () => {
+        projectFactory = await ProjectFactory.deployed();
+
         fundingService = await FundingService.deployed();
 
-        devName = "Hyperbridge";
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
 
+        await fundingService.registerProjectFactory(projectFactory.address);
+
         await fundingService.createDeveloper(devName, { from: devAccount });
 
-        projectTitle = "Blockhub";
-        projectDescription = "This is a description of Blockhub.";
-        projectAbout = "These are the various features of Blockhub.";
         projectDevId = await fundingService.developerMap.call(devAccount);
-        projectContributionGoal = 1000000;
+    });
+
+    beforeEach(async () => {
+        let watcher = fundingService.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectAddress = result.args.projectAddress;
+                projectId = result.args.projectId;
+            }
+        });
 
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
+
+        watcher.stopWatching();
+
+        project = await Project.at(projectAddress);
+    });
+
+    it("should deploy a ProjectFactory contract", async () => {
+        try {
+            assert.ok(projectFactory.address);
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
     });
 
     it("should deploy a FundingService contract", async () => {
@@ -45,9 +71,10 @@ contract('FundingService', function(accounts) {
            assert.equal(newDeveloperId, 1, "New developer should be in developerMap with id = 1");
 
            const createdDeveloper = await fundingService.developers.call(newDeveloperId);
+
            assert.equal(createdDeveloper[0].toNumber(), newDeveloperId, "Incorrect ID");
-           assert.equal(createdDeveloper[1], devAccount, "Incorrect address");
-           assert.equal(createdDeveloper[2], devName, "Incorrect name");
+           assert.equal(createdDeveloper[2], devAccount, "Incorrect address");
+           assert.equal(createdDeveloper[3], devName, "Incorrect name");
        } catch (e) {
            console.log(e.message);
            assert.fail();
@@ -56,27 +83,28 @@ contract('FundingService', function(accounts) {
 
     it("should be able to create Project", async () => {
         try {
-            const projectAddress = await fundingService.projects.call(1);
-
             // Check if project has an address
             assert.notEqual(projectAddress, 0);
 
-            let projectId = await fundingService.projectMap.call(projectAddress);
+            assert.notEqual(projectId, 0);
 
-            // Check that project has ID
-            assert.equal(projectId.toNumber(), 1);
+            const createdProjectFundingService = await project.fundingService.call();
+            const createdProjectId = await project.id.call();
+            const createdProjectStatus = await project.status.call();
+            const createdProjectTitle = await project.title.call();
+            const createdProjectDescription = await project.description.call();
+            const createdProjectAbout = await project.about.call();
+            const createdProjectDeveloper = await project.developer.call();
+            const createdProjectDevId = await project.developerId.call();
+            const createdProjectContributionGoal = await project.contributionGoal.call();
 
-            const project = await Project.at(projectAddress);
-
-            let createdProjectId = await project.id.call();
-            let createdProjectDevId = await project.developerId.call();
-            let createdProjectContributionGoal = await project.contributionGoal.call();
-
-            assert.equal(await project.fundingService.call(), fundingService.address);
-            assert.equal(createdProjectId.toNumber(), projectId.toNumber());
-            assert.equal(await project.title.call(), projectTitle);
-            assert.equal(await project.description.call(), projectDescription);
-            assert.equal(await project.about.call(), projectAbout);
+            assert.equal(createdProjectFundingService, fundingService.address);
+            assert.equal(createdProjectId.toNumber(), projectId);
+            assert.equal(createdProjectStatus, 0);
+            assert.equal(createdProjectTitle, projectTitle);
+            assert.equal(createdProjectDescription, projectDescription);
+            assert.equal(createdProjectAbout, projectAbout);
+            assert.equal(createdProjectDeveloper, devAccount);
             assert.equal(createdProjectDevId.toNumber(), projectDevId);
             assert.equal(createdProjectContributionGoal.toNumber(), projectContributionGoal);
         } catch (e) {
@@ -103,19 +131,15 @@ contract('FundingService', function(accounts) {
 
     it("should submit project for review", async () => {
         try {
-            const projectAddress = await fundingService.projects.call(1);
-            const project = await Project.at(projectAddress);
-
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, false, { from: devAccount });
 
             await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
             await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
             await project.finalizeTiers({ from: devAccount });
 
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             const projectStatus = await project.status.call();
 
@@ -128,21 +152,15 @@ contract('FundingService', function(accounts) {
 
     it("should reject project submitted for review with invalid milestones", async () => {
         try {
-            await fundingService.createProject("New Title", "New Desc", "New About", projectDevId, 20000, {from: devAccount});
-
-            const projectAddress = await fundingService.projects.call(2);
-            const project = await Project.at(projectAddress);
-
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 21, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 21, false, { from: devAccount });
 
             await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
             await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
             await project.finalizeTiers({ from: devAccount });
 
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             assert.fail();
         } catch (e) {
@@ -152,17 +170,11 @@ contract('FundingService', function(accounts) {
 
     it("should reject project submitted for review with no contribution tiers", async () => {
         try {
-            await fundingService.createProject("New Title", "New Desc", "New About", projectDevId, 20000, {from: devAccount});
+            await project.addMilestone("Title 1", "Description 1", 30, false, { from: devAccount });
+            await project.addMilestone("Title 2", "Description 2", 50, false, { from: devAccount });
+            await project.addMilestone("Title 3", "Description 3", 20, false, { from: devAccount });
 
-            const projectAddress = await fundingService.projects.call(2);
-            const project = await Project.at(projectAddress);
-
-            await project.addMilestone("Title 1", "Description 1", 30, { from: devAccount });
-            await project.addMilestone("Title 2", "Description 2", 50, { from: devAccount });
-            await project.addMilestone("Title 3", "Description 3", 20, { from: devAccount });
-            await project.finalizeTimeline({ from: devAccount });
-
-            await fundingService.submitProjectForReview(1, 1, { from: devAccount });
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
 
             assert.fail();
         } catch (e) {
@@ -170,12 +182,30 @@ contract('FundingService', function(accounts) {
         }
     });
 
+    it("should accept project submitted for review with no milestones if it has noTimeline term set", async () => {
+        try {
+            await project.setNoTimeline(true, { from: devAccount });
+
+            await project.addTier(1000, 10000, 500, "These are the rewards.", { from: devAccount });
+            await project.addTier(500, 499, 1, "More rewards!", { from: devAccount });
+            await project.finalizeTiers({ from: devAccount });
+
+            await fundingService.submitProjectForReview(projectId, projectDevId, { from: devAccount });
+
+            const projectStatus = await project.status.call();
+            const projectTimelineIsActive = await project.getTimelineIsActive.call();
+
+            assert.equal(projectStatus, 1, "FundingService did not change valid project's status to Pending.");
+            assert.ok(projectTimelineIsActive);
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
     it("new contributor should be able to contribute to a project", async function() {
         try {
             const amountToContribute = 1000;
-
-            const projectId = 1;
-            const projectAddress = await fundingService.projects.call(projectId);
 
             const initialProjectBalance = await web3.eth.getBalance(projectAddress);
             const initialContributionAmount = await fundingService.projectContributionAmount.call(projectAddress, accounts[2]);
@@ -195,8 +225,6 @@ contract('FundingService', function(accounts) {
             assert.equal(finalProjectBalance.toNumber(), initialProjectBalance.toNumber() + amountToContribute, "Project contract balance incorrect");
             assert.equal(finalContributionAmount.toNumber(), initialContributionAmount.toNumber() + amountToContribute, "FundingService record of this addresses contribution amount incorrect");
             assert.equal(finalProjectContributorsLength, initialProjectContributorsLength + 1, "Project contributors length incorrect");
-
-
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -206,9 +234,6 @@ contract('FundingService', function(accounts) {
     it("existing contributor should be able to contribute to a project", async function() {
         try {
             const amountToContribute = 1000;
-
-            const projectId = 1;
-            const projectAddress = await fundingService.projects.call(projectId);
 
             const initialProjectBalance = await web3.eth.getBalance(projectAddress);
             const initialContributionAmount = await fundingService.projectContributionAmount.call(projectAddress, accounts[2]);
@@ -225,7 +250,7 @@ contract('FundingService', function(accounts) {
 
             assert.equal(finalProjectBalance.toNumber(), initialProjectBalance.toNumber() + amountToContribute, "Project contract balance incorrect");
             assert.equal(finalContributionAmount.toNumber(), initialContributionAmount.toNumber() + amountToContribute, "FundingService record of this addresses contribution amount incorrect");
-            assert.equal(finalProjectContributorsLength, initialProjectContributorsLength, "Project contributors length incorrect");
+            assert.equal(finalProjectContributorsLength, initialProjectContributorsLength + 1, "Project contributors length incorrect");
         } catch (e) {
             console.log(e.message);
             assert.fail();
