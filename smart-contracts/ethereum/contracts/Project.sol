@@ -94,6 +94,10 @@ contract Project {
         contributionGoal = _contributionGoal;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage, bool _isPending) public devRestricted {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
         require(!noTimeline, "Cannot add a milestone to a project with no timeline.");
@@ -450,6 +454,4 @@ contract Project {
 
         delete(pendingContributionTiers);
     }
-
-    function() public payable { }
 }

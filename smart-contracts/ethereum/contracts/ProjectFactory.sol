@@ -7,4 +7,8 @@ contract ProjectFactory {
         Project newProject = new Project(msg.sender, _id, _title, _description, _about, _developer, _developerId, _contributionGoal);
         return address(newProject);
     }
+
+    function () public payable {
+        revert();
+    }
 }

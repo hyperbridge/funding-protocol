@@ -60,6 +60,10 @@ contract FundingService is Ownable {
         projects.push(0);
     }
 
+    function () public payable {
+        revert();
+    }
+
     function registerProjectFactory(address _factoryAddr) public onlyOwner {
         projectFactory = _factoryAddr;
     }
