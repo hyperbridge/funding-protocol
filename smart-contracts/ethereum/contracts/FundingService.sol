@@ -2,8 +2,9 @@ pragma solidity ^0.4.23;
 
 import "./Project.sol";
 import "./ProjectFactory.sol";
+import "./openzeppelin/Ownable.sol";
 
-contract FundingService {
+contract FundingService is Ownable {
 
     struct Developer {
         uint id;
@@ -19,8 +20,6 @@ contract FundingService {
         mapping(address => bool) projectExists;
         address[] activeProjects;
     }
-
-    address public owner;
 
     address public projectFactory;
 
@@ -53,22 +52,15 @@ contract FundingService {
         _;
     }
 
-    modifier ownerOnly() {
-        require(msg.sender == owner);
-        _;
-    }
-
     event ProjectCreated(address projectAddress, uint projectId);
 
     constructor() public {
-        owner = msg.sender;
-
         // reserve 0
         developers.length++;
         projects.push(0);
     }
 
-    function registerProjectFactory(address _factoryAddr) public ownerOnly {
+    function registerProjectFactory(address _factoryAddr) public onlyOwner {
         projectFactory = _factoryAddr;
     }
 
