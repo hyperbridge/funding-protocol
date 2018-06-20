@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "./ERC20.sol";
-import "./ERC20Basic.sol";
-import "./Pausable.sol";
+import "./openzeppelin/ERC20.sol";
+import "./openzeppelin/ERC20Basic.sol";
+import "./openzeppelin/Pausable.sol";
 
 contract FundingVault is Pausable {
 
