@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./StringUtils.sol";
+import "./strings.sol";
 import "./SafeMath.sol";
 
 /*
@@ -11,7 +11,7 @@ contract BountyService {
 
     struct Bounty {
         uint bountyId;
-        bytes32 targetId;           //Target of Id of the bounty (eg. Project)
+        address targetId;           //Target of Id of the bounty (eg. Project)
         address developerAddress;
         string bountyName;
         string bountyDescription;
@@ -36,9 +36,9 @@ contract BountyService {
     mapping(address => uint) public developerMap;       // address => id
     Developer[] public developers;                      // indexed by developer id
     uint public bountyIdCounter;                        // Helps to give each bounty a unique uint ID
-    Bounty[] bountyCollection;                          // Indexed by BountyId
+    Bounty[] public bountyCollection;                          // Indexed by BountyId
 
-    mapping(bytes32 => uint[]) public targetBountyMap;      //Pass the target ID and returns the bountyId's associated with it
+    mapping(address => uint[]) public targetBountyMap;      //Pass the target ID and returns the bountyId's associated with it
     mapping(uint => string[]) public bountyReportMap;       //Map all the bounty reports to its bounty
     mapping(uint => address[]) public bountyHunterReportMap; //Map to keep track of bounty Hunters that submit reports. To be used in conjunction with bountyReportMap
 
@@ -75,7 +75,7 @@ contract BountyService {
         developerMap[msg.sender] = newDeveloper.id;
     }
     
-    function createBounty(uint _developerId, bytes32 _targetId, string _bountyName, string _bountyDescription, string _bountyLink) payable public devRestricted(_developerId){
+    function createBounty(uint _developerId, address _targetId, string _bountyName, string _bountyDescription, string _bountyLink) payable public devRestricted(_developerId){
         
         
         Bounty memory newBounty = Bounty({
