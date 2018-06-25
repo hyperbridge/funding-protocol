@@ -138,6 +138,8 @@ contract BountyService {
         for (uint i=0; i< bountyCollection[_bountyId].approvedHunterMap.length; i++) {
             bountyCollection[_bountyId].approvedHunterMap[i].transfer(bountyShare);
         }
+
+        bountyCollection[_bountyId].bountyValue = address(this).balance;
     }
     
     function closeBounty(uint _bountyId, uint _developerId) public devRestricted(_developerId) bountyStillLive(_bountyId) {

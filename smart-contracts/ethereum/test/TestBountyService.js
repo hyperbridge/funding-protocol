@@ -1,3 +1,23 @@
+/**
+ * Testing Bounty Service Smart Contract
+ * 
+ * Work Flow for creating a Bounty:
+ * 1. Deploy Contract
+ * 2. Create Developer
+ * 3. Create Bounty - send money to the contract
+ * 4. Wait for Bounty Hunter to submit reports
+ * 5. Check the bounty's reports
+ * 6. Approve the bounty reports using the bounty hunters address
+ * 7. Close the bounty
+ * 8. Release the bounty
+ * 
+ * Coverage of the test: 
+ * - Only bounty developer can close the bounty
+ * - Only bounty developer can release the bounty
+ */
+
+
+
 const BountyService = artifacts.require("BountyService");
 const StringUtils = artifacts.require("strings");
 
@@ -14,6 +34,7 @@ contract('BountyService', (accounts) => {
     let imposterDeveloper = accounts[4];
 
     let bountyValue = 5000000000000000000;
+    let bountyEmpty = 0;
 
     before(async () => {
         bountyService = await BountyService.deployed();   
@@ -64,6 +85,7 @@ contract('BountyService', (accounts) => {
     // it("Imposter Developer should not be able close bounty", async () => {
     //     try {
     //         await bountyService.closeBounty(0,1, {from: imposterDeveloper});
+    //         const createdBounty = await bountyService.bountyCollection.call(0);
     //         assert.equal(await createdBounty[7], false, "Bounty IsComplete is true(supposed to be false)");            
     //     } catch (e) {
     //         console.log(e.message);
@@ -100,8 +122,60 @@ contract('BountyService', (accounts) => {
         }
     });
 
+    it("Should be able to approve Bounty Hunters", async () => {
+        try {
+            var hunterAddr1 = await bountyService.bountyHunterReportMap.call(0,0);
+            var hunterAddr2 = await bountyService.bountyHunterReportMap.call(0,1);
+            var hunterAddr3 = await bountyService.bountyHunterReportMap.call(0,2);
+            var hunterAddrArray = String([hunterAddr1,hunterAddr2,hunterAddr3]);
+            await bountyService.approveBountyHunter(0,bountyHunter1, {from: bountyDeveloper});
+            await bountyService.approveBountyHunter(0,bountyHunter2, {from: bountyDeveloper});
+            await bountyService.approveBountyHunter(0,bountyHunter3, {from: bountyDeveloper});
+            assert.equal(String(await bountyService.getApprovedBountyHunters.call(0)), hunterAddrArray, "Approved Hunters are incorrect");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        };
+    });
 
-    //Test: Approve Bounty Hunter , Close Bounty, Release Funds, Create another Bounty, Test sending random funds to contract(fallback)
+    //* VM Revert should happen and does happen. UnComment this block to test */
+    // it("Bounty Hunter should not be able to approve an address", async () => {
+    //     try {
+    //         var hunterAddr1 = await bountyService.bountyHunterReportMap.call(0,0);
+    //         await bountyService.approveBountyHunter(0,bountyHunter1, {from: bountyHunter1});
+    //     } catch (e) {
+    //         console.log(e.message);
+    //         assert.fail(); 
+    //     };
+    // });
+
+    it("Should be able to close the bounty", async () => {
+        try {          
+            await bountyService.closeBounty(0,1, {from: bountyDeveloper});
+            const createdBounty = await bountyService.bountyCollection.call(0);  
+            assert.equal(await createdBounty[7], true, "Bounty IsComplete is true(supposed to be false)");            
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    // Releases funds but there are left over wei from the division
+    // Need to use toNumber() because web3 passes back a big number
+    it("Should be able to release funds from the contract", async () => {
+        try {
+            var bountyLeftover = bountyValue % 3;            
+            await bountyService.releaseBounty(0,1, {from: bountyDeveloper});
+            console.log((await bountyService.getBountyValue.call(0)).toNumber());
+            assert.equal((await bountyService.getBountyValue.call(0)).toNumber(), bountyLeftover, "Bounty value is not equal to zero");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+
+    //Test: Create another Bounty, Test sending random funds to contract(fallback)
 
 
 
