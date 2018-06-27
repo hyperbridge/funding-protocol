@@ -1,2 +1,7 @@
 node_modules
 .next
+smart-contracts/ethereum/.DS_Store
+smart-contracts/ethereum/build/.DS_Store
+smart-contracts/ethereum/build/contracts/.DS_Store
+smart-contracts/ethereum/contracts/.DS_Store
+smart-contracts/ethereum/test/.DS_Store
