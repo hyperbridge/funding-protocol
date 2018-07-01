@@ -1,70 +1,71 @@
 pragma solidity ^0.4.23 ;
-import "./FundingService.sol";
 
-contract Project {
+import "./ProjectStorage.sol";
 
-    struct Timeline {
-        Milestone[] milestones;
-        bool isActive;
-    }
+contract Project is ProjectStorage {
 
-    struct Milestone {
-        string title;
-        string description;
-        uint percentage;
-        bool isComplete;
-    }
-
-    struct ContributionTier {
-        uint contributorLimit;
-        uint minContribution;
-        uint maxContribution;
-        string rewards;
-    }
-
-    struct TimelineProposal {
-        uint timestamp;
-        uint approvalCount;
-        uint disapprovalCount;
-        bool isActive;
-        bool hasFailed;
-        mapping(address => bool) voters;
-    }
-
-    struct MilestoneCompletionSubmission {
-        uint timestamp;
-        uint approvalCount;
-        uint disapprovalCount;
-        string report;
-        bool isActive;
-        bool hasFailed;
-        mapping(address => bool) voters;
-    }
-
+//    struct Timeline {
+//        Milestone[] milestones;
+//        bool isActive;
+//    }
+//
+//    struct Milestone {
+//        string title;
+//        string description;
+//        uint percentage;
+//        bool isComplete;
+//    }
+//
+//    struct ContributionTier {
+//        uint contributorLimit;
+//        uint minContribution;
+//        uint maxContribution;
+//        string rewards;
+//    }
+//
+//    struct TimelineProposal {
+//        uint timestamp;
+//        uint approvalCount;
+//        uint disapprovalCount;
+//        bool isActive;
+//        bool hasFailed;
+//        mapping(address => bool) voters;
+//    }
+//
+//    struct MilestoneCompletionSubmission {
+//        uint timestamp;
+//        uint approvalCount;
+//        uint disapprovalCount;
+//        string report;
+//        bool isActive;
+//        bool hasFailed;
+//        mapping(address => bool) voters;
+//    }
+//
     enum Status {Draft, Pending, Published, Removed, Rejected}
-
-    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
-
-    address public fundingService;
-    uint public id;
-    Status public status;
-    string public title;
-    string public description;
-    string public about;
-    address public developer;
-    uint public developerId;
-    uint public contributionGoal;
-    ContributionTier[] contributionTiers;
-    ContributionTier[] pendingContributionTiers;
-    bool public noRefunds;
-    bool public noTimeline;
-    Timeline timeline;
-    uint public activeMilestoneIndex;
-    Milestone[] completedMilestones;
-    Timeline[] timelineHistory;
-    Timeline pendingTimeline;
-    TimelineProposal timelineProposal;
-    MilestoneCompletionSubmission milestoneCompletionSubmission;
+//
+//    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
+//
+//    address public fundingService;
+//    uint public id;
+//    Status public status;
+//    string public title;
+//    string public description;
+//    string public about;
+//    address public developer;
+//    uint public developerId;
+//    uint public contributionGoal;
+//    ContributionTier[] contributionTiers;
+//    ContributionTier[] pendingContributionTiers;
+//    bool public noRefunds;
+//    bool public noTimeline;
+//    Timeline timeline;
+//    uint public activeMilestoneIndex;
+//    Milestone[] completedMilestones;
+//    Timeline[] timelineHistory;
+//    Timeline pendingTimeline;
+//    TimelineProposal timelineProposal;
+//    MilestoneCompletionSubmission milestoneCompletionSubmission;
 
     modifier devRestricted() {
         require(msg.sender == developer, "Caller is not the developer of this project.");
@@ -82,44 +83,96 @@ contract Project {
         _;
     }
 
-    constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
-        fundingService = _fundingService;
-        id = _id;
-        status = Status.Draft;
-        title = _title;
-        description = _description;
-        about = _about;
-        developer = _developer;
-        developerId = _developerId;
-        contributionGoal = _contributionGoal;
+//    constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
+//        fundingService = _fundingService;
+//        id = _id;
+//        status = Status.Draft;
+//        title = _title;
+//        description = _description;
+//        about = _about;
+//        developer = _developer;
+//        developerId = _developerId;
+//        contributionGoal = _contributionGoal;
+//    }
+
+    function createProject(
+        string _title,
+        string _description,
+        string _about,
+        uint _contributionGoal,
+        address _developer,
+        uint _developerId
+    )
+        public
+    {
+        // Get next ID from storage
+        uint id = getUint(keccak256("project.nextId"));
+        // Increment next ID
+        setUint(keccak256("project.nextId"), id + 1);
+
+        // Set project title
+        setString(keccak256(abi.encodePacked("project.title", id)), _title);
+
+        // Set project description
+        setString(keccak256(abi.encodePacked("project.description", id)), _description);
+
+        // Set project about
+        setString(keccak256(abi.encodePacked("project.about", id)), _about);
+
+        // Set project status
+        setUint(keccak256(abi.encodePacked("project.status", id)), Status.Draft);
+
+        // Set project contribution goal
+        setUint(keccak256(abi.encodePacked("project.contributionGoal", id)), _contributionGoal);
+
+        // Set project developer address
+        setAddress(keccak256(abi.encodePacked("project.developer"), id), _developer);
+
+        // Set project developer id
+        setUint(keccak256(abi.encodePacked("project.developerId"), id));
     }
 
-    function () public payable {
-        revert();
-    }
-
-    function addMilestone(string _milestoneTitle, string _milestoneDescription, uint _percentage, bool _isPending) public devRestricted {
+    function addMilestone(
+        uint _projectId,
+        string _milestoneTitle,
+        string _milestoneDescription,
+        uint _percentage,
+        bool _isPending
+    )
+        public
+        devRestricted
+    {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
-        require(!noTimeline, "Cannot add a milestone to a project with no timeline.");
-
-        Milestone memory newMilestone = Milestone({
-            title: _milestoneTitle,
-            description: _milestoneDescription,
-            percentage: _percentage,
-            isComplete: false
-            });
+        require(!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), "Cannot add a milestone to a project with no timeline.");
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!timelineProposal.isActive, "Pending milestones cannot be added while a timeline proposal vote is active.");
+            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), "Pending milestones cannot be added while a timeline proposal vote is active.");
             // There must be an active timeline already
-            require(timeline.isActive, "Pending milestones cannot be added when there is not a timeline currently active.");
+            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), "Pending milestones cannot be added when there is not a timeline currently active.");
 
-            pendingTimeline.milestones.push(newMilestone);
+            // Get next available milestone index
+            uint index = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
+
+            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", index, _projectId)), _milestoneTitle);
+            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", index, _projectId)), _milestoneDescription);
+            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", index, _projectId)), _percentage);
+            setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", index, _projectId)), false);
+
+            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)), index + 1);
         } else {
             // Timeline must not already be active
-            require(!timeline.isActive, "Milestone cannot be added to an active timeline.");
-            timeline.milestones.push(newMilestone);
+            require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), "Milestone cannot be added to an active timeline.");
+
+            // Get next available milestone index
+            uint index = getUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)));
+
+            setString(keccak256(abi.encodePacked("project.timeline.milestones.title", index, _projectId)), _milestoneTitle);
+            setString(keccak256(abi.encodePacked("project.timeline.milestones.description", index, _projectId)), _milestoneDescription);
+            setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", index, _projectId)), _percentage);
+            setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", index, _projectId)), false);
+
+            setUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)), index + 1);
         }
     }
 
