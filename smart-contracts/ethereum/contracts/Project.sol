@@ -258,8 +258,9 @@ contract Project is ProjectStorage {
         setUint(keccak256(abi.encodePacked("project.status", _projectId)), uint(Status.Pending));
     }
 
-    function getTimelineIsActive() public view returns (bool) {
-        return timeline.isActive;
+    function getTimelineIsActive(uint _projectId) public view returns (bool isActive) {
+        isActive = getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)));
+        return isActive;
     }
 
     function getPendingTimelineMilestoneLength() public view returns (uint) {
