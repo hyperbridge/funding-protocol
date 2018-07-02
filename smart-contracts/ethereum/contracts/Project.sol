@@ -176,20 +176,34 @@ contract Project is ProjectStorage {
         }
     }
 
-    function getMilestone(uint _index, bool _isPending) public view
-    returns (
-        string milestoneTitle,
-        string milestoneDescription,
-        uint milestonePercentage,
-        bool milestoneIsComplete
-    ) {
-        Milestone memory milestone;
+    function getMilestone(
+        uint _projectId,
+        uint _index,
+        bool _isPending
+    )
+        public
+        view
+        returns (
+            string milestoneTitle,
+            string milestoneDescription,
+            uint milestonePercentage,
+            bool milestoneIsComplete
+        )
+    {
         if (_isPending) {
-            milestone = pendingTimeline.milestones[_index];
+//            milestone = pendingTimeline.milestones[_index];
+            milestoneTitle = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
+            milestoneDescription = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
+            milestonePercentage = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
+            milestoneIsComplete = getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
         } else {
-            milestone = timeline.milestones[_index];
+//            milestone = timeline.milestones[_index];
+            milestoneTitle = getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
+            milestoneDescription = getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
+            milestonePercentage = getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
+            milestoneIsComplete = getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
         }
-        return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
+        return (milestoneTitle, milestoneDescription, milestonePercentage, milestoneIsComplete);
     }
 
     function editMilestone(
