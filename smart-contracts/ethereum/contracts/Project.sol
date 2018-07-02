@@ -191,13 +191,11 @@ contract Project is ProjectStorage {
         )
     {
         if (_isPending) {
-//            milestone = pendingTimeline.milestones[_index];
             milestoneTitle = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
             milestoneDescription = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
             milestonePercentage = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
             milestoneIsComplete = getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
         } else {
-//            milestone = timeline.milestones[_index];
             milestoneTitle = getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
             milestoneDescription = getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
             milestonePercentage = getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
@@ -228,7 +226,7 @@ contract Project is ProjectStorage {
             setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _milestonePercentage);
         } else {
             // Timeline must not already be active
-            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Pending milestones cannot be added when there is not a timeline currently active.");
+            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Milestones cannot be added when there is not a timeline currently active.");
 
             setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _milestoneTitle);
             setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _milestoneDescription);
@@ -238,25 +236,26 @@ contract Project is ProjectStorage {
 
     function clearPendingTimeline() public devRestricted {
         // There must not be an active timeline proposal
-        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
+        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "A timeline proposal vote is active.");
 
         delete(pendingTimeline);
         pendingTimeline.milestones = completedMilestones;
         pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex]);
     }
 
-    function initializeTimeline() public fundingServiceRestricted {
+    function initializeTimeline(uint _projectId) public fundingServiceRestricted {
         // Check that there isn't already an active timeline
-        require(!timeline.isActive, "Timeline has already been initialized.");
+        require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Timeline has already been initialized.");
 
         // Set timeline to active
-        timeline.isActive = true;
+        setBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), true);
 
         // Set first milestone as active
-        activeMilestoneIndex = 0;
+        setUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)), 0);
 
         // Change project status to "Pending"
         status = Status.Pending;
+        setUint(keccak256(abi.encodePacked("project.status", _projectId)), uint(Status.Pending));
     }
 
     function getTimelineIsActive() public view returns (bool) {
