@@ -143,13 +143,13 @@ contract Project is ProjectStorage {
         devRestricted
     {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
-        require(!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), "Cannot add a milestone to a project with no timeline.");
+        require(!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId))), "Cannot add a milestone to a project with no timeline.");
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), "Pending milestones cannot be added while a timeline proposal vote is active.");
+            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
             // There must be an active timeline already
-            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), "Pending milestones cannot be added when there is not a timeline currently active.");
+            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Pending milestones cannot be added when there is not a timeline currently active.");
 
             // Get next available milestone index
             uint index = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
@@ -162,7 +162,7 @@ contract Project is ProjectStorage {
             setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)), index + 1);
         } else {
             // Timeline must not already be active
-            require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), "Milestone cannot be added to an active timeline.");
+            require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Milestone cannot be added to an active timeline.");
 
             // Get next available milestone index
             uint index = getUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)));
@@ -238,7 +238,7 @@ contract Project is ProjectStorage {
 
     function clearPendingTimeline() public devRestricted {
         // There must not be an active timeline proposal
-        require(!timelineProposal.isActive, "Pending milestones cannot be edited while a timeline proposal vote is active.");
+        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
 
         delete(pendingTimeline);
         pendingTimeline.milestones = completedMilestones;
