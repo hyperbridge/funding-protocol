@@ -207,29 +207,33 @@ contract Project is ProjectStorage {
     }
 
     function editMilestone(
+        uint _projectId,
         uint _index,
         bool _isPending,
         string _milestoneTitle,
         string _milestoneDescription,
-        uint _milestonePercentage)
-    public devRestricted {
+        uint _milestonePercentage
+    )
+        public
+        devRestricted
+    {
         require(_milestonePercentage <= 100, "Milestone percentage cannot be greater than 100.");
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!timelineProposal.isActive, "Pending milestones cannot be edited while a timeline proposal vote is active.");
+            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
 
-            Milestone storage milestone = pendingTimeline.milestones[_index];
+            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _milestoneTitle);
+            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _milestoneDescription);
+            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _milestonePercentage);
         } else {
             // Timeline must not already be active
-            require(!timeline.isActive, "Milestone cannot be edited in an active timeline.");
+            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Pending milestones cannot be added when there is not a timeline currently active.");
 
-            milestone = timeline.milestones[_index];
+            setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _milestoneTitle);
+            setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _milestoneDescription);
+            setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _milestonePercentage);
         }
-
-        milestone.title = _milestoneTitle;
-        milestone.description = _milestoneDescription;
-        milestone.percentage = _milestonePercentage;
     }
 
     function clearPendingTimeline() public devRestricted {
