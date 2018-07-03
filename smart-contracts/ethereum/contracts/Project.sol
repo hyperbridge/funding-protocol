@@ -15,7 +15,6 @@ contract Project is ProjectStorage {
 //        uint percentage;
 //        bool isComplete;
 //    }
-//
 //    struct ContributionTier {
 //        uint contributorLimit;
 //        uint minContribution;
@@ -234,6 +233,7 @@ contract Project is ProjectStorage {
         }
     }
 
+    // TODO
     function clearPendingTimeline() public devRestricted {
         // There must not be an active timeline proposal
         require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "A timeline proposal vote is active.");
@@ -263,73 +263,78 @@ contract Project is ProjectStorage {
         return isActive;
     }
 
-    function getPendingTimelineMilestoneLength() public view returns (uint) {
-        return pendingTimeline.milestones.length;
+    function getPendingTimelineLength(uint _projectId) public view returns (uint pendingTimelineLength) {
+        pendingTimelineLength = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
+        return pendingTimelineLength;
     }
 
-    function getTimelineMilestoneLength() public view returns (uint) {
-        return timeline.milestones.length;
+    function getTimelineLength() public view returns (uint timelineLength) {
+        timelineLength = getUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)));
+        return timelineLength;
     }
 
-    function getTimelineHistoryLength() public view returns (uint) {
-        return timelineHistory.length;
+    function getTimelineHistoryLength() public view returns (uint timelineHistoryLength) {
+        timelineHistoryLength = getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)));
+        return timelineHistoryLength;
     }
 
-    function verifyPendingTimelinePercentages() private view {
+    function verifyPendingTimelinePercentages(uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!noTimeline) {
-            require(pendingTimeline.milestones.length > 0, "Pending timeline is empty.");
+        if (!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)))) {
+            uint pendingTimelineLength = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
+            require(pendingTimelineLength > 0, "Pending timeline is empty.");
 
             uint percentageAcc = 0;
-            for (uint i = 0; i < pendingTimeline.milestones.length; i++) {
-                percentageAcc += pendingTimeline.milestones[i].percentage;
+            for (uint i = 0; i < pendingTimelineLength; i++) {
+                percentageAcc += getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones", i, _projectId)));
             }
             require(percentageAcc == 100, "Milestone percentages must add to 100.");
         }
     }
 
-    function proposeNewTimeline() public devRestricted {
+    function proposeNewTimeline(uint _projectId) public devRestricted {
         // Can only suggest new timeline if one already exists
-        require(timeline.isActive, "New timeline cannot be proposed if there is no current active timeline.");
+        require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
-        require(!milestoneCompletionSubmission.isActive, "New timeline cannot be proposed if there is an active vote on milestone completion.");
+        require(getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId))), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
         verifyPendingTimelinePercentages();
 
-        TimelineProposal memory newProposal = TimelineProposal({
-            timestamp: now,
-            approvalCount: 0,
-            disapprovalCount: 0,
-            isActive: true,
-            hasFailed: false
-            });
-
-        timelineProposal = newProposal;
+        setUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)), now);
+        setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), true);
     }
 
-    function getTimelineProposal() public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
-        return (timelineProposal.timestamp, timelineProposal.approvalCount, timelineProposal.disapprovalCount, timelineProposal.isActive, timelineProposal.hasFailed);
+    function getTimelineProposal(uint _projectId) public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
+        timestamp = getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
+        approvalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
+        disapprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
+        isActive = getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)));
+        hasFailed = getBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)));
+        return (timestamp, approvalCount, disapprovalCount, isActive, hasFailed);
     }
 
-    function voteOnTimelineProposal(bool approved) public contributorRestricted {
+    function voteOnTimelineProposal(uint _projectId, bool approved) public contributorRestricted {
         // TimelineProposal must be active
-        require(timelineProposal.isActive == true, "No timeline proposal active.");
+        require(getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "No timeline proposal active.");
 
         // Contributor must not have already voted
-        require(!timelineProposal.voters[msg.sender], "This contributor address has already voted.");
+        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", msg.sender, _projectId))), "This contributor address has already voted.");
 
         if (approved) {
-            timelineProposal.approvalCount++;
+            currentApprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
+            setUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)), currentApprovalCount + 1);
         } else {
-            timelineProposal.disapprovalCount++;
+            currentDisapprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
+            setUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)), currentDisapprovalCount + 1);
         }
-        timelineProposal.voters[msg.sender] = true;
+        setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), true);
     }
 
-    function hasVotedOnTimelineProposal() public view returns (bool) {
-        return timelineProposal.voters[msg.sender];
+    function hasVotedOnTimelineProposal(uint _projectId) public view returns (bool hasVoted) {
+        hasVoted = getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", msg.sender, _projectId)));
+        return hasVoted;
     }
 
     function finalizeTimelineProposal() public devRestricted {
