@@ -42,6 +42,29 @@ contract ProjectStorageAccess {
         mapping(address => bool) voters;
     }
 
+    /*
+        Each project stores the following data and accesses it through the associated namespace:
+            uint id                                                         (project.id)
+            Status status                                                   (project.status)
+            string title                                                    (project.title)
+            string description                                              (project.description)
+            string about                                                    (project.about)
+            address developer                                               (project.developer)
+            uint developerId                                                (project.developerId)
+            uint contributionGoal                                           (project.contributionGoal)
+            ContributionTier[] contributionTiers                            (project.contributionTiers)
+            ContributionTier[] pendingContributionTiers                     (project.pendingContributionTiers)
+            bool noRefunds                                                  (project.noRefunds)
+            bool noTimeline                                                 (project.noTimeline)
+            Timeline timeline                                               (project.timeline)
+            uint activeMilestoneIndex                                       (project.activeMilestoneIndex)
+            Milestone[] completedMilestones                                 (project.completedMilestones)
+            Timeline[] timelineHistory                                      (project.timelineHistory)
+            Timeline pendingTimeline                                        (project.pendingTimeline)
+            TimelineProposal timelineProposal                               (project.timelineProposal)
+            MilestoneCompletionSubmission milestoneCompletionSubmission     (project.milestoneCompletionSubmission)
+    */
+
     ProjectStorage pStorage;
 
     // Getters
