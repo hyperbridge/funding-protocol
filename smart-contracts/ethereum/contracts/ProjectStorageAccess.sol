@@ -43,7 +43,7 @@ contract ProjectStorageAccess {
     }
 
     /*
-        Each project stores the following data and accesses it through the associated namespace:
+        Each project stores the following data in ProjectStorage and accesses it through the associated namespace:
             uint id                                                         (project.id)
             Status status                                                   (project.status)
             string title                                                    (project.title)
@@ -133,20 +133,100 @@ contract ProjectStorageAccess {
 
     // Milestone
 
-    function getMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
+    function getTimelineMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
         return pStorage.getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
     }
 
-    function getMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
+    function getTimelineMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
         return pStorage.getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
     }
 
-    function getMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
+    function getTimelineMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
         return pStorage.getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
     }
 
-    function getMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
+    function getTimelineMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
         return pStorage.getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
+    }
+
+    function getTimelineMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
+        string memory title = getTimelineMilestoneTitle(_projectId, _index);
+        string memory description = getTimelineMilestoneDescription(_projectId, _index);
+        uint percentage = getTimelineMilestonePercentage(_projectId, _index);
+        bool isComplete = getTimelineMilestoneIsComplete(_projectId, _index);
+
+        Milestone memory milestone = Milestone({
+            title: title,
+            description: description,
+            percentage: percentage,
+            isComplete: isComplete
+            });
+
+        return milestone;
+    }
+
+    function getPendingTimelineMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
+    }
+
+    function getPendingTimelineMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
+    }
+
+    function getPendingTimelineMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
+        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
+    }
+
+    function getPendingTimelineMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
+        return pStorage.getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
+    }
+
+    function getPendingTimelineMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
+        string memory title = getPendingTimelineMilestoneTitle(_projectId, _index);
+        string memory description = getPendingTimelineMilestoneDescription(_projectId, _index);
+        uint percentage = getPendingTimelineMilestonePercentage(_projectId, _index);
+        bool isComplete = getPendingTimelineMilestoneIsComplete(_projectId, _index);
+
+        Milestone memory milestone = Milestone({
+            title: title,
+            description: description,
+            percentage: percentage,
+            isComplete: isComplete
+            });
+
+        return milestone;
+    }
+
+    function getCompletedMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)));
+    }
+
+    function getCompletedMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)));
+    }
+
+    function getCompletedMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
+        return pStorage.getUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)));
+    }
+
+    function getCompletedMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
+        return pStorage.getBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)));
+    }
+
+    function getCompletedMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
+        string memory title = getCompletedMilestoneTitle(_projectId, _index);
+        string memory description = getCompletedMilestoneDescription(_projectId, _index);
+        uint percentage = getCompletedMilestonePercentage(_projectId, _index);
+        bool isComplete = getCompletedMilestoneIsComplete(_projectId, _index);
+
+        Milestone memory milestone = Milestone({
+            title: title,
+            description: description,
+            percentage: percentage,
+            isComplete: isComplete
+            });
+
+        return milestone;
     }
 
     // ContributionTier
@@ -386,20 +466,100 @@ contract ProjectStorageAccess {
 
     // Milestone
 
-    function setMilestoneTitle(uint _projectId, uint _index, string _title) internal {
+    function setTimelineMilestoneTitle(uint _projectId, uint _index, string _title) internal {
         return pStorage.setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _title);
     }
 
-    function setMilestoneDescription(uint _projectId, uint _index, string _description) internal {
+    function setTimelineMilestoneDescription(uint _projectId, uint _index, string _description) internal {
         return pStorage.setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _description);
     }
 
-    function setMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
+    function setTimelineMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
         return pStorage.setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _percentage);
     }
 
-    function setMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
+    function setTimelineMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
         return pStorage.setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)), _isComplete);
+    }
+
+    function setTimelineMilestone(
+        uint _projectId,
+        uint _index,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+    internal
+    {
+        setTimelineMilestoneTitle(_projectId, _index, _title);
+        setTimelineMilestoneDescription(_projectId, _index, _description);
+        setTimelineMilestonePercentage(_projectId, _index, _percentage);
+        setTimelineMilestoneIsComplete(_projectId, _index, _isComplete);
+    }
+
+    function setPendingTimelineMilestoneTitle(uint _projectId, uint _index, string _title) internal {
+        return pStorage.setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _title);
+    }
+
+    function setPendingTimelineMilestoneDescription(uint _projectId, uint _index, string _description) internal {
+        return pStorage.setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _description);
+    }
+
+    function setPendingTimelineMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
+        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _percentage);
+    }
+
+    function setPendingTimelineMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
+        return pStorage.setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)), _isComplete);
+    }
+
+    function setPendingTimelineMilestone(
+        uint _projectId,
+        uint _index,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+    internal
+    {
+        setPendingTimelineMilestoneTitle(_projectId, _index, _title);
+        setPendingTimelineMilestoneDescription(_projectId, _index, _description);
+        setPendingTimelineMilestonePercentage(_projectId, _index, _percentage);
+        setPendingTimelineMilestoneIsComplete(_projectId, _index, _isComplete);
+    }
+
+    function setCompletedMilestoneTitle(uint _projectId, uint _index, string _title) internal {
+        return pStorage.setString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)), _title);
+    }
+
+    function setCompletedMilestoneDescription(uint _projectId, uint _index, string _description) internal {
+        return pStorage.setString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)), _description);
+    }
+
+    function setCompletedMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
+        return pStorage.setUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)), _percentage);
+    }
+
+    function setCompletedMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
+        return pStorage.setBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)), _isComplete);
+    }
+
+    function setCompletedMilestone(
+        uint _projectId,
+        uint _index,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+    internal
+    {
+        setCompletedMilestoneTitle(_projectId, _index, _title);
+        setCompletedMilestoneDescription(_projectId, _index, _description);
+        setCompletedMilestonePercentage(_projectId, _index, _percentage);
+        setCompletedMilestoneIsComplete(_projectId, _index, _isComplete);
     }
 
     // ContributionTier
