@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./openzeppelin/Ownable.sol";
 
-contract ProjectStorage is Ownable {
+contract ProjectStorage {
 
     mapping(bytes32 => uint256)    private uIntStorage;
     mapping(bytes32 => string)     private stringStorage;
@@ -11,6 +11,7 @@ contract ProjectStorage is Ownable {
     mapping(bytes32 => bool)       private boolStorage;
     mapping(bytes32 => int256)     private intStorage;
 
+    // Getters
 
     function getAddress(bytes32 _key) external view returns (address) {
         return addressStorage[_key];
@@ -36,6 +37,7 @@ contract ProjectStorage is Ownable {
         return intStorage[_key];
     }
 
+    // Setters
 
     function setAddress(bytes32 _key, address _value) external {
         addressStorage[_key] = _value;
@@ -61,6 +63,7 @@ contract ProjectStorage is Ownable {
         intStorage[_key] = _value;
     }
 
+    // Delete
 
     function deleteAddress(bytes32 _key) external {
         delete addressStorage[_key];
