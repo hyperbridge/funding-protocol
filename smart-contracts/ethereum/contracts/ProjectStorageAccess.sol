@@ -52,17 +52,64 @@ contract ProjectStorageAccess {
             address developer                                               (project.developer)
             uint developerId                                                (project.developerId)
             uint contributionGoal                                           (project.contributionGoal)
-            ContributionTier[] contributionTiers                            (project.contributionTiers)
-            ContributionTier[] pendingContributionTiers                     (project.pendingContributionTiers)
+            ContributionTier[] contributionTiers
+                uint contributorLimit                                       (project.contributionTiers.contributorLimit)
+                uint minContribution                                        (project.contributionTiers.minContribution)
+                uint maxContribution                                        (project.contributionTiers.maxContribution)
+                uint rewards                                                (project.contributionTiers.rewards)
+            ContributionTier[] pendingContributionTiers
+                uint contributorLimit                                       (project.pendingContributionTiers.contributorLimit)
+                uint minContribution                                        (project.pendingContributionTiers.minContribution)
+                uint maxContribution                                        (project.pendingContributionTiers.maxContribution)
+                string rewards                                              (project.pendingContributionTiers.rewards)
             bool noRefunds                                                  (project.noRefunds)
             bool noTimeline                                                 (project.noTimeline)
-            Timeline timeline                                               (project.timeline)
+            Timeline timeline
+                bool isActive                                               (project.timeline.isActive)
+                Milestone[] milestones
+                    Milestone
+                        string title                                        (project.timeline.milestones.title)
+                        string description                                  (project.timeline.milestones.description)
+                        uint percentage                                     (project.timeline.milestones.percentage)
+                        bool isComplete                                     (project.timeline.milestones.isComplete)
             uint activeMilestoneIndex                                       (project.activeMilestoneIndex)
-            Milestone[] completedMilestones                                 (project.completedMilestones)
-            Timeline[] timelineHistory                                      (project.timelineHistory)
-            Timeline pendingTimeline                                        (project.pendingTimeline)
-            TimelineProposal timelineProposal                               (project.timelineProposal)
-            MilestoneCompletionSubmission milestoneCompletionSubmission     (project.milestoneCompletionSubmission)
+            Timeline pendingTimeline
+                bool isActive                                               (project.pendingTimeline.isActive)
+                Milestone[] milestones
+                    Milestone
+                        string title                                        (project.pendingTimeline.milestones.title)
+                        string description                                  (project.pendingTimeline.milestones.description)
+                        uint percentage                                     (project.pendingTimeline.milestones.percentage)
+                        bool isComplete                                     (project.pendingTimeline.milestones.isComplete)
+            Milestone[] completedMilestones
+                Milestone
+                    string title                                            (project.completedMilestones.title)
+                    string description                                      (project.completedMilestones.description)
+                    uint percentage                                         (project.completedMilestones.percentage)
+                    bool isComplete                                         (project.completedMilestones.isComplete)
+            Timeline[] timelineHistory
+                Timeline
+                    Milestone[]
+                        Milestone
+                            string title                                    (project.timelineHistory.milestones.title)
+                            string description                              (project.timelineHistory.milestones.description)
+                            uint percentage                                 (project.timelineHistory.milestones.percentage)
+                            bool isComplete                                 (project.timelineHistory.milestones.isComplete)
+            TimelineProposal timelineProposal
+                uint timestamp                                              (project.timelineProposal.timestamp)
+                uint approvalCount                                          (project.timelineProposal.approvalCount)
+                uint disapprovalCount                                       (project.timelineProposal.disapprovalCount)
+                bool isActive                                               (project.timelineProposal.isActive)
+                bool hasFailed                                              (project.timelineProposal.hasFailed)
+                mapping(address => bool) voters                             (project.timelineProposal.voters)
+            MilestoneCompletionSubmission milestoneCompletionSubmission
+                uint timestamp                                              (project.milestoneCompletionSubmission.timestamp)
+                uint approvalCount                                          (project.milestoneCompletionSubmission.approvalCount)
+                uint disapprovalCount                                       (project.milestoneCompletionSubmission.disapprovalCount)
+                string report                                               (project.milestoneCompletionSubmission.report)
+                bool isActive                                               (project.milestoneCompletionSubmission.isActive)
+                bool hasFailed                                              (project.milestoneCompletionSubmission.hasFailed)
+                mapping(address => bool) voters                             (project.milestoneCompletionSubmission.voters)
     */
 
     ProjectStorage pStorage;
@@ -160,7 +207,7 @@ contract ProjectStorageAccess {
             description: description,
             percentage: percentage,
             isComplete: isComplete
-            });
+        });
 
         return milestone;
     }
@@ -192,9 +239,13 @@ contract ProjectStorageAccess {
             description: description,
             percentage: percentage,
             isComplete: isComplete
-            });
+        });
 
         return milestone;
+    }
+
+    function getCompletedMilestonesLength(uint _projectId) internal view returns (uint) {
+        return pStorage.getUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)));
     }
 
     function getCompletedMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
@@ -224,7 +275,39 @@ contract ProjectStorageAccess {
             description: description,
             percentage: percentage,
             isComplete: isComplete
-            });
+        });
+
+        return milestone;
+    }
+
+    function getTimelineHistoryMilestoneTitle(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _timelineIndex, _milestoneIndex, _projectId)));
+    }
+
+    function getTimelineHistoryMilestoneDescription(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string) {
+        return pStorage.getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _timelineIndex, _milestoneIndex, _projectId)));
+    }
+
+    function getTimelineHistoryMilestonePercentage(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (uint) {
+        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _timelineIndex, _milestoneIndex, _projectId)));
+    }
+
+    function getTimelineHistoryMilestoneIsComplete(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (bool) {
+        return pStorage.getBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _timelineIndex, _milestoneIndex, _projectId)));
+    }
+
+    function getTimelineHistoryMilestone(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (Milestone) {
+        string memory title = getTimelineHistoryMilestoneTitle(_projectId, _timelineIndex, _milestoneIndex);
+        string memory description = getTimelineHistoryMilestoneDescription(_projectId, _timelineIndex, _milestoneIndex);
+        uint percentage = getTimelineHistoryMilestonePercentage(_projectId, _timelineIndex, _milestoneIndex);
+        bool isComplete = getTimelineHistoryMilestoneIsComplete(_projectId, _timelineIndex, _milestoneIndex);
+
+        Milestone memory milestone = Milestone({
+            title: title,
+            description: description,
+            percentage: percentage,
+            isComplete: isComplete
+        });
 
         return milestone;
     }
@@ -490,7 +573,7 @@ contract ProjectStorageAccess {
         uint _percentage,
         bool _isComplete
     )
-    internal
+        internal
     {
         setTimelineMilestoneTitle(_projectId, _index, _title);
         setTimelineMilestoneDescription(_projectId, _index, _description);
@@ -522,12 +605,16 @@ contract ProjectStorageAccess {
         uint _percentage,
         bool _isComplete
     )
-    internal
+        internal
     {
         setPendingTimelineMilestoneTitle(_projectId, _index, _title);
         setPendingTimelineMilestoneDescription(_projectId, _index, _description);
         setPendingTimelineMilestonePercentage(_projectId, _index, _percentage);
         setPendingTimelineMilestoneIsComplete(_projectId, _index, _isComplete);
+    }
+
+    function getCompletedMilestonesLength(uint _projectId, uint _length) internal {
+        return pStorage.setUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)), _length);
     }
 
     function setCompletedMilestoneTitle(uint _projectId, uint _index, string _title) internal {
@@ -554,7 +641,7 @@ contract ProjectStorageAccess {
         uint _percentage,
         bool _isComplete
     )
-    internal
+        internal
     {
         setCompletedMilestoneTitle(_projectId, _index, _title);
         setCompletedMilestoneDescription(_projectId, _index, _description);
@@ -592,7 +679,7 @@ contract ProjectStorageAccess {
         uint _maxContribution,
         string _rewards
     )
-    internal
+        internal
     {
         setContributionTierContributorLimit(_projectId, _index, _contributorLimit);
         setContributionTierMinContribution(_projectId, _index, _minContribution);
@@ -628,7 +715,7 @@ contract ProjectStorageAccess {
         uint _maxContribution,
         string _rewards
     )
-    internal
+        internal
     {
         setPendingContributionTierContributorLimit(_projectId, _index, _contributorLimit);
         setPendingContributionTierMinContribution(_projectId, _index, _minContribution);
@@ -670,7 +757,7 @@ contract ProjectStorageAccess {
         bool _isActive,
         bool _hasFailed
     )
-    internal
+        internal
     {
         setTimelineProposalTimestamp(_projectId, _timestamp);
         setTimelineProposalApprovalCount(_projectId, _approvalCount);
@@ -718,7 +805,7 @@ contract ProjectStorageAccess {
         bool _isActive,
         bool _hasFailed
     )
-    internal
+        internal
     {
         setMilestoneCompletionSubmissionTimestamp(_projectId, _timestamp);
         setMilestoneCompletionSubmissionApprovalCount(_projectId, _approvalCount);
@@ -740,7 +827,7 @@ contract ProjectStorageAccess {
         uint _developerId,
         uint _contributionGoal
     )
-    internal
+        internal
     {
         setStatus(_projectId, _status);
         setTitle(_projectId, _title);
@@ -749,5 +836,61 @@ contract ProjectStorageAccess {
         setDeveloper(_projectId, _developer);
         setDeveloperId(_projectId, _developerId);
         setContributionGoal(_projectId, _contributionGoal);
+    }
+
+
+
+    // Deletion
+
+    function deleteContributionTiers(uint _projectId) internal {
+        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
+
+        for (uint i = 0; i < length; i++) {
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.contributionTiers.rewards", i, _projectId)));
+        }
+
+        setContributionTiersLength(_projectId, 0);
+    }
+
+    function deletePendingContributionTiers(uint _projectId) internal {
+        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
+
+        for (uint i = 0; i < length; i++) {
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", i, _projectId)));
+        }
+
+        setPendingContributionTiersLength(_projectId, 0);
+    }
+
+    function deleteTimeline(uint _projectId) internal {
+        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
+
+        for (uint i = 0; i < length; i++) {
+            deleteString(keccak256(abi.encodePacked("project.timeline.milestones.title", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.timeline.milestones.description", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", i, _projectId)));
+            deleteBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", i, _projectId)));
+        }
+
+        setTimelineLength(_projectId, 0);
+    }
+
+    function deletePendingTimeline(uint _projectId) internal {
+        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
+
+        for (uint i = 0; i < length; i++) {
+            deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", i, _projectId)));
+            deleteBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", i, _projectId)));
+        }
+
+        setPendingTimelineLength(_projectId, 0);
     }
 }
