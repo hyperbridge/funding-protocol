@@ -1,98 +1,35 @@
-pragma solidity ^0.4.23 ;
+pragma solidity ^0.4.24;
 
-import "./ProjectStorage.sol";
+import "./ProjectStorageAccess.sol";
+import "./FundingService.sol";
 
-contract Project is ProjectStorage {
+contract Project is ProjectStorageAccess {
 
-//    struct Timeline {
-//        Milestone[] milestones;
-//        bool isActive;
-//    }
-//
-//    struct Milestone {
-//        string title;
-//        string description;
-//        uint percentage;
-//        bool isComplete;
-//    }
-//    struct ContributionTier {
-//        uint contributorLimit;
-//        uint minContribution;
-//        uint maxContribution;
-//        string rewards;
-//    }
-//
-//    struct TimelineProposal {
-//        uint timestamp;
-//        uint approvalCount;
-//        uint disapprovalCount;
-//        bool isActive;
-//        bool hasFailed;
-//        mapping(address => bool) voters;
-//    }
-//
-//    struct MilestoneCompletionSubmission {
-//        uint timestamp;
-//        uint approvalCount;
-//        uint disapprovalCount;
-//        string report;
-//        bool isActive;
-//        bool hasFailed;
-//        mapping(address => bool) voters;
-//    }
-//
     enum Status {Draft, Pending, Published, Removed, Rejected}
-//
-//    uint public constant MILESTONE_COMPLETION_REP_CHANGE = 5;
-//
-//    address public fundingService;
-//    uint public id;
-//    Status public status;
-//    string public title;
-//    string public description;
-//    string public about;
-//    address public developer;
-//    uint public developerId;
-//    uint public contributionGoal;
-//    ContributionTier[] contributionTiers;
-//    ContributionTier[] pendingContributionTiers;
-//    bool public noRefunds;
-//    bool public noTimeline;
-//    Timeline timeline;
-//    uint public activeMilestoneIndex;
-//    Milestone[] completedMilestones;
-//    Timeline[] timelineHistory;
-//    Timeline pendingTimeline;
-//    TimelineProposal timelineProposal;
-//    MilestoneCompletionSubmission milestoneCompletionSubmission;
 
-    modifier devRestricted() {
-        require(msg.sender == developer, "Caller is not the developer of this project.");
-        _;
+    // TODO - rethink modifiers
+    //    modifier devRestricted() {
+    //        require(msg.sender == developer, "Caller is not the developer of this project.");
+    //        _;
+    //    }
+    //
+    //    modifier contributorRestricted() {
+    //        FundingService fs = FundingService(fundingService);
+    //        require(fs.projectContributionAmount(this, msg.sender) != 0, "Caller is not a contributor to this project.");
+    //        _;
+    //    }
+    //
+    //    modifier fundingServiceRestricted() {
+    //        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
+    //        _;
+    //    }
+
+    address fundingService;
+
+    constructor(address _projectStorage, address _fundingService) public {
+        pStorage = ProjectStorage(_projectStorage);
+        fundingService = _fundingService;
     }
-
-    modifier contributorRestricted() {
-        FundingService fs = FundingService(fundingService);
-        require(fs.projectContributionAmount(this, msg.sender) != 0, "Caller is not a contributor to this project.");
-        _;
-    }
-
-    modifier fundingServiceRestricted() {
-        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
-        _;
-    }
-
-//    constructor(address _fundingService, uint _id, string _title, string _description, string _about, address _developer, uint _developerId, uint _contributionGoal) public {
-//        fundingService = _fundingService;
-//        id = _id;
-//        status = Status.Draft;
-//        title = _title;
-//        description = _description;
-//        about = _about;
-//        developer = _developer;
-//        developerId = _developerId;
-//        contributionGoal = _contributionGoal;
-//    }
 
     function createProject(
         string _title,
@@ -102,76 +39,52 @@ contract Project is ProjectStorage {
         address _developer,
         uint _developerId
     )
-        public
+    public
     {
         // Get next ID from storage
-        uint id = getUint(keccak256("project.nextId"));
+        uint id = _getNextId();
         // Increment next ID
-        setUint(keccak256("project.nextId"), id + 1);
+        incrementNextId();
 
-        // Set project title
-        setString(keccak256(abi.encodePacked("project.title", id)), _title);
-
-        // Set project description
-        setString(keccak256(abi.encodePacked("project.description", id)), _description);
-
-        // Set project about
-        setString(keccak256(abi.encodePacked("project.about", id)), _about);
-
-        // Set project status
-        setUint(keccak256(abi.encodePacked("project.status", id)), Status.Draft);
-
-        // Set project contribution goal
-        setUint(keccak256(abi.encodePacked("project.contributionGoal", id)), _contributionGoal);
-
-        // Set project developer address
-        setAddress(keccak256(abi.encodePacked("project.developer"), id), _developer);
-
-        // Set project developer id
-        setUint(keccak256(abi.encodePacked("project.developerId"), id));
+        _setProject(id, uint(Status.Draft), _title, _description, _about, _developer, _developerId, _contributionGoal);
     }
 
     function addMilestone(
         uint _projectId,
-        string _milestoneTitle,
-        string _milestoneDescription,
+        string _title,
+        string _description,
         uint _percentage,
         bool _isPending
     )
-        public
-        devRestricted
+    public
     {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
-        require(!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId))), "Cannot add a milestone to a project with no timeline.");
+        require(!_getNoTimeline(_projectId), "Cannot add a milestone to a project with no timeline.");
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
+            require(!_getTimelineProposalIsActive(_projectId), "Pending milestones cannot be added while a timeline proposal vote is active.");
             // There must be an active timeline already
-            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Pending milestones cannot be added when there is not a timeline currently active.");
+            require(_getTimelineIsActive(_projectId), "Pending milestones cannot be added when there is not a timeline currently active.");
 
             // Get next available milestone index
-            uint index = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
+            uint index = _getPendingTimelineLength(_projectId);
 
-            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", index, _projectId)), _milestoneTitle);
-            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", index, _projectId)), _milestoneDescription);
-            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", index, _projectId)), _percentage);
-            setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", index, _projectId)), false);
+            _setPendingTimelineMilestone(_projectId, index, _title, _description, _percentage, false);
 
-            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)), index + 1);
+            // Increment pending timeline length
+            _setPendingTimelineLength(_projectId, index + 1);
         } else {
             // Timeline must not already be active
-            require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Milestone cannot be added to an active timeline.");
+            require(!_getTimelineIsActive(_projectId), "Milestone cannot be added to an active timeline.");
 
-            // Get next available milestone index
-            uint index = getUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)));
+            // _get next available milestone index
+            index = _getTimelineLength(_projectId);
 
-            setString(keccak256(abi.encodePacked("project.timeline.milestones.title", index, _projectId)), _milestoneTitle);
-            setString(keccak256(abi.encodePacked("project.timeline.milestones.description", index, _projectId)), _milestoneDescription);
-            setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", index, _projectId)), _percentage);
-            setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", index, _projectId)), false);
+            _setTimelineMilestone(_projectId, index, _title, _description, _percentage, false);
 
-            setUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)), index + 1);
+            // Increment timeline length
+            _setTimelineLength(_projectId, index + 1);
         }
     }
 
@@ -180,354 +93,449 @@ contract Project is ProjectStorage {
         uint _index,
         bool _isPending
     )
-        public
-        view
-        returns (
-            string milestoneTitle,
-            string milestoneDescription,
-            uint milestonePercentage,
-            bool milestoneIsComplete
-        )
+    public
+    view
+    returns (
+        string milestoneTitle,
+        string milestoneDescription,
+        uint milestonePercentage,
+        bool milestoneIsComplete
+    )
     {
+        Milestone memory milestone;
         if (_isPending) {
-            milestoneTitle = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
-            milestoneDescription = getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
-            milestonePercentage = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
-            milestoneIsComplete = getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
+            milestone = _getPendingTimelineMilestone(_projectId, _index);
         } else {
-            milestoneTitle = getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
-            milestoneDescription = getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
-            milestonePercentage = getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
-            milestoneIsComplete = getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
+            milestone = _getTimelineMilestone(_projectId, _index);
         }
-        return (milestoneTitle, milestoneDescription, milestonePercentage, milestoneIsComplete);
+        return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
     function editMilestone(
         uint _projectId,
         uint _index,
         bool _isPending,
-        string _milestoneTitle,
-        string _milestoneDescription,
-        uint _milestonePercentage
+        string _title,
+        string _description,
+        uint _percentage
     )
-        public
-        devRestricted
+    public
     {
-        require(_milestonePercentage <= 100, "Milestone percentage cannot be greater than 100.");
+        require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
 
         if (_isPending) {
             // There must not be an active timeline proposal
-            require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "Pending milestones cannot be added while a timeline proposal vote is active.");
+            require(!_getTimelineProposalIsActive(_projectId), "Pending milestones cannot be edited while a timeline proposal vote is active.");
+            // This milestone must not be completed
+            require(!_getPendingTimelineMilestoneIsComplete(_projectId, _index), "Cannot edit a completed milestone.");
 
-            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _milestoneTitle);
-            setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _milestoneDescription);
-            setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _milestonePercentage);
+            _setPendingTimelineMilestone(_projectId, _index, _title, _description, _percentage, false);
         } else {
-            // Timeline must not already be active
-            require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Milestones cannot be added when there is not a timeline currently active.");
+            // Timeline must not be active
+            require(!_getTimelineIsActive(_projectId), "Milestones in an active timeline cannot be edited.");
+            // This milestone must not be completed
+            require(!_getTimelineMilestoneIsComplete(_projectId, _index), "Cannot edit a completed milestone.");
 
-            setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _milestoneTitle);
-            setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _milestoneDescription);
-            setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _milestonePercentage);
+            _setTimelineMilestone(_projectId, _index, _title, _description, _percentage, false);
         }
     }
 
-    // TODO
-    function clearPendingTimeline() public devRestricted {
+    function clearPendingTimeline(uint _projectId) public {
         // There must not be an active timeline proposal
-        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "A timeline proposal vote is active.");
+        require(!_getTimelineProposalIsActive(_projectId), "A timeline proposal vote is active.");
 
-        delete(pendingTimeline);
-        pendingTimeline.milestones = completedMilestones;
-        pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex]);
+        _deletePendingTimeline(_projectId);
+
+        uint completedMilestonesLength = _getCompletedMilestonesLength(_projectId);
+
+        for (uint i = 0; i < completedMilestonesLength; i++) {
+            Milestone memory completedMilestone = _getCompletedMilestone(_projectId, i);
+            _setPendingTimelineMilestone(
+                _projectId,
+                i,
+                completedMilestone.title,
+                completedMilestone.description,
+                completedMilestone.percentage,
+                completedMilestone.isComplete
+            );
+        }
+
+        uint activeMilestoneIndex = _getActiveMilestoneIndex(_projectId);
+
+        Milestone memory activeMilestone = _getTimelineMilestone(_projectId, activeMilestoneIndex);
+        _setPendingTimelineMilestone(
+            _projectId,
+            completedMilestonesLength,
+            activeMilestone.title,
+            activeMilestone.description,
+            activeMilestone.percentage,
+            activeMilestone.isComplete
+        );
+
+        _setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
     }
 
-    function initializeTimeline(uint _projectId) public fundingServiceRestricted {
+    function initializeTimeline(uint _projectId) public {
         // Check that there isn't already an active timeline
-        require(!getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "Timeline has already been initialized.");
+        require(!_getTimelineIsActive(_projectId), "Timeline has already been initialized.");
 
         // Set timeline to active
-        setBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), true);
+        _setTimelineIsActive(_projectId, true);
 
         // Set first milestone as active
-        setUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)), 0);
+        _setActiveMilestoneIndex(_projectId, 0);
 
         // Change project status to "Pending"
-        status = Status.Pending;
-        setUint(keccak256(abi.encodePacked("project.status", _projectId)), uint(Status.Pending));
+        _setStatus(_projectId, uint(Status.Pending));
     }
 
-    function getTimelineIsActive(uint _projectId) public view returns (bool isActive) {
-        isActive = getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)));
-        return isActive;
+    function getTimelineIsActive(uint _projectId) public view returns (bool) {
+        return _getTimelineIsActive(_projectId);
     }
 
-    function getPendingTimelineLength(uint _projectId) public view returns (uint pendingTimelineLength) {
-        pendingTimelineLength = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
-        return pendingTimelineLength;
+    function getPendingTimelineLength(uint _projectId) public view returns (uint) {
+        return _getPendingTimelineLength(_projectId);
     }
 
-    function getTimelineLength() public view returns (uint timelineLength) {
-        timelineLength = getUint(keccak256(abi.encodePacked("project.timeline.milestones.length", _projectId)));
-        return timelineLength;
+    function getTimelineLength(uint _projectId) public view returns (uint) {
+        return _getTimelineLength(_projectId);
     }
 
-    function getTimelineHistoryLength() public view returns (uint timelineHistoryLength) {
-        timelineHistoryLength = getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)));
-        return timelineHistoryLength;
+    function getTimelineHistoryLength(uint _projectId) public view returns (uint) {
+        return _getTimelineHistoryLength(_projectId);
     }
 
     function verifyPendingTimelinePercentages(uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)))) {
-            uint pendingTimelineLength = getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.length", _projectId)));
+        if (!_getNoTimeline(_projectId)) {
+            uint pendingTimelineLength = _getPendingTimelineLength(_projectId);
             require(pendingTimelineLength > 0, "Pending timeline is empty.");
 
             uint percentageAcc = 0;
             for (uint i = 0; i < pendingTimelineLength; i++) {
-                percentageAcc += getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones", i, _projectId)));
+                percentageAcc += _getPendingTimelineMilestonePercentage(_projectId, i);
             }
             require(percentageAcc == 100, "Milestone percentages must add to 100.");
         }
     }
 
-    function proposeNewTimeline(uint _projectId) public devRestricted {
+    function proposeNewTimeline(uint _projectId) public {
         // Can only suggest new timeline if one already exists
-        require(getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId))), "New timeline cannot be proposed if there is no current active timeline.");
+        require(_getTimelineIsActive(_projectId), "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
-        require(getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId))), "New timeline cannot be proposed if there is an active vote on milestone completion.");
+        require(!_getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
-        verifyPendingTimelinePercentages();
+        verifyPendingTimelinePercentages(_projectId);
 
-        setUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)), now);
-        setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), true);
+        _setTimelineProposalTimestamp(_projectId, now);
+        _setTimelineProposalIsActive(_projectId, true);
     }
 
-    function getTimelineProposal(uint _projectId) public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
-        timestamp = getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
-        approvalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
-        disapprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
-        isActive = getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)));
-        hasFailed = getBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)));
-        return (timestamp, approvalCount, disapprovalCount, isActive, hasFailed);
+    function getTimelineProposal(uint _projectId) public view
+    returns (
+        uint timestamp,
+        uint approvalCount,
+        uint disapprovalCount,
+        bool isActive,
+        bool hasFailed
+    ) {
+        TimelineProposal memory proposal = _getTimelineProposal(_projectId);
+        return (proposal.timestamp, proposal.approvalCount, proposal.disapprovalCount, proposal.isActive, proposal.hasFailed);
     }
 
-    function voteOnTimelineProposal(uint _projectId, bool approved) public contributorRestricted {
+    function voteOnTimelineProposal(uint _projectId, bool _approved) public {
         // TimelineProposal must be active
-        require(getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId))), "No timeline proposal active.");
+        require(_getTimelineProposalIsActive(_projectId), "No timeline proposal active.");
 
         // Contributor must not have already voted
-        require(!getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", msg.sender, _projectId))), "This contributor address has already voted.");
+        require(!_getTimelineProposalHasVoted(_projectId, msg.sender), "This contributor address has already voted.");
 
-        if (approved) {
-            currentApprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
-            setUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)), currentApprovalCount + 1);
+        if (_approved) {
+            uint currentApprovalCount = _getTimelineProposalApprovalCount(_projectId);
+            _setTimelineProposalApprovalCount(_projectId, currentApprovalCount + 1);
         } else {
-            currentDisapprovalCount = getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
-            setUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)), currentDisapprovalCount + 1);
+            uint currentDisapprovalCount = _getTimelineProposalDisapprovalCount(_projectId);
+            _setTimelineProposalDisapprovalCount(_projectId, currentDisapprovalCount + 1);
         }
-        setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), true);
+
+        _setTimelineProposalIsActive(_projectId, true);
     }
 
-    function hasVotedOnTimelineProposal(uint _projectId) public view returns (bool hasVoted) {
-        hasVoted = getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", msg.sender, _projectId)));
-        return hasVoted;
+    function hasVotedOnTimelineProposal(uint _projectId) public view returns (bool) {
+        return _getTimelineProposalHasVoted(_projectId, msg.sender);
     }
 
-    function finalizeTimelineProposal() public devRestricted {
+    function finalizeTimelineProposal(uint _projectId) public {
         // TimelineProposal must be active
-        require(timelineProposal.isActive == true, "There is no timeline proposal active.");
+        require(_getTimelineProposalIsActive(_projectId), "There is no timeline proposal active.");
 
         FundingService fs = FundingService(fundingService);
-        uint numContributors = fs.getProjectContributorList(this).length;
-        uint numVoters = timelineProposal.approvalCount + timelineProposal.disapprovalCount;
-        bool isTwoWeeksLater = now >= timelineProposal.timestamp + 2 weeks;
+        uint numContributors = fs.getProjectContributorList(_projectId).length;
+        uint approvalCount = _getTimelineProposalApprovalCount(_projectId);
+        uint disapprovalCount = _getTimelineProposalDisapprovalCount(_projectId);
+        uint numVoters = approvalCount + disapprovalCount;
+        bool isTwoWeeksLater = now >= _getTimelineProposalTimestamp(_projectId) + 2 weeks;
         uint votingThreshold = numVoters * 75 / 100;
 
         // Proposal needs >75% total approval, or for 2 weeks to have passed and >75% approval among voters
-        require((timelineProposal.approvalCount > numContributors * 75 / 100) ||
-            (isTwoWeeksLater && timelineProposal.approvalCount > votingThreshold),
+        require((approvalCount > numContributors * 75 / 100) ||
+            (isTwoWeeksLater && approvalCount > votingThreshold),
             "Conditions for finalizing timeline proposal have not yet been achieved.");
 
-        if (timelineProposal.approvalCount > votingThreshold) {
-            timeline.isActive = false;
-            timelineHistory.push(timeline);
-            timeline = pendingTimeline;
-            timeline.isActive = true;
-            delete(timelineProposal);
-            delete(pendingTimeline);
+        if (approvalCount > votingThreshold) {
+            // Set current timeline to inactive
+            _setTimelineIsActive(_projectId, false);
+
+            // Push old timeline into timeline history
+            uint historyLength = _getTimelineHistoryLength(_projectId);
+            uint timelineLength = _getTimelineLength(_projectId);
+
+            for (uint i = 0; i < timelineLength; i++) {
+                Milestone memory milestone = _getTimelineMilestone(_projectId, i);
+                _setTimelineHistoryMilestone(_projectId, historyLength, i, milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
+            }
+
+            _setTimelineHistoryLength(_projectId, historyLength + 1);
+            _setTimelineHistoryMilestonesLength(_projectId, historyLength, timelineLength);
+
+            // Move pending timeline into timeline
+            uint pendingTimelineLength = _getPendingTimelineLength(_projectId);
+
+            for (uint j = 0; j < pendingTimelineLength; j++) {
+                Milestone memory pendingMilestone = _getPendingTimelineMilestone(_projectId, j);
+                _setTimelineMilestone(_projectId, j, pendingMilestone.title, pendingMilestone.description, pendingMilestone.percentage, pendingMilestone.isComplete);
+            }
+
+            _setTimelineLength(_projectId, pendingTimelineLength);
+
+            // Set timeline to be active
+            _setTimelineIsActive(_projectId, true);
+
+            // Delete pending timeline
+            _deletePendingTimeline(_projectId);
+
+            // Set timeline proposal to inactive
+            _setTimelineProposalIsActive(_projectId, false);
         } else {
-            // TimelineProposal has failed
-            timelineProposal.hasFailed = true;
+            // Timeline proposal has failed
+            _setTimelineProposalHasFailed(_projectId, true);
         }
     }
 
-    function submitMilestoneCompletion(string _report) public devRestricted {
+    function submitMilestoneCompletion(uint _projectId, string _report) public {
         // Can only submit for milestone completion if timeline is active
-        require(timeline.isActive, "There is no active timeline.");
+        require(_getTimelineIsActive(_projectId), "There is no active timeline.");
         // Can only submit for milestone completion if there is not already a vote on milestone completion
-        require(!milestoneCompletionSubmission.isActive, "There is already a vote on milestone completion active.");
+        require(!_getMilestoneCompletionSubmissionIsActive(_projectId), "There is already a vote on milestone completion active.");
         // Can only submit for milestone completion if there is not already a vote on a timeline proposal
-        require(!timelineProposal.isActive, "Cannot submit milestone completion if there is an active vote to change the timeline.");
+        require(!_getTimelineProposalIsActive(_projectId), "Cannot submit milestone completion if there is an active vote to change the timeline.");
 
-        MilestoneCompletionSubmission memory newSubmission = MilestoneCompletionSubmission({
-            timestamp: now,
-            approvalCount: 0,
-            disapprovalCount: 0,
-            report: _report,
-            isActive: true,
-            hasFailed: false
-            });
-
-        milestoneCompletionSubmission = newSubmission;
+        _setMilestoneCompletionSubmission(_projectId, now, 0, 0, _report, true, false);
     }
 
-    function getMilestoneCompletionSubmission() public view returns (uint timestamp, uint approvalCount, uint disapprovalCount, string report, bool isActive, bool hasFailed) {
-        return (milestoneCompletionSubmission.timestamp, milestoneCompletionSubmission.approvalCount, milestoneCompletionSubmission.disapprovalCount, milestoneCompletionSubmission.report, milestoneCompletionSubmission.isActive, milestoneCompletionSubmission.hasFailed);
+    function getMilestoneCompletionSubmission(uint _projectId) public view
+    returns (
+        uint timestamp,
+        uint approvalCount,
+        uint disapprovalCount,
+        string report,
+        bool isActive,
+        bool hasFailed
+    ) {
+        MilestoneCompletionSubmission memory submission = _getMilestoneCompletionSubmission(_projectId);
+        return (
+        submission.timestamp,
+        submission.approvalCount,
+        submission.disapprovalCount,
+        submission.report,
+        submission.isActive,
+        submission.hasFailed
+        );
     }
 
-    function voteOnMilestoneCompletion(bool approved) public contributorRestricted {
+    function voteOnMilestoneCompletion(uint _projectId, bool _approved) public {
         // MilestoneCompletionSubmission must be active
-        require(milestoneCompletionSubmission.isActive == true, "No vote on milestone completion active.");
+        require(_getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
 
         // Contributor must not have already voted
-        require(!milestoneCompletionSubmission.voters[msg.sender], "This contributor address has already voted.");
+        require(!_getMilestoneCompletionSubmissionHasVoted(_projectId, msg.sender), "This contributor address has already voted.");
 
-        if (approved) {
-            milestoneCompletionSubmission.approvalCount++;
+        if (_approved) {
+            uint currentApprovalCount = _getMilestoneCompletionSubmissionApprovalCount(_projectId);
+            _setMilestoneCompletionSubmissionApprovalCount(_projectId, currentApprovalCount + 1);
         } else {
-            milestoneCompletionSubmission.disapprovalCount++;
+            uint currentDisapprovalCount = _getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
+            _setMilestoneCompletionSubmissionDisapprovalCount(_projectId, currentDisapprovalCount + 1);
         }
-        milestoneCompletionSubmission.voters[msg.sender] = true;
+
+        _setMilestoneCompletionSubmissionIsActive(_projectId, true);
     }
 
-    function hasVotedOnMilestoneCompletion() public view returns (bool) {
-        return milestoneCompletionSubmission.voters[msg.sender];
+    function hasVotedOnMilestoneCompletion(uint _projectId) public view returns (bool) {
+        return _getMilestoneCompletionSubmissionHasVoted(_projectId, msg.sender);
     }
 
-    function finalizeMilestoneCompletion() public devRestricted {
+    function finalizeMilestoneCompletion(uint _projectId) public {
         // MilestoneCompletionSubmission must be active
-        require(milestoneCompletionSubmission.isActive == true, "No vote on milestone completion active.");
+        require(_getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
 
         FundingService fs = FundingService(fundingService);
-        uint numContributors = fs.getProjectContributorList(this).length;
-        uint numVoters = milestoneCompletionSubmission.approvalCount + milestoneCompletionSubmission.disapprovalCount;
-        bool isTwoWeeksLater = now >= milestoneCompletionSubmission.timestamp + 2 weeks;
+        uint numContributors = fs.getProjectContributorList(_projectId).length;
+        uint approvalCount = _getMilestoneCompletionSubmissionApprovalCount(_projectId);
+        uint disapprovalCount = _getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
+        uint numVoters = approvalCount + disapprovalCount;
+        bool isTwoWeeksLater = now >= _getMilestoneCompletionSubmissionTimestamp(_projectId) + 2 weeks;
         uint votingThreshold = numVoters * 75 / 100;
 
         // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
-        require((milestoneCompletionSubmission.approvalCount > numContributors * 75 / 100) ||
-            (isTwoWeeksLater && milestoneCompletionSubmission.approvalCount > votingThreshold),
+        require((approvalCount > numContributors * 75 / 100) ||
+            (isTwoWeeksLater && approvalCount > votingThreshold),
             "Conditions for finalizing milestone completion have not yet been achieved.");
 
-        timeline.milestones[activeMilestoneIndex].isComplete = true;
+        uint activeIndex = _getActiveMilestoneIndex(_projectId);
+        _setTimelineMilestoneIsComplete(_projectId, activeIndex, true);
 
         // Update completedMilestones, remove any pending milestones, and add the completed milestones + current active
         // milestone to the start of the pending timeline. This is to ensure that any future timeline proposals take
         // into account the milestones that have already released their funds.
-        completedMilestones.push(timeline.milestones[activeMilestoneIndex]);
 
-        delete(pendingTimeline);
-        pendingTimeline.milestones = completedMilestones;
+        // Update completed milestones
+        uint completedMilestonesLength = _getCompletedMilestonesLength(_projectId);
 
-        delete(milestoneCompletionSubmission);
+        Milestone memory activeMilestone = _getTimelineMilestone(_projectId, activeIndex);
+
+        _setCompletedMilestone(_projectId, completedMilestonesLength, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
+
+        _setCompletedMilestonesLength(_projectId, completedMilestonesLength + 1);
+        completedMilestonesLength++;
+
+        // Remove pending timeline
+        _deletePendingTimeline(_projectId);
 
         // Increase developer reputation
-        fs.updateDeveloperReputation(developerId, MILESTONE_COMPLETION_REP_CHANGE);
+        fs.updateDeveloperReputation(_getDeveloperId(_projectId), fs.MILESTONE_COMPLETION_REP_CHANGE());
+
+        // Set milestone completion submission to inactive
+        _setMilestoneCompletionSubmissionIsActive(_projectId, false);
+
+        /* Add the completed milestones + current active milestone to the start of the pending timeline. This is to
+           ensure that any future timeline proposals take into account the milestones that have already released their
+           funds.
+        */
+        for (uint i = 0; i < completedMilestonesLength; i++) {
+            Milestone memory completedMilestone = _getCompletedMilestone(_projectId, i);
+            _setPendingTimelineMilestone(_projectId, i, completedMilestone.title, completedMilestone.description, completedMilestone.percentage, completedMilestone.isComplete);
+        }
+
+        _setPendingTimelineLength(_projectId, completedMilestonesLength);
 
         // Increment active milestone and release funds if this was not the last milestone
-        if (activeMilestoneIndex < timeline.milestones.length - 1) {
+        if (activeIndex < _getTimelineLength(_projectId) - 1) {
             // Increment the active milestone
-            activeMilestoneIndex++;
+            _setActiveMilestoneIndex(_projectId, activeIndex + 1);
+            activeIndex++;
 
             // Add currently active milestone to pendingTimeline
-            pendingTimeline.milestones.push(timeline.milestones[activeMilestoneIndex]);
+            Milestone memory currentMilestone = _getTimelineMilestone(_projectId, activeIndex);
+
+            uint pendingTimelineLength = _getPendingTimelineLength(_projectId);
+
+            _setPendingTimelineMilestone(_projectId, pendingTimelineLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
+            _setPendingTimelineLength(_projectId, pendingTimelineLength + 1);
 
             // todo - transfer funds from vault (through funding service) to developer
         }
     }
 
-    function setStatus(Status _status) public fundingServiceRestricted {
-        status = _status;
+    function setStatus(uint _projectId, Status _status) public {
+        _setStatus(_projectId, uint(_status));
     }
 
-    function setNoRefunds(bool val) public devRestricted {
-        require(status == Status.Draft, "This action can only be performed on a draft project.");
-        noRefunds = val;
+    function setNoRefunds(uint _projectId, bool _noRefunds) public {
+        require(Status(_getStatus(_projectId)) == Status.Draft, "This action can only be performed on a draft project.");
+
+        _setNoRefunds(_projectId, _noRefunds);
     }
 
-    function setNoTimeline(bool val) public devRestricted {
-        require(status == Status.Draft, "This action can only be performed on a draft project.");
-        if (val) {
-            delete(timeline);
+    function setNoTimeline(uint _projectId, bool _noTimeline) public {
+        require(Status(_getStatus(_projectId)) == Status.Draft, "This action can only be performed on a draft project.");
+
+        if (_noTimeline) {
+            _deleteTimeline(_projectId);
         }
-        noTimeline = val;
+
+        _setNoTimeline(_projectId, _noTimeline);
     }
 
-    function addTier(uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) public devRestricted {
-        ContributionTier memory newTier = ContributionTier({
-            contributorLimit: _contributorLimit,
-            maxContribution: _maxContribution,
-            minContribution: _minContribution,
-            rewards: _rewards
-            });
+    function addTier(uint _projectId, uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) public {
+        uint currentLength = _getPendingContributionTiersLength(_projectId);
 
-        pendingContributionTiers.push(newTier);
+        _setPendingContributionTier(_projectId, currentLength, _contributorLimit, _maxContribution, _minContribution, _rewards);
+
+        _setPendingContributionTiersLength(_projectId, currentLength + 1);
     }
 
     function editTier(
+        uint _projectId,
         uint _index,
         uint _contributorLimit,
         uint _maxContribution,
         uint _minContribution,
-        string _rewards)
-    public devRestricted {
-        ContributionTier storage tier = pendingContributionTiers[_index];
-
-        tier.contributorLimit = _contributorLimit;
-        tier.maxContribution = _maxContribution;
-        tier.minContribution = _minContribution;
-        tier.rewards = _rewards;
+        string _rewards
+    )
+    public
+    {
+        _setPendingContributionTier(_projectId, _index, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
-    function getContributionTier(uint _index) public view
+    function getContributionTier(uint _projectId, uint _index) public view
     returns (
         uint tierContributorLimit,
         uint tierMaxContribution,
         uint tierMinContribution,
         string tierRewards
     ) {
-        ContributionTier memory tier = contributionTiers[_index];
+        ContributionTier memory tier = _getContributionTier(_projectId, _index);
 
         return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
-    function getPendingTiersLength() public view returns (uint) {
-        return pendingContributionTiers.length;
+    function getPendingTiersLength(uint _projectId) public view returns (uint) {
+        return _getPendingContributionTiersLength(_projectId);
     }
 
-    function getTiersLength() public view returns (uint) {
-        return contributionTiers.length;
+    function getTiersLength(uint _projectId) public view returns (uint) {
+        return _getContributionTiersLength(_projectId);
     }
 
-    function getPendingContributionTier(uint _index) public view
+    function getPendingContributionTier(uint _projectId, uint _index) public view
     returns (
         uint tierContributorLimit,
         uint tierMaxContribution,
         uint tierMinContribution,
         string tierRewards
     ) {
-        ContributionTier memory tier = pendingContributionTiers[_index];
+        ContributionTier memory tier = _getPendingContributionTier(_projectId, _index);
 
         return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
-    function finalizeTiers() public devRestricted {
-        contributionTiers = pendingContributionTiers;
+    function finalizeTiers(uint _projectId) public {
 
-        delete(pendingContributionTiers);
+        _deleteContributionTiers(_projectId);
+
+        uint length = _getPendingContributionTiersLength(_projectId);
+
+        for (uint i = 0; i < length; i++) {
+            ContributionTier memory tier = _getPendingContributionTier(_projectId, i);
+
+            _setContributionTier(_projectId, i, tier.contributorLimit, tier.minContribution, tier.maxContribution, tier.rewards);
+        }
+
+        _setContributionTiersLength(_projectId, length);
+
+        _deletePendingContributionTiers(_projectId);
     }
 }
