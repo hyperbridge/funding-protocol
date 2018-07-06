@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./ProjectStorage.sol";
 
-contract ProjectStorageAccess {
+contract ProjectStorageAccess is ProjectStorage {
 
     struct Timeline {
         Milestone[] milestones;
@@ -112,70 +112,68 @@ contract ProjectStorageAccess {
                 mapping(address => bool) voters                             (project.milestoneCompletionSubmission.voters)
     */
 
-    ProjectStorage pStorage;
-
-    // Getters
+    // _getters
 
     function _getNextId() internal view returns (uint) {
-        return pStorage.getUint(keccak256("project.nextId"));
+        return _getUint(keccak256("project.nextId"));
     }
 
     function _getStatus(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.status", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.status", _projectId)));
     }
 
     function _getTitle(uint _projectId) internal view returns (string) {
-        return pStorage.getString(keccak256(abi.encodePacked("project.title", _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.title", _projectId)));
     }
 
     function _getDescription(uint _projectId) internal view returns (string) {
-        return pStorage.getString(keccak256(abi.encodePacked("project.description", _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.description", _projectId)));
     }
 
     function _getAbout(uint _projectId) internal view returns (string) {
-        return pStorage.getString(keccak256(abi.encodePacked("project.title", _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.title", _projectId)));
     }
 
     function _getDeveloper(uint _projectId) internal view returns (address) {
-        return pStorage.getAddress(keccak256(abi.encodePacked("project.developer", _projectId)));
+        return _getAddress(keccak256(abi.encodePacked("project.developer", _projectId)));
     }
 
     function _getDeveloperId(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
     }
 
     function _getContributionGoal(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)));
     }
 
     function _getNoRefunds(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)));
     }
 
     function _getNoTimeline(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)));
     }
 
     function _getActiveMilestoneIndex(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)));
     }
 
     // Timeline
 
     function _getTimelineIsActive(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)));
     }
 
     function _getTimelineLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
     }
 
     function _getPendingTimelineLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
     }
 
     function _getTimelineHistoryLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)));
     }
 
     // Milestone
@@ -183,25 +181,36 @@ contract ProjectStorageAccess {
     function _getTimelineMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
     }
 
     function _getTimelineMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
     }
 
     function _getTimelineMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
     }
 
     function _getTimelineMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
         require(_index < _getTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
+    }
+
+    function _getTimelineMilestone(uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
+        require(_index < _getTimelineLength(_projectId), "Index is outside of accessible range.");
+
+        title = _getTimelineMilestoneTitle(_projectId, _index);
+        description = _getTimelineMilestoneDescription(_projectId, _index);
+        percentage = _getTimelineMilestonePercentage(_projectId, _index);
+        isComplete = _getTimelineMilestoneIsComplete(_projectId, _index);
+
+        return (title, description, percentage, isComplete);
     }
 
     function _getTimelineMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
@@ -225,25 +234,36 @@ contract ProjectStorageAccess {
     function _getPendingTimelineMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getPendingTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
     }
 
     function _getPendingTimelineMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getPendingTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
     }
 
     function _getPendingTimelineMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getPendingTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
     }
 
     function _getPendingTimelineMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
         require(_index < _getPendingTimelineLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
+    }
+
+    function _getPendingTimelineMilestone(uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
+        require(_index < _getPendingTimelineLength(_projectId), "Index is outside of accessible range.");
+
+        title = _getPendingTimelineMilestoneTitle(_projectId, _index);
+        description = _getPendingTimelineMilestoneDescription(_projectId, _index);
+        percentage = _getPendingTimelineMilestonePercentage(_projectId, _index);
+        isComplete = _getPendingTimelineMilestoneIsComplete(_projectId, _index);
+
+        return (title, description, percentage, isComplete);
     }
 
     function _getPendingTimelineMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
@@ -265,31 +285,42 @@ contract ProjectStorageAccess {
     }
 
     function _getCompletedMilestonesLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)));
     }
 
     function _getCompletedMilestoneTitle(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getCompletedMilestonesLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)));
     }
 
     function _getCompletedMilestoneDescription(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getCompletedMilestonesLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)));
     }
 
     function _getCompletedMilestonePercentage(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getCompletedMilestonesLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)));
     }
 
     function _getCompletedMilestoneIsComplete(uint _projectId, uint _index) internal view returns (bool) {
         require(_index < _getCompletedMilestonesLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)));
+    }
+
+    function _getCompletedMilestone(uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
+        require(_index < _getCompletedMilestonesLength(_projectId), "Index is outside of accessible range.");
+
+        title = _getCompletedMilestoneTitle(_projectId, _index);
+        description = _getCompletedMilestoneDescription(_projectId, _index);
+        percentage = _getCompletedMilestonePercentage(_projectId, _index);
+        isComplete = _getCompletedMilestoneIsComplete(_projectId, _index);
+
+        return (title, description, percentage, isComplete);
     }
 
     function _getCompletedMilestone(uint _projectId, uint _index) internal view returns (Milestone) {
@@ -311,35 +342,47 @@ contract ProjectStorageAccess {
     }
 
     function _getTimelineHistoryMilestonesLength(uint _projectId, uint _timelineIndex) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex)));
     }
 
     function _getTimelineHistoryMilestoneTitle(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string) {
         require(_timelineIndex < _getTimelineHistoryLength(_projectId), "Timeline index is outside of accessible range.");
         require(_milestoneIndex < _getTimelineHistoryMilestonesLength(_projectId, _timelineIndex), "Milestone index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _timelineIndex, _milestoneIndex, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _timelineIndex, _milestoneIndex, _projectId)));
     }
 
     function _getTimelineHistoryMilestoneDescription(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string) {
         require(_timelineIndex < _getTimelineHistoryLength(_projectId), "Timeline index is outside of accessible range.");
         require(_milestoneIndex < _getTimelineHistoryMilestonesLength(_projectId, _timelineIndex), "Milestone index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _timelineIndex, _milestoneIndex, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _timelineIndex, _milestoneIndex, _projectId)));
     }
 
     function _getTimelineHistoryMilestonePercentage(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (uint) {
         require(_timelineIndex < _getTimelineHistoryLength(_projectId), "Timeline index is outside of accessible range.");
         require(_milestoneIndex < _getTimelineHistoryMilestonesLength(_projectId, _timelineIndex), "Milestone index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _timelineIndex, _milestoneIndex, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _timelineIndex, _milestoneIndex, _projectId)));
     }
 
     function _getTimelineHistoryMilestoneIsComplete(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (bool) {
         require(_timelineIndex < _getTimelineHistoryLength(_projectId), "Timeline index is outside of accessible range.");
         require(_milestoneIndex < _getTimelineHistoryMilestonesLength(_projectId, _timelineIndex), "Milestone index is outside of accessible range.");
 
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _timelineIndex, _milestoneIndex, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _timelineIndex, _milestoneIndex, _projectId)));
+    }
+
+    function _getTimelineHistoryMilestone(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
+        require(_timelineIndex < _getTimelineHistoryLength(_projectId), "Timeline index is outside of accessible range.");
+        require(_milestoneIndex < _getTimelineHistoryMilestonesLength(_projectId, _timelineIndex), "Milestone index is outside of accessible range.");
+
+        title = _getTimelineHistoryMilestoneTitle(_projectId, _timelineIndex, _milestoneIndex);
+        description = _getTimelineHistoryMilestoneDescription(_projectId, _timelineIndex, _milestoneIndex);
+        percentage = _getTimelineHistoryMilestonePercentage(_projectId, _timelineIndex, _milestoneIndex);
+        isComplete = _getTimelineHistoryMilestoneIsComplete(_projectId, _timelineIndex, _milestoneIndex);
+
+        return (title, description, percentage, isComplete);
     }
 
     function _getTimelineHistoryMilestone(uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (Milestone) {
@@ -364,31 +407,42 @@ contract ProjectStorageAccess {
     // ContributionTier
 
     function _getContributionTiersLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
     }
 
     function _getContributionTierContributorLimit(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)));
     }
 
     function _getContributionTierMinContribution(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)));
     }
 
     function _getContributionTierMaxContribution(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)));
     }
 
     function _getContributionTierRewards(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)));
+    }
+
+    function _getContributionTier(uint _projectId, uint _index) internal view returns (uint contributorLimit, uint minContribution, uint maxContribution, string rewards) {
+        require(_index < _getContributionTiersLength(_projectId), "Index is outside of accessible range.");
+
+        contributorLimit = _getContributionTierContributorLimit(_projectId, _index);
+        minContribution = _getContributionTierMinContribution(_projectId, _index);
+        maxContribution = _getContributionTierMaxContribution(_projectId, _index);
+        rewards = _getContributionTierRewards(_projectId, _index);
+
+        return (contributorLimit, minContribution, maxContribution, rewards);
     }
 
     function _getContributionTier(uint _projectId, uint _index) internal view returns (ContributionTier) {
@@ -410,31 +464,42 @@ contract ProjectStorageAccess {
     }
 
     function _getPendingContributionTiersLength(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
     }
 
     function _getPendingContributionTierContributorLimit(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getPendingContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)));
     }
 
     function _getPendingContributionTierMinContribution(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getPendingContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)));
     }
 
     function _getPendingContributionTierMaxContribution(uint _projectId, uint _index) internal view returns (uint) {
         require(_index < _getPendingContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)));
     }
 
     function _getPendingContributionTierRewards(uint _projectId, uint _index) internal view returns (string) {
         require(_index < _getPendingContributionTiersLength(_projectId), "Index is outside of accessible range.");
 
-        return pStorage.getString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)));
+    }
+
+    function _getPendingContributionTier(uint _projectId, uint _index) internal view returns (uint contributorLimit, uint minContribution, uint maxContribution, string rewards) {
+        require(_index < _getPendingContributionTiersLength(_projectId), "Index is outside of accessible range.");
+
+        contributorLimit = _getPendingContributionTierContributorLimit(_projectId, _index);
+        minContribution = _getPendingContributionTierMinContribution(_projectId, _index);
+        maxContribution = _getPendingContributionTierMaxContribution(_projectId, _index);
+        rewards = _getPendingContributionTierRewards(_projectId, _index);
+
+        return (contributorLimit, minContribution, maxContribution, rewards);
     }
 
     function _getPendingContributionTier(uint _projectId, uint _index) internal view returns (ContributionTier) {
@@ -458,28 +523,39 @@ contract ProjectStorageAccess {
     // TimelineProposal
 
     function _getTimelineProposalTimestamp(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
     }
 
     function _getTimelineProposalApprovalCount(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
     }
 
     function _getTimelineProposalDisapprovalCount(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
     }
 
     function _getTimelineProposalIsActive(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)));
     }
 
     function _getTimelineProposalHasFailed(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)));
     }
 
     function _getTimelineProposalHasVoted(uint _projectId, address _address) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)));
     }
+
+    function _getTimelineProposal(uint _projectId) internal view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
+        timestamp = _getTimelineProposalTimestamp(_projectId);
+        approvalCount = _getTimelineProposalApprovalCount(_projectId);
+        disapprovalCount = _getTimelineProposalDisapprovalCount(_projectId);
+        isActive = _getTimelineProposalIsActive(_projectId);
+        hasFailed = _getTimelineProposalHasFailed(_projectId);
+
+        return (timestamp, approvalCount, disapprovalCount, isActive, hasFailed);
+    }
+
 
     function _getTimelineProposal(uint _projectId) internal view returns (TimelineProposal) {
         uint timestamp = _getTimelineProposalTimestamp(_projectId);
@@ -502,31 +578,42 @@ contract ProjectStorageAccess {
     // MilestoneCompletionSubmission
 
     function _getMilestoneCompletionSubmissionTimestamp(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionApprovalCount(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionDisapprovalCount(uint _projectId) internal view returns (uint) {
-        return pStorage.getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)));
+        return _getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionReport(uint _projectId) internal view returns (string) {
-        return pStorage.getString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)));
+        return _getString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionIsActive(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionHasFailed(uint _projectId) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)));
     }
 
     function _getMilestoneCompletionSubmissionHasVoted(uint _projectId, address _address) internal view returns (bool) {
-        return pStorage.getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.voters", _address, _projectId)));
+        return _getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.voters", _address, _projectId)));
+    }
+
+    function _getMilestoneCompletionSubmission(uint _projectId) internal view returns (uint timestamp, uint approvalCount, uint disapprovalCount, string report, bool isActive, bool hasFailed) {
+        timestamp = _getMilestoneCompletionSubmissionTimestamp(_projectId);
+        approvalCount = _getMilestoneCompletionSubmissionApprovalCount(_projectId);
+        disapprovalCount = _getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
+        report = _getMilestoneCompletionSubmissionReport(_projectId);
+        isActive = _getMilestoneCompletionSubmissionIsActive(_projectId);
+        hasFailed = _getMilestoneCompletionSubmissionHasFailed(_projectId);
+
+        return (timestamp, approvalCount, disapprovalCount, report, isActive, hasFailed);
     }
 
     function _getMilestoneCompletionSubmission(uint _projectId) internal view returns (MilestoneCompletionSubmission) {
@@ -553,85 +640,85 @@ contract ProjectStorageAccess {
 
     // Setters
 
-    function incrementNextId() internal {
+    function _incrementNextId() internal {
         uint currentId = _getNextId();
-        pStorage.setUint(keccak256("project.nextId"), currentId + 1);
+        setUint(keccak256("project.nextId"), currentId + 1);
     }
 
     function _setStatus(uint _projectId, uint _status) internal {
-        pStorage.setUint(keccak256(abi.encodePacked("project.status", _projectId)), _status);
+        setUint(keccak256(abi.encodePacked("project.status", _projectId)), _status);
     }
 
     function _setTitle(uint _projectId, string _title) internal {
-        pStorage.setString(keccak256(abi.encodePacked("project.title", _projectId)), _title);
+        setString(keccak256(abi.encodePacked("project.title", _projectId)), _title);
     }
 
     function _setDescription(uint _projectId, string _description) internal {
-        pStorage.setString(keccak256(abi.encodePacked("project.description", _projectId)), _description);
+        setString(keccak256(abi.encodePacked("project.description", _projectId)), _description);
     }
 
     function _setAbout(uint _projectId, string _about) internal {
-        pStorage.setString(keccak256(abi.encodePacked("project.about", _projectId)), _about);
+        setString(keccak256(abi.encodePacked("project.about", _projectId)), _about);
     }
 
     function _setDeveloper(uint _projectId, address _developer) internal {
-        pStorage.setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
+        setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
     }
 
     function _setDeveloperId(uint _projectId, uint _developerId) internal {
-        pStorage.setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
+        setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
     }
 
     function _setContributionGoal(uint _projectId, uint _goal) internal {
-        pStorage.setUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)), _goal);
+        setUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)), _goal);
     }
 
     function _setNoRefunds(uint _projectId, bool _noRefunds) internal {
-        pStorage.setBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)), _noRefunds);
+        setBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)), _noRefunds);
     }
 
     function _setNoTimeline(uint _projectId, bool _noTimeline) internal {
-        pStorage.setBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), _noTimeline);
+        setBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), _noTimeline);
     }
 
     function _setActiveMilestoneIndex(uint _projectId, uint _index) internal {
-        pStorage.setUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)), _index);
+        setUint(keccak256(abi.encodePacked("project.activeMilestoneIndex", _projectId)), _index);
     }
 
     // Timeline
 
     function _setTimelineIsActive(uint _projectId, bool _isActive) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), _isActive);
+        return setBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), _isActive);
     }
 
     function _setTimelineLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)), _length);
     }
 
     function _setPendingTimelineLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)), _length);
     }
 
     function _setTimelineHistoryLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId)), _length);
     }
 
     // Milestone
 
     function _setTimelineMilestoneTitle(uint _projectId, uint _index, string _title) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _title);
+        return setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _title);
     }
 
     function _setTimelineMilestoneDescription(uint _projectId, uint _index, string _description) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _description);
+        return setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _description);
     }
 
     function _setTimelineMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _percentage);
+        return setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _percentage);
     }
 
     function _setTimelineMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)), _isComplete);
+        return setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)), _isComplete);
     }
 
     function _setTimelineMilestone(
@@ -651,19 +738,19 @@ contract ProjectStorageAccess {
     }
 
     function _setPendingTimelineMilestoneTitle(uint _projectId, uint _index, string _title) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _title);
+        return setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _title);
     }
 
     function _setPendingTimelineMilestoneDescription(uint _projectId, uint _index, string _description) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _description);
+        return setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _description);
     }
 
     function _setPendingTimelineMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _percentage);
+        return setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _percentage);
     }
 
     function _setPendingTimelineMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)), _isComplete);
+        return setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)), _isComplete);
     }
 
     function _setPendingTimelineMilestone(
@@ -683,23 +770,23 @@ contract ProjectStorageAccess {
     }
 
     function _setCompletedMilestonesLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId)), _length);
     }
 
     function _setCompletedMilestoneTitle(uint _projectId, uint _index, string _title) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)), _title);
+        return setString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)), _title);
     }
 
     function _setCompletedMilestoneDescription(uint _projectId, uint _index, string _description) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)), _description);
+        return setString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)), _description);
     }
 
     function _setCompletedMilestonePercentage(uint _projectId, uint _index, uint _percentage) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)), _percentage);
+        return setUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)), _percentage);
     }
 
     function _setCompletedMilestoneIsComplete(uint _projectId, uint _index, bool _isComplete) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)), _isComplete);
+        return setBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)), _isComplete);
     }
 
     function _setCompletedMilestone(
@@ -719,23 +806,23 @@ contract ProjectStorageAccess {
     }
 
     function _setTimelineHistoryMilestonesLength(uint _projectId, uint _timelineIndex, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex)), _length);
+        return setUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex)), _length);
     }
 
     function _setTimelineHistoryMilestoneTitle(uint _projectId, uint _timelineIndex, uint _milestoneIndex, string _title) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _projectId, _timelineIndex, _milestoneIndex)), _title);
+        return setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _projectId, _timelineIndex, _milestoneIndex)), _title);
     }
 
     function _setTimelineHistoryMilestoneDescription(uint _projectId, uint _timelineIndex, uint _milestoneIndex, string _description) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _projectId, _timelineIndex, _milestoneIndex)), _description);
+        return setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _projectId, _timelineIndex, _milestoneIndex)), _description);
     }
 
     function _setTimelineHistoryMilestonePercentage(uint _projectId, uint _timelineIndex, uint _milestoneIndex, uint _percentage) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _projectId, _timelineIndex, _milestoneIndex)), _percentage);
+        return setUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _projectId, _timelineIndex, _milestoneIndex)), _percentage);
     }
 
     function _setTimelineHistoryMilestoneIsComplete(uint _projectId, uint _timelineIndex, uint _milestoneIndex, bool _isComplete) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _projectId, _timelineIndex, _milestoneIndex)), _isComplete);
+        return setBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _projectId, _timelineIndex, _milestoneIndex)), _isComplete);
     }
 
     function _setTimelineHistoryMilestone(
@@ -760,23 +847,23 @@ contract ProjectStorageAccess {
     // ContributionTier
 
     function _setContributionTiersLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)), _length);
     }
 
     function _setContributionTierContributorLimit(uint _projectId, uint _index, uint _limit) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)), _limit);
+        return setUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)), _limit);
     }
 
     function _setContributionTierMinContribution(uint _projectId, uint _index, uint _min) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)), _min);
+        return setUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)), _min);
     }
 
     function _setContributionTierMaxContribution(uint _projectId, uint _index, uint _max) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)), _max);
+        return setUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)), _max);
     }
 
     function _setContributionTierRewards(uint _projectId, uint _index, string _rewards) internal {
-        pStorage.setString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)), _rewards);
+        setString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)), _rewards);
     }
 
     function _setContributionTier(
@@ -796,23 +883,23 @@ contract ProjectStorageAccess {
     }
 
     function _setPendingContributionTiersLength(uint _projectId, uint _length) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)), _length);
+        return setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)), _length);
     }
 
     function _setPendingContributionTierContributorLimit(uint _projectId, uint _index, uint _limit) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)), _limit);
+        return setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)), _limit);
     }
 
     function _setPendingContributionTierMinContribution(uint _projectId, uint _index, uint _min) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)), _min);
+        return setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)), _min);
     }
 
     function _setPendingContributionTierMaxContribution(uint _projectId, uint _index, uint _max) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)), _max);
+        return setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)), _max);
     }
 
     function _setPendingContributionTierRewards(uint _projectId, uint _index, string _rewards) internal {
-        pStorage.setString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)), _rewards);
+        setString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)), _rewards);
     }
 
     function _setPendingContributionTier(
@@ -834,27 +921,27 @@ contract ProjectStorageAccess {
     // TimelineProposal
 
     function _setTimelineProposalTimestamp(uint _projectId, uint _timestamp) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)), _timestamp);
+        return setUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)), _timestamp);
     }
 
     function _setTimelineProposalApprovalCount(uint _projectId, uint _count) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)), _count);
+        return setUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)), _count);
     }
 
     function _setTimelineProposalDisapprovalCount(uint _projectId, uint _count) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)), _count);
+        return setUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)), _count);
     }
 
     function _setTimelineProposalIsActive(uint _projectId, bool _isActive) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), _isActive);
+        return setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), _isActive);
     }
 
     function _setTimelineProposalHasFailed(uint _projectId, bool _hasFailed) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)), _hasFailed);
+        return setBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)), _hasFailed);
     }
 
     function _setTimelineProposalHasVoted(uint _projectId, address _address, bool _vote) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)), _vote);
+        return setBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)), _vote);
     }
 
     function _setTimelineProposal(
@@ -877,31 +964,31 @@ contract ProjectStorageAccess {
     // MilestoneCompletionSubmission
 
     function _setMilestoneCompletionSubmissionTimestamp(uint _projectId, uint _timestamp) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)), _timestamp);
+        return setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)), _timestamp);
     }
 
     function _setMilestoneCompletionSubmissionApprovalCount(uint _projectId, uint _count) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)), _count);
+        return setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)), _count);
     }
 
     function _setMilestoneCompletionSubmissionDisapprovalCount(uint _projectId, uint _count) internal {
-        return pStorage.setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)), _count);
+        return setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)), _count);
     }
 
     function _setMilestoneCompletionSubmissionReport(uint _projectId, string _report) internal {
-        return pStorage.setString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)), _report);
+        return setString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)), _report);
     }
 
     function _setMilestoneCompletionSubmissionIsActive(uint _projectId, bool _isActive) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)), _isActive);
+        return setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)), _isActive);
     }
 
     function _setMilestoneCompletionSubmissionHasFailed(uint _projectId, bool _hasFailed) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)), _hasFailed);
+        return setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)), _hasFailed);
     }
 
     function _setMilestoneCompletionSubmissionHasVoted(uint _projectId, address _address, bool _vote) internal {
-        return pStorage.setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.voters", _address, _projectId)), _vote);
+        return setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.voters", _address, _projectId)), _vote);
     }
 
     function _setMilestoneCompletionSubmission(
@@ -951,52 +1038,52 @@ contract ProjectStorageAccess {
     // Deletion
 
     function _deleteContributionTiers(uint _projectId) internal {
-        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
+        uint length = _getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
 
         for (uint i = 0; i < length; i++) {
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", i, _projectId)));
-            pStorage.deleteString(keccak256(abi.encodePacked("project.contributionTiers.rewards", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.contributionTiers.rewards", i, _projectId)));
         }
 
         _setContributionTiersLength(_projectId, 0);
     }
 
     function _deletePendingContributionTiers(uint _projectId) internal {
-        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
+        uint length = _getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
 
         for (uint i = 0; i < length; i++) {
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", i, _projectId)));
-            pStorage.deleteString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", i, _projectId)));
         }
 
         _setPendingContributionTiersLength(_projectId, 0);
     }
 
     function _deleteTimeline(uint _projectId) internal {
-        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
+        uint length = _getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
 
         for (uint i = 0; i < length; i++) {
-            pStorage.deleteString(keccak256(abi.encodePacked("project.timeline.milestones.title", i, _projectId)));
-            pStorage.deleteString(keccak256(abi.encodePacked("project.timeline.milestones.description", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", i, _projectId)));
-            pStorage.deleteBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.timeline.milestones.title", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.timeline.milestones.description", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", i, _projectId)));
+            deleteBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", i, _projectId)));
         }
 
         _setTimelineLength(_projectId, 0);
     }
 
     function _deletePendingTimeline(uint _projectId) internal {
-        uint length = pStorage.getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
+        uint length = _getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
 
         for (uint i = 0; i < length; i++) {
-            pStorage.deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", i, _projectId)));
-            pStorage.deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", i, _projectId)));
-            pStorage.deleteUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", i, _projectId)));
-            pStorage.deleteBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", i, _projectId)));
+            deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", i, _projectId)));
+            deleteUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", i, _projectId)));
+            deleteBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", i, _projectId)));
         }
 
         _setPendingTimelineLength(_projectId, 0);

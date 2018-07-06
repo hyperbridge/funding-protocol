@@ -1,7 +1,6 @@
 pragma solidity ^0.4.23;
 
 import "./Project.sol";
-import "./ProjectFactory.sol";
 import "./openzeppelin/Ownable.sol";
 
 contract FundingService is Ownable {
@@ -21,7 +20,7 @@ contract FundingService is Ownable {
         address[] activeProjects;
     }
 
-    address public projectFactory;
+    address public projectRegistry;
 
     mapping(address => uint) public developerMap; // address => id
     Developer[] public developers; // indexed by developer id
@@ -52,7 +51,7 @@ contract FundingService is Ownable {
         _;
     }
 
-    event ProjectCreated(address projectAddress, uint projectId);
+    event ProjectCreated(uint projectId);
 
     constructor() public {
         // reserve 0
@@ -64,8 +63,8 @@ contract FundingService is Ownable {
         revert();
     }
 
-    function registerProjectFactory(address _factoryAddr) public onlyOwner {
-        projectFactory = _factoryAddr;
+    function registerProjectRegistry(address _projectReg) public onlyOwner {
+        projectRegistry = _projectReg;
     }
 
     function createDeveloper(string _name) public {
@@ -114,23 +113,19 @@ contract FundingService is Ownable {
     }
 
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
-        require(projectFactory != address(0), "No project factory registered.");
+        Project projectReg = Project(projectReg);
 
-        ProjectFactory factory = ProjectFactory(projectFactory);
+        uint newProjectId = projectReg.createProject(_title, _description, _about,  _contributionGoal, msg.sender,  _developerId);
 
-        uint newProjectId = projects.length;
-
-        address newProject = factory.createProject(newProjectId, _title, _description, _about,  msg.sender,  _developerId, _contributionGoal);
-
-        projectMap[newProject] = newProjectId;
-        projects.push(newProject);
+        // projectMap[newProject] = newProjectId;
+        // projects.push(newProject);
 
         Developer storage dev = developers[_developerId];
 
         dev.projectIdIndex[newProjectId] = dev.projectIds.length;
         dev.projectIds.push(newProjectId);
 
-        emit ProjectCreated(newProject, newProjectId);
+        emit ProjectCreated(newProjectId);
     }
 
     function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
@@ -139,48 +134,50 @@ contract FundingService is Ownable {
         // check that project exists
         require(projectAddress != address(0), "Project does not exist.");
 
-        Project project = Project(projectAddress);
+        // Project project = Project(projectAddress);
 
-        verifyProjectMilestones(project);
+        // verifyProjectMilestones(project);
 
-        verifyProjectTiers(project);
+        // verifyProjectTiers(project);
 
         // Set project status to "Pending" and change timeline to active
-        project.initializeTimeline();
+        // TODO - project.initializeTimeline();
     }
 
-    function verifyProjectMilestones(address _project) private view {
-        Project project = Project(_project);
+    // TODO
+    // function verifyProjectMilestones(address _project) private view {
+    //     Project project = Project(_project);
 
-        // If project has a timeline, verify:
-        // - Milestones are present
-        // - Milestone percentages add up to 100
-        if (!project.noTimeline()) {
-            uint timelineLength = project.getTimelineMilestoneLength();
+    //     // If project has a timeline, verify:
+    //     // - Milestones are present
+    //     // - Milestone percentages add up to 100
+    //     if (!project.noTimeline()) {
+    //         uint timelineLength = project.getTimelineMilestoneLength();
 
-            require(timelineLength > 0, "Project has no milestones.");
+    //         require(timelineLength > 0, "Project has no milestones.");
 
-            uint percentageAcc = 0;
-            for (uint j = 0; j < timelineLength; j++) {
-                // todo - is there a way to ignore multiple returns?
-                string memory title;
-                string memory description;
-                uint percentage;
-                bool isComplete;
-                (title, description, percentage, isComplete) = project.getMilestone(j, false);
-                percentageAcc = percentageAcc + percentage;
-            }
-            require(percentageAcc == 100, "Milestone percentages must add to 100.");
-        }
-    }
+    //         uint percentageAcc = 0;
+    //         for (uint j = 0; j < timelineLength; j++) {
+    //             // todo - is there a way to ignore multiple returns?
+    //             string memory title;
+    //             string memory description;
+    //             uint percentage;
+    //             bool isComplete;
+    //             (title, description, percentage, isComplete) = project.getMilestone(j, false);
+    //             percentageAcc = percentageAcc + percentage;
+    //         }
+    //         require(percentageAcc == 100, "Milestone percentages must add to 100.");
+    //     }
+    // }
 
-    function verifyProjectTiers(address _project) private view {
-        Project project = Project(_project);
+    // TODO
+    // function verifyProjectTiers(address _project) private view {
+    //     Project project = Project(_project);
 
-        // Verify that project has contribution tiers
-        uint tiersLength = project.getTiersLength();
-        require(tiersLength > 0, "Project has no contribution tiers.");
-    }
+    //     // Verify that project has contribution tiers
+    //     uint tiersLength = project.getTiersLength();
+    //     require(tiersLength > 0, "Project has no contribution tiers.");
+    // }
 
     function getProjects() public view returns (address[]) {
         address[] memory addresses = new address[](projects.length - 1);
