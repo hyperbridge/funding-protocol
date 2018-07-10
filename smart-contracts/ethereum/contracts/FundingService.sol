@@ -109,7 +109,7 @@ contract FundingService is Ownable {
     }
 
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
-        Project projectReg = Project(projectReg);
+        Project projectReg = Project(projectRegistry);
 
         uint newProjectId = projectReg.createProject(_title, _description, _about,  _contributionGoal, msg.sender,  _developerId);
 
