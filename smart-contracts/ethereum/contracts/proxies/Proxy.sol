@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 contract Proxy {
 
-    function implementation() public view returns (address);
+    function getImplementation() public view returns (address);
 
     function () payable public {
         address impl = implementation();

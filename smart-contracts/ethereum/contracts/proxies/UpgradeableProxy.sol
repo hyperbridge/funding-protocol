@@ -10,6 +10,6 @@ contract UpgradeableProxy is Proxy, ProxyStorage {
     function _upgradeTo(address _implementation) internal {
         require(_implementation != implementation);
         implementation = _implementation;
-        Upgraded(_implementation);
+        emit Upgraded(_implementation);
     }
 }
