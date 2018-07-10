@@ -36,4 +36,56 @@ library ProjectLib {
 
         return id;
     }
+
+    function submitProjectForReview(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) public { // devRestricted(_developerId) {
+        // check that project exists
+        require(_pStorage.getProjectIsActive(_projectId), "Project does not exist.");
+
+        verifyProjectMilestones(_pStorage, _projectId);
+
+        verifyProjectTiers(_pStorage, _projectId);
+
+        // Set project status to "Pending" and change timeline to active
+        initializeTimeline(_pStorage, _projectId);
+    }
+
+    function verifyProjectMilestones(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private view {
+        // If project has a timeline, verify:
+        // - Milestones are present
+        // - Milestone percentages add up to 100
+        if (!_pStorage.getNoTimeline(_projectId)) {
+            uint timelineLength = _pStorage.getTimelineLength(_projectId);
+
+            require(timelineLength > 0, "Project has no milestones.");
+
+            uint percentageAcc = 0;
+            for (uint i = 0; i < timelineLength; i++) {
+                uint percentage = _pStorage.getTimelineMilestonePercentage(_projectId, i);
+                percentageAcc = percentageAcc + percentage;
+            }
+
+            require(percentageAcc == 100, "Milestone percentages must add to 100.");
+        }
+    }
+
+    function verifyProjectTiers(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private view {
+        // Verify that project has contribution tiers
+        uint tiersLength = _pStorage.getContributionTiersLength(_projectId);
+        require(tiersLength > 0, "Project has no contribution tiers.");
+    }
+
+
+    function initializeTimeline(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private {
+        // Check that there isn't already an active timeline
+        require(!_pStorage.getTimelineIsActive(_projectId), "Timeline has already been initialized.");
+
+        // Set timeline to active
+        _pStorage.setTimelineIsActive(_projectId, true);
+
+        // Set first milestone as active
+        _pStorage.setActiveMilestoneIndex(_projectId, 0);
+
+        // Change project status to "Pending"
+        _pStorage.setStatus(_projectId, uint(Project.Status.Pending));
+    }
 }

@@ -120,6 +120,10 @@ library ProjectStorageAccess {
         return _pStorage.getUint(keccak256("project.nextId"));
     }
 
+    function getProjectIsActive(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) internal view returns (bool) {
+        return _pStorage.getBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)));
+    }
+
     function getStatus(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) internal view returns (uint) {
         return _pStorage.getUint(keccak256(abi.encodePacked("project.status", _projectId)));
     }
@@ -640,7 +644,8 @@ library ProjectStorageAccess {
 
     // Miscellaneous
 
-    function getProject(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) internal view returns (uint, string, string, string, uint, address, uint) {
+    function getProject(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) internal view returns (bool, uint, string, string, string, uint, address, uint) {
+        bool isActive = _pStorage.getBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)));
         uint status = _pStorage.getUint(keccak256(abi.encodePacked("project.status", _projectId)));
         string memory title = _pStorage.getString(keccak256(abi.encodePacked("project.title", _projectId)));
         string memory description = _pStorage.getString(keccak256(abi.encodePacked("project.description", _projectId)));
@@ -649,7 +654,7 @@ library ProjectStorageAccess {
         address developer = _pStorage.getAddress(keccak256(abi.encodePacked("project.developer", _projectId)));
         uint developerId = _pStorage.getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
 
-        return (status, title, description, about, contributionGoal, developer, developerId);
+        return (isActive, status, title, description, about, contributionGoal, developer, developerId);
     }
 
 
@@ -659,6 +664,10 @@ library ProjectStorageAccess {
     function incrementNextId(ProjectEternalStorage.ProjectStorage storage _pStorage) internal {
         uint currentId = _pStorage.getUint(keccak256("project.nextId"));
         _pStorage.setUint(keccak256("project.nextId"), currentId + 1);
+    }
+
+    function setProjectIsActive(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, bool _isActive) internal {
+        return _pStorage.setBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)), _isActive);
     }
 
     function setStatus(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, uint _status) internal {

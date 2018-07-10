@@ -10,14 +10,14 @@ contract FundingService is Ownable {
         uint reputation;
         address addr;
         string name;
-        mapping(uint => uint) projectIdIndex; // mapping of project id to index in Developer.projectIds
+        mapping(uint => bool) ownsProject; // project id => owned by this dev
         uint[] projectIds; // the projects belonging to this developer
     }
 
     struct Contributor {
         address addr;
-        mapping(address => bool) projectExists;
-        address[] activeProjects;
+        mapping(uint => bool) contributesToProject;
+        uint[] activeProjects;
     }
 
     address public projectRegistry;
@@ -27,11 +27,8 @@ contract FundingService is Ownable {
 
     mapping(address => Contributor) public contributors;
 
-    mapping(address => mapping(address => uint)) public projectContributionAmount; // project address => (contributor address => contribution amount)
-    mapping(address => address[]) projectContributorList; // project address => Contributors[]
-
-    mapping(address => uint) public projectMap; // address => id
-    address[] public projects; // indexed by project id
+    mapping(uint => mapping(address => uint)) public projectContributionAmount; // project id => (contributor address => contribution amount)
+    mapping(uint => address[]) projectContributorList; // project address => Contributors[]
 
     modifier devRestricted(uint _developerId) {
         require(developers[_developerId].id == _developerId, "Developer does not exist."); // check that developer exists
@@ -39,24 +36,23 @@ contract FundingService is Ownable {
         _;
     }
 
-    modifier validProjectOnly(uint _developerId) {
-        // Caller must be a project
-        uint projectId = projectMap[msg.sender];
-        require(projectId != 0, "Caller must be a project.");
+    // modifier validProjectOnly(uint _developerId) {
+    //     // Caller must be a project
+    //     uint projectId = projectMap[msg.sender];
+    //     require(projectId != 0, "Caller must be a project.");
 
-        // Caller must be a project created by the specified developer
-        Developer storage developer = developers[_developerId];
-        require(developer.projectIdIndex[projectId] != 0, "Caller must be a project created by the specified developer.");
+    //     // Caller must be a project created by the specified developer
+    //     Developer storage developer = developers[_developerId];
+    //     require(developer.projectIdIndex[projectId] != 0, "Caller must be a project created by the specified developer.");
 
-        _;
-    }
+    //     _;
+    // }
 
     event ProjectCreated(uint projectId);
 
     constructor() public {
         // reserve 0
         developers.length++;
-        projects.push(0);
     }
 
     function () public payable {
@@ -93,7 +89,7 @@ contract FundingService is Ownable {
         return (dev.reputation, dev.addr, dev.name, dev.projectIds);
     }
 
-    function updateDeveloperReputation(uint _developerId, uint _val) public validProjectOnly(_developerId) {
+    function updateDeveloperReputation(uint _developerId, uint _val) public { //validProjectOnly(_developerId) {
         Developer storage developer = developers[_developerId];
 
         uint currentRep = developer.reputation;
@@ -117,88 +113,24 @@ contract FundingService is Ownable {
 
         uint newProjectId = projectReg.createProject(_title, _description, _about,  _contributionGoal, msg.sender,  _developerId);
 
-        // projectMap[newProject] = newProjectId;
-        // projects.push(newProject);
-
         Developer storage dev = developers[_developerId];
 
-        dev.projectIdIndex[newProjectId] = dev.projectIds.length;
+        dev.ownsProject[newProjectId] = true;
         dev.projectIds.push(newProjectId);
 
         emit ProjectCreated(newProjectId);
     }
 
-    function submitProjectForReview(uint _projectId, uint _developerId) public devRestricted(_developerId) {
-        address projectAddress = projects[_projectId];
-
-        // check that project exists
-        require(projectAddress != address(0), "Project does not exist.");
-
-        // Project project = Project(projectAddress);
-
-        // verifyProjectMilestones(project);
-
-        // verifyProjectTiers(project);
-
-        // Set project status to "Pending" and change timeline to active
-        // TODO - project.initializeTimeline();
-    }
-
-    // TODO
-    // function verifyProjectMilestones(address _project) private view {
-    //     Project project = Project(_project);
-
-    //     // If project has a timeline, verify:
-    //     // - Milestones are present
-    //     // - Milestone percentages add up to 100
-    //     if (!project.noTimeline()) {
-    //         uint timelineLength = project.getTimelineMilestoneLength();
-
-    //         require(timelineLength > 0, "Project has no milestones.");
-
-    //         uint percentageAcc = 0;
-    //         for (uint j = 0; j < timelineLength; j++) {
-    //             // todo - is there a way to ignore multiple returns?
-    //             string memory title;
-    //             string memory description;
-    //             uint percentage;
-    //             bool isComplete;
-    //             (title, description, percentage, isComplete) = project.getMilestone(j, false);
-    //             percentageAcc = percentageAcc + percentage;
-    //         }
-    //         require(percentageAcc == 100, "Milestone percentages must add to 100.");
-    //     }
-    // }
-
-    // TODO
-    // function verifyProjectTiers(address _project) private view {
-    //     Project project = Project(_project);
-
-    //     // Verify that project has contribution tiers
-    //     uint tiersLength = project.getTiersLength();
-    //     require(tiersLength > 0, "Project has no contribution tiers.");
-    // }
-
-    function getProjects() public view returns (address[]) {
-        address[] memory addresses = new address[](projects.length - 1);
-
-        for (uint i = 1; i < projects.length; i++) {
-            addresses[i - 1] = projects[i];
-        }
-
-        return addresses;
-    }
-
     function contributeToProject(uint _projectId) public payable {
-        address projectAddress = projects[_projectId];
+        (bool isActive, uint status, string memory title, string memory description, string memory about, uint contributionGoal, address developer, uint developerId) = Project(projectRegistry).getProject(_projectId);
 
-        require(projectAddress != 0, "Project does not exist."); // check that project exists
+        require(isActive, "Project does not exist."); // check that project exists
 
         // if contributor doesn't exist, create it
         if (contributors[msg.sender].addr == 0) {
             Contributor memory newContributor = Contributor({
                 addr: msg.sender,
-                activeProjects: new address[](0)
+                activeProjects: new uint[](0)
                 });
 
             // add contributor to global contributors mapping
@@ -208,25 +140,24 @@ contract FundingService is Ownable {
         Contributor storage contributor = contributors[msg.sender];
 
         // if project is not in contributor's project list, add it
-        if (!contributor.projectExists[projectAddress]) {
-            contributor.projectExists[projectAddress] = true;
-            contributor.activeProjects.push(projectAddress);
+        if (!contributor.contributesToProject[_projectId]) {
+            contributor.contributesToProject[_projectId] = true;
+            contributor.activeProjects.push(_projectId);
         }
 
         // add to projectContributorList, if not already present
-        if (projectContributionAmount[projectAddress][msg.sender] == 0) {
-            projectContributorList[projectAddress].push(msg.sender);
+        if (projectContributionAmount[_projectId][msg.sender] == 0) {
+            projectContributorList[_projectId].push(msg.sender);
         }
 
         // add contribution amount to project
-        uint currentProjectContributionAmount = projectContributionAmount[projectAddress][msg.sender];
-        projectContributionAmount[projectAddress][msg.sender] = currentProjectContributionAmount + msg.value;
+        uint currentProjectContributionAmount = projectContributionAmount[_projectId][msg.sender];
+        projectContributionAmount[_projectId][msg.sender] = currentProjectContributionAmount + msg.value;
 
-        // transfer money to project
-        projectAddress.transfer(msg.value);
+        // TODO - money to project
     }
 
-    function getProjectContributorList(address _projectAddress) public view returns (address[]) {
-        return projectContributorList[_projectAddress];
+    function getProjectContributorList(uint _projectId) public view returns (address[]) {
+        return projectContributorList[_projectId];
     }
 }

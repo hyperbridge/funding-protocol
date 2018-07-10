@@ -31,11 +31,11 @@ contract Project is ProjectEternalStorage {
     //        require(fs.projectContributionAmount(this, msg.sender) != 0, "Caller is not a contributor to this project.");
     //        _;
     //    }
-    //
-    //    modifier fundingServiceRestricted() {
-    //        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
-    //        _;
-    //    }
+
+    modifier fundingServiceRestricted() {
+        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
+        _;
+    }
 
     address fundingService;
 
@@ -52,11 +52,40 @@ contract Project is ProjectEternalStorage {
         uint _developerId
     )
     public
+    fundingServiceRestricted
     returns (uint)
     {
         uint id = pStorage.createProject(_title, _description, _about, _contributionGoal, uint(Status.Draft), _developer, _developerId);
-
         return id;
+    }
+
+    function getProject(uint _projectId) public view returns (bool isActive, uint status, string title, string description, string about, uint contributionGoal, address developer, uint developerId) {
+        isActive = pStorage.getProjectIsActive(_projectId);
+        status = pStorage.getStatus(_projectId);
+        title = pStorage.getTitle(_projectId);
+        description = pStorage.getDescription(_projectId);
+        about = pStorage.getAbout(_projectId);
+        contributionGoal = pStorage.getContributionGoal(_projectId);
+        developer = pStorage.getDeveloper(_projectId);
+        developerId = pStorage.getDeveloperId(_projectId);
+
+        return (isActive, status, title, description, about, contributionGoal, developer, developerId);
+    }
+
+    function getProjects() public view returns (uint[]) {
+        uint numProjects = pStorage.getNextId();
+
+        uint[] memory activeProjects = new uint[](numProjects);
+
+        uint length = 0;
+        for (uint i = 0; i < numProjects; i++) {
+            if (pStorage.getProjectIsActive(i)) {
+                activeProjects[length] = (i);
+                length++;
+            }
+        }
+
+        return activeProjects;
     }
 
     function addMilestone(
@@ -92,8 +121,8 @@ contract Project is ProjectEternalStorage {
         pStorage.clearPendingTimeline(_projectId);
     }
 
-    function initializeTimeline(uint _projectId) public {
-        pStorage.initializeTimeline(_projectId);
+    function submitProjectForReview(uint _projectId) public { // devRestricted(_developerId) {
+        pStorage.submitProjectForReview(_projectId);
     }
 
     function proposeNewTimeline(uint _projectId) public {
@@ -118,8 +147,7 @@ contract Project is ProjectEternalStorage {
 
     function hasPassedTimelineProposalVote(uint _projectId) private view returns (bool) {
         FundingService fs = FundingService(fundingService);
-        // TODO - uint numContributors = fs.getProjectContributorList(_projectId).length;
-        uint numContributors = 1000;
+        uint numContributors = fs.getProjectContributorList(_projectId).length;
         uint approvalCount = pStorage.getTimelineProposalApprovalCount(_projectId);
         uint disapprovalCount = pStorage.getTimelineProposalDisapprovalCount(_projectId);
         uint numVoters = approvalCount + disapprovalCount;
@@ -155,8 +183,7 @@ contract Project is ProjectEternalStorage {
 
     function hasPassedMilestoneCompletionVote(uint _projectId) private view returns (bool) {
         FundingService fs = FundingService(fundingService);
-        // TODO - uint numContributors = fs.getProjectContributorList(_projectId).length;
-        uint numContributors = 1000;
+        uint numContributors = fs.getProjectContributorList(_projectId).length;
         uint approvalCount = pStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
         uint disapprovalCount = pStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
         uint numVoters = approvalCount + disapprovalCount;
