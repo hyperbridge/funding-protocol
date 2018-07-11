@@ -27,6 +27,7 @@ library ProjectLib {
         _pStorage.incrementNextId();
 
         // Create project
+        _pStorage.setProjectIsActive(id, true);
         _pStorage.setTitle(id, _title);
         _pStorage.setDescription(id, _description);
         _pStorage.setAbout(id, _about);

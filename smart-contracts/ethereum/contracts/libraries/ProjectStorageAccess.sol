@@ -135,7 +135,7 @@ library ProjectStorageAccess {
     }
 
     function getAbout(address _pStorage, uint _projectId) internal view returns (string) {
-        return ProjectEternalStorage(_pStorage).getString(keccak256(abi.encodePacked("project.title", _projectId)));
+        return ProjectEternalStorage(_pStorage).getString(keccak256(abi.encodePacked("project.about", _projectId)));
     }
 
     function getDeveloper(address _pStorage, uint _projectId) internal view returns (address) {
