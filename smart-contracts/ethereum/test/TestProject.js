@@ -1,14 +1,13 @@
 const FundingService = artifacts.require("FundingService");
 const Project = artifacts.require("Project");
-const ProjectFactory = artifacts.require("ProjectFactory");
+const ProjectProxy = artifacts.require("ProjectProxy");
 
 contract('ProjectMilestones', function(accounts) {
-    let projectFactory;
+    let projectProxy;
     let fundingService;
     let fundingServiceOwner;
     let devAccount;
     let project;
-    let projectAddress;
     let projectId;
     let projectDevId;
     const devName = "Hyperbridge";
@@ -18,14 +17,17 @@ contract('ProjectMilestones', function(accounts) {
     const projectContributionGoal = 1000000;
 
     before(async () => {
-        projectFactory = await ProjectFactory.deployed();
-
         fundingService = await FundingService.deployed();
-
         fundingServiceOwner = accounts[0];
         devAccount = accounts[1];
 
-        await fundingService.registerProjectFactory(projectFactory.address);
+        project = await Project.new(fundingService.address);
+
+        projectProxy = await ProjectProxy.deployed();
+
+        await projectProxy.upgradeTo(project.address);
+
+        await fundingService.registerProjectContract(projectProxy.address);
 
         await fundingService.createDeveloper(devName, { from: devAccount });
 
@@ -35,7 +37,6 @@ contract('ProjectMilestones', function(accounts) {
     beforeEach(async () => {
         let watcher = fundingService.ProjectCreated().watch(function (error, result) {
             if (!error) {
-                projectAddress = result.args.projectAddress;
                 projectId = result.args.projectId;
             }
         });
@@ -43,8 +44,6 @@ contract('ProjectMilestones', function(accounts) {
         await fundingService.createProject(projectTitle, projectDescription, projectAbout, projectDevId, projectContributionGoal, {from: devAccount});
 
         watcher.stopWatching();
-
-        project = await Project.at(projectAddress);
     });
 
     it("should be able to add initial milestones", async () => {
