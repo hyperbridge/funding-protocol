@@ -1,14 +1,15 @@
 pragma solidity ^0.4.24;
 
-import "./ProjectEternalStorage.sol";
+import "../Project.sol";
+import "../ProjectEternalStorage.sol";
 import "./ProjectStorageAccess.sol";
 
 library ProjectLib {
 
-    using ProjectStorageAccess for ProjectEternalStorage.ProjectStorage;
+    using ProjectStorageAccess for address;
 
     function createProject(
-        ProjectEternalStorage.ProjectStorage storage _pStorage,
+        address _pStorage,
         string _title,
         string _description,
         string _about,
@@ -37,7 +38,7 @@ library ProjectLib {
         return id;
     }
 
-    function submitProjectForReview(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) public { // devRestricted(_developerId) {
+    function submitProjectForReview(address _pStorage, uint _projectId) public { // devRestricted(_developerId) {
         // check that project exists
         require(_pStorage.getProjectIsActive(_projectId), "Project does not exist.");
 
@@ -49,7 +50,7 @@ library ProjectLib {
         initializeTimeline(_pStorage, _projectId);
     }
 
-    function verifyProjectMilestones(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private view {
+    function verifyProjectMilestones(address _pStorage, uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
@@ -68,14 +69,14 @@ library ProjectLib {
         }
     }
 
-    function verifyProjectTiers(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private view {
+    function verifyProjectTiers(address _pStorage, uint _projectId) private view {
         // Verify that project has contribution tiers
         uint tiersLength = _pStorage.getContributionTiersLength(_projectId);
         require(tiersLength > 0, "Project has no contribution tiers.");
     }
 
 
-    function initializeTimeline(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private {
+    function initializeTimeline(address _pStorage, uint _projectId) private {
         // Check that there isn't already an active timeline
         require(!_pStorage.getTimelineIsActive(_projectId), "Timeline has already been initialized.");
 

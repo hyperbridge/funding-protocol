@@ -6,10 +6,10 @@ import "./ProjectStorageAccess.sol";
 
 library ProjectTimelineLib {
 
-    using ProjectStorageAccess for ProjectEternalStorage.ProjectStorage;
+    using ProjectStorageAccess for address;
 
     function addMilestone(
-        ProjectEternalStorage.ProjectStorage storage _pStorage,
+        address _pStorage,
         uint _projectId,
         bool _isPending,
         string _title,
@@ -45,7 +45,7 @@ library ProjectTimelineLib {
     }
 
     function editMilestone(
-        ProjectEternalStorage.ProjectStorage storage _pStorage,
+        address _pStorage,
         uint _projectId,
         bool _isPending,
         uint _index,
@@ -68,7 +68,7 @@ library ProjectTimelineLib {
         }
     }
 
-    function clearPendingTimeline(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function clearPendingTimeline(address _pStorage, uint _projectId) external {
         // There must not be an active timeline proposal
         require(!_pStorage.getTimelineProposalIsActive(_projectId), "A timeline proposal vote is active.");
 
@@ -103,7 +103,7 @@ library ProjectTimelineLib {
         _pStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
     }
 
-    function initializeTimeline(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function initializeTimeline(address _pStorage, uint _projectId) external {
         // Check that there isn't already an active timeline
         require(!_pStorage.getTimelineIsActive(_projectId), "Timeline has already been initialized.");
 

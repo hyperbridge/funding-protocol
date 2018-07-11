@@ -20,7 +20,7 @@ contract FundingService is Ownable {
         uint[] activeProjects;
     }
 
-    address public projectRegistry;
+    address public projectContract;
 
     mapping(address => uint) public developerMap; // address => id
     Developer[] public developers; // indexed by developer id
@@ -59,8 +59,8 @@ contract FundingService is Ownable {
         revert();
     }
 
-    function registerProjectRegistry(address _projectReg) public onlyOwner {
-        projectRegistry = _projectReg;
+    function registerProjectContract(address _projectContract) public onlyOwner {
+        projectContract = _projectContract;
     }
 
     function createDeveloper(string _name) public {
@@ -109,9 +109,9 @@ contract FundingService is Ownable {
     }
 
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
-        Project projectReg = Project(projectRegistry);
+        Project pc = Project(projectContract);
 
-        uint newProjectId = projectReg.createProject(_title, _description, _about,  _contributionGoal, msg.sender,  _developerId);
+        uint newProjectId = pc.createProject(_title, _description, _about,  _contributionGoal, msg.sender,  _developerId);
 
         Developer storage dev = developers[_developerId];
 
@@ -122,7 +122,7 @@ contract FundingService is Ownable {
     }
 
     function contributeToProject(uint _projectId) public payable {
-        (bool isActive, uint status, string memory title, string memory description, string memory about, uint contributionGoal, address developer, uint developerId) = Project(projectRegistry).getProject(_projectId);
+        (bool isActive, uint status, string memory title, string memory description, string memory about, uint contributionGoal, address developer, uint developerId) = Project(projectContract).getProject(_projectId);
 
         require(isActive, "Project does not exist."); // check that project exists
 
@@ -131,7 +131,7 @@ contract FundingService is Ownable {
             Contributor memory newContributor = Contributor({
                 addr: msg.sender,
                 activeProjects: new uint[](0)
-                });
+            });
 
             // add contributor to global contributors mapping
             contributors[msg.sender] = newContributor;

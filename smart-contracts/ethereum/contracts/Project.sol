@@ -1,22 +1,23 @@
 pragma solidity ^0.4.24;
 
+import "./FundingService.sol";
 import "./ProjectEternalStorage.sol";
 import "./libraries/ProjectStorageAccess.sol";
-import "./FundingService.sol";
 import "./libraries/ProjectLib.sol";
 import "./libraries/ProjectTimelineLib.sol";
 import "./libraries/ProjectContributionTierLib.sol";
 import "./libraries/ProjectTimelineProposalLib.sol";
 import "./libraries/ProjectMilestoneCompletionLib.sol";
 
-contract Project is ProjectEternalStorage {
+contract Project {
 
-    using ProjectLib for ProjectStorage;
-    using ProjectTimelineLib for ProjectStorage;
-    using ProjectContributionTierLib for ProjectStorage;
-    using ProjectTimelineProposalLib for ProjectStorage;
-    using ProjectMilestoneCompletionLib for ProjectStorage;
-    using ProjectStorageAccess for ProjectStorage;
+    using ProjectStorageAccess for address;
+
+    using ProjectLib for address;
+    using ProjectTimelineLib for address;
+    using ProjectContributionTierLib for address;
+    using ProjectTimelineProposalLib for address;
+    using ProjectMilestoneCompletionLib for address;
 
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
@@ -38,9 +39,14 @@ contract Project is ProjectEternalStorage {
     }
 
     address fundingService;
+    address pStorage;
 
     constructor(address _fundingService) public {
         fundingService = _fundingService;
+    }
+
+    function registerProjectStorage(address _projectStorage) public {
+        pStorage = _projectStorage;
     }
 
     function createProject(

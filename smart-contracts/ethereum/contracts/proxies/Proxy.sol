@@ -5,7 +5,7 @@ contract Proxy {
     function getImplementation() public view returns (address);
 
     function () payable public {
-        address impl = implementation();
+        address impl = getImplementation();
         require(impl != address(0));
 
         assembly {

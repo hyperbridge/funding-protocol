@@ -5,21 +5,21 @@ import "./ProjectStorageAccess.sol";
 
 library ProjectTimelineProposalLib {
 
-    using ProjectStorageAccess for ProjectEternalStorage.ProjectStorage;
+    using ProjectStorageAccess for address;
 
-    function proposeNewTimeline(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function proposeNewTimeline(address _pStorage, uint _projectId) external {
         // Can only suggest new timeline if one already exists
         require(_pStorage.getTimelineIsActive(_projectId), "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
         require(!_pStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
-        verifyPendingTimelinePercentage(_pStorage, _projectId);
+        verifyPendingTimelinePercentages(_pStorage, _projectId);
 
         _pStorage.setTimelineProposalTimestamp(_projectId, now);
         _pStorage.setTimelineProposalIsActive(_projectId, true);
     }
 
-    function verifyPendingTimelinePercentages(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) private view {
+    function verifyPendingTimelinePercentages(address _pStorage, uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
@@ -36,7 +36,7 @@ library ProjectTimelineProposalLib {
         }
     }
 
-    function voteOnTimelineProposal(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, bool _approved) external {
+    function voteOnTimelineProposal(address _pStorage, uint _projectId, bool _approved) external {
         // TimelineProposal must be active
         require(_pStorage.getTimelineProposalIsActive(_projectId), "No timeline proposal active.");
 
@@ -54,7 +54,7 @@ library ProjectTimelineProposalLib {
         _pStorage.setTimelineProposalIsActive(_projectId, true);
     }
 
-    function succeedTimelineProposal(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function succeedTimelineProposal(address _pStorage, uint _projectId) external {
         // Set current timeline to inactive
         _pStorage.setTimelineIsActive(_projectId, false);
 

@@ -5,9 +5,9 @@ import "./ProjectStorageAccess.sol";
 
 library ProjectContributionTierLib {
 
-    using ProjectStorageAccess for ProjectEternalStorage.ProjectStorage;
+    using ProjectStorageAccess for address;
 
-    function addTier(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) external {
+    function addTier(address _pStorage, uint _projectId, uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) external {
         uint currentLength = _pStorage.getPendingContributionTiersLength(_projectId);
 
         _pStorage.setPendingContributionTier(_projectId, currentLength, _contributorLimit, _maxContribution, _minContribution, _rewards);
@@ -15,7 +15,7 @@ library ProjectContributionTierLib {
         _pStorage.setPendingContributionTiersLength(_projectId, currentLength + 1);
     }
 
-    function finalizeTiers(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function finalizeTiers(address _pStorage, uint _projectId) external {
 
         _pStorage.deleteContributionTiers(_projectId);
 

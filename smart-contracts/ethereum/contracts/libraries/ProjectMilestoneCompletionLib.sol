@@ -5,9 +5,9 @@ import "./ProjectStorageAccess.sol";
 
 library ProjectMilestoneCompletionLib {
 
-    using ProjectStorageAccess for ProjectEternalStorage.ProjectStorage;
+    using ProjectStorageAccess for address;
 
-    function submitMilestoneCompletion(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, string _report) external {
+    function submitMilestoneCompletion(address _pStorage, uint _projectId, string _report) external {
         // Can only submit for milestone completion if timeline is active
         require(_pStorage.getTimelineIsActive(_projectId), "There is no active timeline.");
         // Can only submit for milestone completion if there is not already a vote on milestone completion
@@ -18,7 +18,7 @@ library ProjectMilestoneCompletionLib {
         _pStorage.setMilestoneCompletionSubmission(_projectId, now, 0, 0, _report, true, false);
     }
 
-    function voteOnMilestoneCompletion(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId, bool _approved) external {
+    function voteOnMilestoneCompletion(address _pStorage, uint _projectId, bool _approved) external {
         // MilestoneCompletionSubmission must be active
         require(_pStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
 
@@ -37,7 +37,7 @@ library ProjectMilestoneCompletionLib {
         _pStorage.setMilestoneCompletionSubmissionIsActive(_projectId, true);
     }
 
-    function succeedMilestoneCompletion(ProjectEternalStorage.ProjectStorage storage _pStorage, uint _projectId) external {
+    function succeedMilestoneCompletion(address _pStorage, uint _projectId) external {
         uint activeIndex = _pStorage.getActiveMilestoneIndex(_projectId);
         _pStorage.setTimelineMilestoneIsComplete(_projectId, activeIndex, true);
 
