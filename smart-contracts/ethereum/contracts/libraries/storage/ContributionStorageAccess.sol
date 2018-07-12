@@ -87,7 +87,11 @@ library ContributionStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributionAmount", _projectId, _contributorId)));
     }
 
-    function getContributorToAProject(address _fundingStorage, uint _projectId, uint _index) internal view returns (uint) {
+    function getProjectContributorListLength(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributorList.length", _projectId)));
+    }
+
+    function getProjectContributor(address _fundingStorage, uint _projectId, uint _index) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributorList", _projectId, _index)));
     }
 
@@ -124,7 +128,11 @@ library ContributionStorageAccess {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributionAmount", _projectId, _contributorId)), _amount);
     }
 
-    function setContributorToAProject(address _fundingStorage, uint _projectId, uint _index, uint _contributorId) internal {
+    function setProjectContributorListLength(address _fundingStorage, uint _projectId, uint _length) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributorList.length", _projectId)), _length);
+    }
+
+    function setProjectContributor(address _fundingStorage, uint _projectId, uint _index, uint _contributorId) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributorList", _projectId, _index)), _contributorId);
     }
 }

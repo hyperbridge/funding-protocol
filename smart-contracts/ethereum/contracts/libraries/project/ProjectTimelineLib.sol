@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "../Project.sol";
-import "../ProjectEternalStorage.sol";
+import "../FundingStorage.sol";
 import "./ProjectStorageAccess.sol";
 
 library ProjectTimelineLib {
