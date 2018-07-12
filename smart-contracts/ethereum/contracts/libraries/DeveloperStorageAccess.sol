@@ -19,14 +19,21 @@ library DeveloperStorageAccess {
             uint reputation                                                 (developer.reputation)
             address addr                                                    (developer.addr)
             string name                                                     (developer.name)
-            mapping(uint => bool) ownsProject                               (developer.ownsProject)
+            mapping(uint (id) => bool) ownsProject                          (developer.ownsProject)
             uint[] ownedProjectIds                                          (developer.projectIds)
+
+        In addition, there is a registry of developers:
+            mapping(address => uint (id)) developerMap                      (developer.developerMap)
     */
 
     // Getters
 
     function getNextId(address _pStorage) internal view returns (uint) {
         return FundingStorage(_pStorage).getUint(keccak256("developer.nextId"));
+    }
+
+    function getDeveloperId(address _pStorage, address _developerAddress) internal view returns (uint) {
+        return FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)));
     }
 
     function getReputation(address _pStorage, uint _developerId) internal view returns (uint) {
@@ -56,6 +63,10 @@ library DeveloperStorageAccess {
     function incrementNextId(address _pStorage) internal {
         uint currentId = FundingStorage(_pStorage).getUint(keccak256("developer.nextId"));
         FundingStorage(_pStorage).setUint(keccak256("developer.nextId"), currentId + 1);
+    }
+
+    function setDeveloperId(address _pStorage, address _developerAddress, uint _developerId) internal {
+        FundingStorage(_pStorage).setUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)), _developerId);
     }
 
     function setReputation(address _pStorage, uint _developerId, uint _rep) internal {
