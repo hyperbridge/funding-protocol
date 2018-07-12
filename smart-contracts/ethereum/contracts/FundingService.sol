@@ -1,40 +1,18 @@
 pragma solidity ^0.4.23;
 
 import "./Project.sol";
-import "./openzeppelin/Ownable.sol";
+import "./Developer.sol";
+import "./Contribution.sol";
 
-contract FundingService is Ownable {
+contract FundingService {
 
-    struct Developer {
-        uint id;
-        uint reputation;
-        address addr;
-        string name;
-        mapping(uint => bool) ownsProject; // project id => owned by this dev
-        uint[] projectIds; // the projects belonging to this developer
-    }
+    address public fundingStorage;
 
-    struct Contributor {
-        address addr;
-        mapping(uint => bool) contributesToProject;
-        uint[] activeProjects;
-    }
-
-    address public projectContract;
-
-    mapping(address => uint) public developerMap; // address => id
-    Developer[] public developers; // indexed by developer id
-
-    mapping(address => Contributor) public contributors;
-
-    mapping(uint => mapping(address => uint)) public projectContributionAmount; // project id => (contributor address => contribution amount)
-    mapping(uint => address[]) projectContributorList; // project address => Contributors[]
-
-    modifier devRestricted(uint _developerId) {
-        require(developers[_developerId].id == _developerId, "Developer does not exist."); // check that developer exists
-        require(msg.sender == developers[_developerId].addr, "Address does not match specified developer.");
-        _;
-    }
+//    modifier devRestricted(uint _developerId) {
+//        require(developers[_developerId].id == _developerId, "Developer does not exist."); // check that developer exists
+//        require(msg.sender == developers[_developerId].addr, "Address does not match specified developer.");
+//        _;
+//    }
 
     // modifier validProjectOnly(uint _developerId) {
     //     // Caller must be a project
@@ -50,63 +28,50 @@ contract FundingService is Ownable {
 
     event ProjectCreated(uint projectId);
 
-    constructor() public {
-        // reserve 0
-        developers.length++;
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
     }
 
     function () public payable {
         revert();
     }
 
-    function registerProjectContract(address _projectContract) public onlyOwner {
-        projectContract = _projectContract;
+    function registerFundingStorage(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
     }
 
     function createDeveloper(string _name) public {
-        require(developerMap[msg.sender] == 0, "This account is already a developer."); // require that this account is not already a developer
+        FundingStorage fs = FundingStorage(fundingStorage);
+        Developer developerContract = Developer(fs.getAddress(keccak256(abi.encodePacked("contract.developer"))));
+        developerContract.createDeveloper(_name, msg.sender);
 
-        Developer memory newDeveloper = Developer({
-            id: developers.length,
-            reputation: 0,
-            addr: msg.sender,
-            name: _name,
-            projectIds: new uint[](0)
-            });
-
-        developers.push(newDeveloper);
-        developerMap[msg.sender] = newDeveloper.id;
-
-        // Reserve 0 in developer's projectIds
-        Developer storage createdDeveloper = developers[newDeveloper.id];
-        createdDeveloper.projectIds.push(0);
     }
 
-    function getDeveloper(uint _id) public view returns (uint reputation, address addr, string name, uint[] projectIds) {
-        require(developers[_id].id == _id, "Developer does not exist."); // check that developer exists
+//    function getDeveloper(uint _id) public view returns (uint reputation, address addr, string name, uint[] projectIds) {
+//        require(developers[_id].id == _id, "Developer does not exist."); // check that developer exists
+//
+//        Developer memory dev = developers[_id];
+//        return (dev.reputation, dev.addr, dev.name, dev.projectIds);
+//    }
 
-        Developer memory dev = developers[_id];
-        return (dev.reputation, dev.addr, dev.name, dev.projectIds);
-    }
+//    function updateDeveloperReputation(uint _developerId, uint _val) public { //validProjectOnly(_developerId) {
+//        Developer storage developer = developers[_developerId];
+//
+//        uint currentRep = developer.reputation;
+//
+//        developer.reputation = currentRep + _val;
+//    }
 
-    function updateDeveloperReputation(uint _developerId, uint _val) public { //validProjectOnly(_developerId) {
-        Developer storage developer = developers[_developerId];
-
-        uint currentRep = developer.reputation;
-
-        developer.reputation = currentRep + _val;
-    }
-
-    function getDevelopers() public view returns (address[]) {
-        address[] memory addresses = new address[](developers.length - 1);
-
-        for (uint i = 1; i < developers.length; i++) {
-            Developer memory developer = developers[i];
-            addresses[i - 1] = (developer.addr);
-        }
-
-        return addresses;
-    }
+//    function getDevelopers() public view returns (address[]) {
+//        address[] memory addresses = new address[](developers.length - 1);
+//
+//        for (uint i = 1; i < developers.length; i++) {
+//            Developer memory developer = developers[i];
+//            addresses[i - 1] = (developer.addr);
+//        }
+//
+//        return addresses;
+//    }
 
     function createProject(string _title, string _description, string _about, uint _developerId, uint _contributionGoal) public devRestricted(_developerId) {
         Project pc = Project(projectContract);
@@ -157,7 +122,7 @@ contract FundingService is Ownable {
         // TODO - money to project
     }
 
-    function getProjectContributorList(uint _projectId) public view returns (address[]) {
-        return projectContributorList[_projectId];
-    }
+//    function getProjectContributorList(uint _projectId) public view returns (address[]) {
+//        return projectContributorList[_projectId];
+//    }
 }
