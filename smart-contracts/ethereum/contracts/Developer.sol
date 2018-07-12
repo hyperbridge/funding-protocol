@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./libraries/DeveloperStorageAccess.sol";
+import "./libraries/storage/DeveloperStorageAccess.sol";
 
 contract Developer {
 
@@ -18,6 +18,8 @@ contract Developer {
 
     address public fundingService;
     address public fundingStorage;
+
+    event DeveloperCreated(uint developerId);
 
     constructor(address _fundingService, address _fundingStorage) public {
         fundingService = _fundingService;
@@ -41,6 +43,8 @@ contract Developer {
         fundingStorage.setDeveloperId(msg.sender, id);
         fundingStorage.setName(id, _name);
         fundingStorage.setAddress(id, msg.sender);
+
+        emit DeveloperCreated(id);
     }
 
     function getDeveloper(uint _id) external view fundingServiceOnly
