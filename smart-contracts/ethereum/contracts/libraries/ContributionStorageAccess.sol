@@ -14,17 +14,17 @@ library ContributionStorageAccess {
     /*
         Each contributor (indexed by id) stores the following data in FundingStorage and accesses it through the
         associated namespace:
-            uint id                                                                         (contributor.id)
-            address addr                                                                    (contributor.addr)
-            mapping(uint => bool) contributesToProject                                      (contributor.contributesToProject)
-            uint[] fundedProjects                                                           (contributor.fundedProjects)
+            uint id                                                                     (contributor.id)
+            address addr                                                                (contributor.addr)
+            mapping(uint => bool) contributesToProject                                  (contributor.contributesToProject)
+            uint[] fundedProjects                                                       (contributor.fundedProjects)
 
         The FundingStorage tracks contribution amounts:
-            mapping(uint (projID) => mapping (address => uint)) projectContributionAmount   (contribution.projectContributionAmount)
-            mapping(uint => address[]) projectContributorList                               (contribution.projectContributorList)
+            mapping(uint (projID) => mapping (uint (id) => uint)) contributionAmount    (contribution.contributionAmount)
+            mapping(uint (projID) => address[]) contributorList                         (contribution.contributorList)
 
         There is a registry of contributors:
-            mapping(address => uint (id)) contributorMap                                    (contribution.contributorMap)
+            mapping(address => uint (id)) contributorMap                                (contribution.contributorMap)
     */
 
     // Getters
@@ -78,9 +78,17 @@ library ContributionStorageAccess {
             id: _contributorId,
             addr: getAddress(_fundingStorage, _contributorId),
             fundedProjects: getFundedProjects(_fundingStorage, _contributorId)
-            });
+        });
 
         return contributor;
+    }
+
+    function getContributionAmount(address _fundingStorage, uint _projectId, uint _contributorId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributionAmount", _projectId, _contributorId)));
+    }
+
+    function getContributorToAProject(address _fundingStorage, uint _projectId, uint _index) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributorList", _projectId, _index)));
     }
 
     // Setters
