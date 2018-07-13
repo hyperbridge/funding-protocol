@@ -1,26 +1,17 @@
 pragma solidity ^0.4.24;
 
 import "./libraries/storage/ContributionStorageAccess.sol";
+import "./libraries/storage/ProjectStorageAccess.sol";
+import "./FundingVault.sol";
 
 contract Contribution {
 
     using ContributionStorageAccess for address;
+    using ProjectStorageAccess for address;
 
-    modifier fundingServiceOnly() {
-        require(msg.sender == fundingService, "This action can only be performed by the Funding Service.");
-        _;
-    }
-
-    modifier validFundingContractOnly() {
-        // TODO
-        _;
-    }
-
-    address public fundingService;
     address public fundingStorage;
 
-    constructor(address _fundingService, address _fundingStorage) public {
-        fundingService = _fundingService;
+    constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
 
         // reserve contributorId 0
@@ -31,19 +22,17 @@ contract Contribution {
         revert();
     }
 
-    function contributeToProject(uint _projectId, address _contributor) external payable fundingServiceOnly {
-//        (bool isActive, uint status, string memory title, string memory description, string memory about, uint contributionGoal, address developer, uint developerId) = Project(projectContract).getProject(_projectId);
-//
-//        require(isActive, "Project does not exist."); // check that project exists
+    function contributeToProject(uint _projectId) external payable {
+        require(fundingStorage.getProjectIsActive(_projectId), "Project does not exist."); // check that project exists
 
-        uint contributorId = fundingStorage.getContributorId(_contributor);
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
 
         // if contributor doesn't exist, create it
         if (contributorId == 0) {
             contributorId = fundingStorage.generateNewId();
 
-            fundingStorage.setContributorId(_contributor, contributorId);
-            fundingStorage.setAddress(contributorId, _contributor);
+            fundingStorage.setContributorId(msg.sender, contributorId);
+            fundingStorage.setAddress(contributorId, msg.sender);
         }
 
         // if project is not in contributor's project list, add it
@@ -65,6 +54,7 @@ contract Contribution {
         uint currentAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
         fundingStorage.setContributionAmount(_projectId, contributorId, currentAmount + msg.value);
 
-        // TODO - money to project
+        FundingVault fv = FundingVault(fundingStorage.getAddress(keccak256(abi.encodePacked("contract.address", "FundingVault"))));
+        fv.depositEth.value(msg.value)();
     }
 }
