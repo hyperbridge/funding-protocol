@@ -31,6 +31,13 @@ contract FundingStorage is Ownable {
         boolStorage[keccak256(abi.encodePacked("contract.address", _newContract))] = true;
     }
 
+    function unregisterContract(string _name, address _contract) external onlyOwner {
+        require(addressStorage[keccak256(abi.encodePacked("contract.address", _name))] == _oldContract);
+
+        addressStorage[keccak256(abi.encodePacked("contract.address", _name))] = address(0);
+        boolStorage[keccak256(abi.encodePacked("contract.address", _contract))] = false;
+    }
+
     /**** Getters ***********/
 
     function getAddress(bytes32 _key) external view returns (address) {
