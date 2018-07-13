@@ -29,13 +29,13 @@ library ContributionStorageAccess {
 
     // Getters
 
-    function generateNewId(address _fundingStorage) internal view returns (uint) {
+    function generateNewContributorId(address _fundingStorage) internal view returns (uint) {
         uint id = getNextId(_fundingStorage);
         incrementNextId(_fundingStorage);
         return id;
     }
 
-    function getNextId(address _fundingStorage) internal view returns (uint) {
+    function getNextContributorId(address _fundingStorage) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256("contributor.nextId"));
     }
 
@@ -43,7 +43,7 @@ library ContributionStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributorMap", _contributorAddress)));
     }
 
-    function getAddress(address _fundingStorage, uint _contributorId) internal view returns (address) {
+    function getContributorAddress(address _fundingStorage, uint _contributorId) internal view returns (address) {
         return FundingStorage(_fundingStorage).getAddress(keccak256(abi.encodePacked("contributor.address", _contributorId)));
     }
 
@@ -51,15 +51,15 @@ library ContributionStorageAccess {
         return FundingStorage(_fundingStorage).getBool(keccak256(abi.encodePacked("contributor.contributesToProject", _contributorId, _projectId)));
     }
 
-    function getFundedProjectsLength(address _fundingStorage, uint _contributorId) internal view returns (uint) {
+    function getContributorFundedProjectsLength(address _fundingStorage, uint _contributorId) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contributor.fundedProjects.length", _contributorId)));
     }
 
-    function getFundedProject(address _fundingStorage, uint _contributorId, uint _index) internal view returns (uint) {
+    function getContributorFundedProject(address _fundingStorage, uint _contributorId, uint _index) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contributor.fundedProjects", _index, _contributorId)));
     }
 
-    function getFundedProjectIds(address _fundingStorage, uint _contributorId) internal view returns (uint[]) {
+    function getContributorFundedProjectIds(address _fundingStorage, uint _contributorId) internal view returns (uint[]) {
         uint length = getFundedProjectsLength(_fundingStorage, _contributorId);
 
         uint[] fundedIds;
@@ -99,7 +99,7 @@ library ContributionStorageAccess {
 
     // Setters
 
-    function incrementNextId(address _fundingStorage) internal {
+    function incrementNextContributorId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("contributor.nextId"));
         FundingStorage(_fundingStorage).setUint(keccak256("contributor.nextId"), currentId + 1);
     }
@@ -108,7 +108,7 @@ library ContributionStorageAccess {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributorMap", _contributorAddress)), _contributorId);
     }
 
-    function setAddress(address _fundingStorage, uint _contributorId, address _contributorAddress) internal {
+    function setContributorAddress(address _fundingStorage, uint _contributorId, address _contributorAddress) internal {
         FundingStorage(_fundingStorage).setAddress(keccak256(abi.encodePacked("contributor.address", _contributorId)), _contributorAddress);
     }
 
@@ -116,11 +116,11 @@ library ContributionStorageAccess {
         FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("contributor.contributesToProject", _contributorId, _projectId)), _contributesToProject);
     }
 
-    function setFundedProjectsLength(address _fundingStorage, uint _contributorId, uint _length) internal {
+    function setContributorFundedProjectsLength(address _fundingStorage, uint _contributorId, uint _length) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contributor.fundedProjects.length", _contributorId)), _length);
     }
 
-    function setFundedProject(address _fundingStorage, uint _contributorId, uint _index, uint _projectId) internal {
+    function setContributorFundedProject(address _fundingStorage, uint _contributorId, uint _index, uint _projectId) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contributor.fundedProjects", _index, _contributorId)), _projectId);
     }
 

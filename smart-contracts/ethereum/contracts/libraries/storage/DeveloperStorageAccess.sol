@@ -28,13 +28,13 @@ library DeveloperStorageAccess {
 
     // Getters
 
-    function generateNewId(address _fundingStorage) internal view returns (uint) {
+    function generateNewDeveloperId(address _fundingStorage) internal view returns (uint) {
         uint id = getNextId(_fundingStorage);
         incrementNextId(_fundingStorage);
         return id;
     }
 
-    function getNextId(address _fundingStorage) internal view returns (uint) {
+    function getNextDeveloperId(address _fundingStorage) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256("developer.nextId"));
     }
 
@@ -42,31 +42,31 @@ library DeveloperStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)));
     }
 
-    function getReputation(address _fundingStorage, uint _developerId) internal view returns (uint) {
+    function getDeveloperReputation(address _fundingStorage, uint _developerId) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.reputation", _developerId)));
     }
 
-    function getAddress(address _fundingStorage, uint _developerId) internal view returns (address) {
+    function getDeveloperAddress(address _fundingStorage, uint _developerId) internal view returns (address) {
         return FundingStorage(_fundingStorage).getAddress(keccak256(abi.encodePacked("developer.address", _developerId)));
     }
 
-    function getName(address _fundingStorage, uint _developerId) internal view returns (string) {
+    function getDeveloperName(address _fundingStorage, uint _developerId) internal view returns (string) {
         return FundingStorage(_fundingStorage).getString(keccak256(abi.encodePacked("developer.name", _developerId)));
     }
 
-    function getOwnsProject(address _fundingStorage, uint _developerId, uint _projectId) internal view returns (bool) {
+    function getDeveloperOwnsProject(address _fundingStorage, uint _developerId, uint _projectId) internal view returns (bool) {
         return FundingStorage(_fundingStorage).getBool(keccak256(abi.encodePacked("developer.ownsProject", _developerId, _projectId)));
     }
 
-    function getOwnedProjectIdsLength(address _fundingStorage, uint _developerId) internal view returns (uint) {
+    function getDeveloperOwnedProjectIdsLength(address _fundingStorage, uint _developerId) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.projectIds.length", _developerId)));
     }
 
-    function getOwnedProjectId(address _fundingStorage, uint _developerId, uint _index) internal view returns (uint) {
+    function getDeveloperOwnedProjectId(address _fundingStorage, uint _developerId, uint _index) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.projectIds", _index, _developerId)));
     }
 
-    function getOwnedProjectIds(address _fundingStorage, uint _developerId) internal view returns (uint[]) {
+    function getDeveloperOwnedProjectIds(address _fundingStorage, uint _developerId) internal view returns (uint[]) {
         uint length = getOwnedProjectIdsLength(_fundingStorage, _developerId);
 
         uint[] ownedIds;
@@ -96,7 +96,7 @@ library DeveloperStorageAccess {
 
     // Setters
 
-    function incrementNextId(address _fundingStorage) internal {
+    function incrementNextDeveloperId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("developer.nextId"));
         FundingStorage(_fundingStorage).setUint(keccak256("developer.nextId"), currentId + 1);
     }
@@ -105,27 +105,27 @@ library DeveloperStorageAccess {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)), _developerId);
     }
 
-    function setReputation(address _fundingStorage, uint _developerId, uint _rep) internal {
+    function setDeveloperReputation(address _fundingStorage, uint _developerId, uint _rep) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.reputation", _developerId)), _rep);
     }
 
-    function setAddress(address _fundingStorage, uint _developerId, address _address) internal {
+    function setDeveloperAddress(address _fundingStorage, uint _developerId, address _address) internal {
         FundingStorage(_fundingStorage).setAddress(keccak256(abi.encodePacked("developer.address", _developerId)), _address);
     }
 
-    function setName(address _fundingStorage, uint _developerId, string _name) internal {
+    function setDeveloperName(address _fundingStorage, uint _developerId, string _name) internal {
         FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("developer.name", _developerId)), _name);
     }
 
-    function setOwnsProject(address _fundingStorage, uint _developerId, uint _projectId, bool _ownsProject) internal {
+    function setDeveloperOwnsProject(address _fundingStorage, uint _developerId, uint _projectId, bool _ownsProject) internal {
         FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("developer.ownsProject", _developerId, _projectId)), _ownsProject);
     }
 
-    function setOwnedProjectIdsLength(address _fundingStorage, uint _developerId, uint _length) internal {
+    function setDeveloperOwnedProjectIdsLength(address _fundingStorage, uint _developerId, uint _length) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.projectIds.length", _developerId)), _length);
     }
 
-    function setOwnedProjectId(address _fundingStorage, uint _developerId, uint _index, uint _projectId) internal {
+    function setDeveloperOwnedProjectId(address _fundingStorage, uint _developerId, uint _index, uint _projectId) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.projectIds", _index, _developerId)), _projectId);
     }
 }
