@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../Project.sol";
 import "../FundingStorage.sol";
-import "./ProjectStorageAccess.sol";
+import "../storage/ProjectStorageAccess.sol";
 
 library ProjectLib {
 
@@ -39,7 +39,7 @@ library ProjectLib {
         return id;
     }
 
-    function submitProjectForReview(address _pStorage, uint _projectId) public { // devRestricted(_developerId) {
+    function submitProjectForReview(address _pStorage, uint _projectId) external {
         // check that project exists
         require(_pStorage.getProjectIsActive(_projectId), "Project does not exist.");
 
