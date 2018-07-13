@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract ProjectEternalStorage {
+import "./openzeppelin/Ownable.sol";
+
+contract FundingStorage is Ownable {
 
 
     /**** Storage Types *******/
@@ -14,16 +16,20 @@ contract ProjectEternalStorage {
 
     /*** Modifiers ************/
 
-    // modifier onlyLatestProjectContract() {
-    //     // The owner is only allowed to set the storage upon deployment to register the initial contracts, afterwards their direct access is disabled
-    //     if (msg.sender == owner) {
-    //         require(boolStorage[keccak256("contract.storage.initialised")] == false);
-    //     } else {
-    //         // Make sure the access is permitted to only contracts in our Dapp
-    //         require(addressStorage[keccak256("contract.address", msg.sender)] != 0x0);
-    //     }
-    //     _;
-    // }
+     modifier onlyLatestFundingContract() {
+        require(boolStorage[keccak256(abi.encodePacked("contract.address", msg.sender))]);
+         _;
+     }
+
+    /**** Contract Registration ***********/
+
+    function registerContract(string _name, address _oldContract, address _newContract) external onlyOwner {
+        require(_oldContract == address(0) || addressStorage[keccak256(abi.encodePacked("contract.address", _name))] == _oldContract);
+
+        addressStorage[keccak256(abi.encodePacked("contract.address", _name))] = _newContract;
+        boolStorage[keccak256(abi.encodePacked("contract.address", _oldContract))] = false;
+        boolStorage[keccak256(abi.encodePacked("contract.address", _newContract))] = true;
+    }
 
     /**** Getters ***********/
 
@@ -54,53 +60,53 @@ contract ProjectEternalStorage {
     /**** Setters ***********/
 
 
-    function setAddress(bytes32 _key, address _value) external {
+    function setAddress(bytes32 _key, address _value) external onlyLatestFundingContract {
         addressStorage[_key] = _value;
     }
 
-    function setUint(bytes32 _key, uint _value) external {
+    function setUint(bytes32 _key, uint _value) external onlyLatestFundingContract {
         uIntStorage[_key] = _value;
     }
 
-    function setString(bytes32 _key, string _value) external {
+    function setString(bytes32 _key, string _value) external onlyLatestFundingContract {
         stringStorage[_key] = _value;
     }
 
-    function setBytes(bytes32 _key, bytes _value) external {
+    function setBytes(bytes32 _key, bytes _value) external onlyLatestFundingContract {
         bytesStorage[_key] = _value;
     }
 
-    function setBool(bytes32 _key, bool _value) external {
+    function setBool(bytes32 _key, bool _value) external onlyLatestFundingContract {
         boolStorage[_key] = _value;
     }
 
-    function setInt(bytes32 _key, int _value) external {
+    function setInt(bytes32 _key, int _value) external onlyLatestFundingContract {
         intStorage[_key] = _value;
     }
 
     /**** Deletion ***********/
 
-    function deleteAddress(bytes32 _key) external {
+    function deleteAddress(bytes32 _key) external onlyLatestFundingContract {
         delete addressStorage[_key];
     }
 
-    function deleteUint(bytes32 _key) external {
+    function deleteUint(bytes32 _key) external onlyLatestFundingContract {
         delete uIntStorage[_key];
     }
 
-    function deleteString(bytes32 _key) external {
+    function deleteString(bytes32 _key) external onlyLatestFundingContract {
         delete stringStorage[_key];
     }
 
-    function deleteBytes(bytes32 _key) external {
+    function deleteBytes(bytes32 _key) external onlyLatestFundingContract {
         delete bytesStorage[_key];
     }
 
-    function deleteBool(bytes32 _key) external {
+    function deleteBool(bytes32 _key) external onlyLatestFundingContract {
         delete boolStorage[_key];
     }
 
-    function deleteInt(bytes32 _key) external {
+    function deleteInt(bytes32 _key) external onlyLatestFundingContract {
         delete intStorage[_key];
     }
 }
