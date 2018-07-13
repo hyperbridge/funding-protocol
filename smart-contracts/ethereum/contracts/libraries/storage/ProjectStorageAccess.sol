@@ -114,7 +114,7 @@ library ProjectStorageAccess {
 
     // Getters
 
-    function getNextId(address _pStorage) internal view returns (uint) {
+    function getNextProjectId(address _pStorage) internal view returns (uint) {
         return FundingStorage(_pStorage).getUint(keccak256("project.nextId"));
     }
 
@@ -122,39 +122,39 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)));
     }
 
-    function getStatus(address _pStorage, uint _projectId) internal view returns (uint) {
+    function getProjectStatus(address _pStorage, uint _projectId) internal view returns (uint) {
         return FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.status", _projectId)));
     }
 
-    function getTitle(address _pStorage, uint _projectId) internal view returns (string) {
+    function getProjectTitle(address _pStorage, uint _projectId) internal view returns (string) {
         return FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.title", _projectId)));
     }
 
-    function getDescription(address _pStorage, uint _projectId) internal view returns (string) {
+    function getProjectDescription(address _pStorage, uint _projectId) internal view returns (string) {
         return FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.description", _projectId)));
     }
 
-    function getAbout(address _pStorage, uint _projectId) internal view returns (string) {
+    function getProjectAbout(address _pStorage, uint _projectId) internal view returns (string) {
         return FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.about", _projectId)));
     }
 
-    function getDeveloper(address _pStorage, uint _projectId) internal view returns (address) {
+    function getProjectDeveloper(address _pStorage, uint _projectId) internal view returns (address) {
         return FundingStorage(_pStorage).getAddress(keccak256(abi.encodePacked("project.developer", _projectId)));
     }
 
-    function getDeveloperId(address _pStorage, uint _projectId) internal view returns (uint) {
+    function getProjectDeveloperId(address _pStorage, uint _projectId) internal view returns (uint) {
         return FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
     }
 
-    function getContributionGoal(address _pStorage, uint _projectId) internal view returns (uint) {
+    function getProjectContributionGoal(address _pStorage, uint _projectId) internal view returns (uint) {
         return FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)));
     }
 
-    function getNoRefunds(address _pStorage, uint _projectId) internal view returns (bool) {
+    function getProjectNoRefunds(address _pStorage, uint _projectId) internal view returns (bool) {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)));
     }
 
-    function getNoTimeline(address _pStorage, uint _projectId) internal view returns (bool) {
+    function getProjectNoTimeline(address _pStorage, uint _projectId) internal view returns (bool) {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)));
     }
 
@@ -206,18 +206,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
     }
 
-    function getTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
-        require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId))), "Index is outside of accessible range.");
-
-        title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
-        description = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)));
-        percentage = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)));
-        isComplete = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)));
-
-        return (title, description, percentage, isComplete);
-    }
-
-    function _getTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
+    function getTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
         require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId))), "Index is outside of accessible range.");
 
         string memory title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)));
@@ -259,18 +248,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
     }
 
-    function getPendingTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
-        require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId))), "Index is outside of accessible range.");
-
-        title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
-        description = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)));
-        percentage = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)));
-        isComplete = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)));
-
-        return (title, description, percentage, isComplete);
-    }
-
-    function _getPendingTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
+    function getPendingTimelineMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
         require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId))), "Index is outside of accessible range.");
 
         string memory title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)));
@@ -316,18 +294,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)));
     }
 
-    function getCompletedMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
-        require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId))), "Index is outside of accessible range.");
-
-        title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)));
-        description = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)));
-        percentage = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)));
-        isComplete = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)));
-
-        return (title, description, percentage, isComplete);
-    }
-
-    function _getCompletedMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
+    function getCompletedMilestone(address _pStorage, uint _projectId, uint _index) internal view returns (Milestone) {
         require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.completedMilestones.length", _projectId))), "Index is outside of accessible range.");
 
         string memory title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)));
@@ -377,19 +344,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _timelineIndex, _milestoneIndex, _projectId)));
     }
 
-    function getTimelineHistoryMilestone(address _pStorage, uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (string memory title, string memory description, uint percentage, bool isComplete) {
-        require(_timelineIndex < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId))), "Timeline index is outside of accessible range.");
-        require(_milestoneIndex < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex))), "Milestone index is outside of accessible range.");
-
-        title = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _timelineIndex, _milestoneIndex, _projectId)));
-        description = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _timelineIndex, _milestoneIndex, _projectId)));
-        percentage = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _timelineIndex, _milestoneIndex, _projectId)));
-        isComplete = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _timelineIndex, _milestoneIndex, _projectId)));
-
-        return (title, description, percentage, isComplete);
-    }
-
-    function _getTimelineHistoryMilestone(address _pStorage, uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (Milestone) {
+    function getTimelineHistoryMilestone(address _pStorage, uint _projectId, uint _timelineIndex, uint _milestoneIndex) internal view returns (Milestone) {
         require(_timelineIndex < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineHistory.length", _projectId))), "Timeline index is outside of accessible range.");
         require(_milestoneIndex < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.length", _projectId, _timelineIndex))), "Milestone index is outside of accessible range.");
 
@@ -438,18 +393,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)));
     }
 
-    function getContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (uint contributorLimit, uint minContribution, uint maxContribution, string rewards) {
-        require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId))), "Index is outside of accessible range.");
-
-        contributorLimit = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)));
-        minContribution = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)));
-        maxContribution = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)));
-        rewards = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)));
-
-        return (contributorLimit, minContribution, maxContribution, rewards);
-    }
-
-    function _getContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (ContributionTier) {
+    function getContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (ContributionTier) {
         require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId))), "Index is outside of accessible range.");
 
         uint contributorLimit = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)));
@@ -495,18 +439,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)));
     }
 
-    function getPendingContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (uint contributorLimit, uint minContribution, uint maxContribution, string rewards) {
-        require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId))), "Index is outside of accessible range.");
-
-        contributorLimit = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)));
-        minContribution = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)));
-        maxContribution = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)));
-        rewards = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)));
-
-        return (contributorLimit, minContribution, maxContribution, rewards);
-    }
-
-    function _getPendingContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (ContributionTier) {
+    function getPendingContributionTier(address _pStorage, uint _projectId, uint _index) internal view returns (ContributionTier) {
         require(_index < FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId))), "Index is outside of accessible range.");
 
         uint contributorLimit = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)));
@@ -550,18 +483,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)));
     }
 
-    function getTimelineProposal(address _pStorage, uint _projectId) internal view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
-        timestamp = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
-        approvalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
-        disapprovalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
-        isActive = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)));
-        hasFailed = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)));
-
-        return (timestamp, approvalCount, disapprovalCount, isActive, hasFailed);
-    }
-
-
-    function _getTimelineProposal(address _pStorage, uint _projectId) internal view returns (TimelineProposal) {
+    function getTimelineProposal(address _pStorage, uint _projectId) internal view returns (TimelineProposal) {
         uint timestamp = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)));
         uint approvalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)));
         uint disapprovalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)));
@@ -609,18 +531,7 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.voters", _address, _projectId)));
     }
 
-    function getMilestoneCompletionSubmission(address _pStorage, uint _projectId) internal view returns (uint timestamp, uint approvalCount, uint disapprovalCount, string report, bool isActive, bool hasFailed) {
-        timestamp = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)));
-        approvalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)));
-        disapprovalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)));
-        report = FundingStorage(_pStorage).getString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)));
-        isActive = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)));
-        hasFailed = FundingStorage(_pStorage).getBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)));
-
-        return (timestamp, approvalCount, disapprovalCount, report, isActive, hasFailed);
-    }
-
-    function _getMilestoneCompletionSubmission(address _pStorage, uint _projectId) internal view returns (MilestoneCompletionSubmission) {
+    function getMilestoneCompletionSubmission(address _pStorage, uint _projectId) internal view returns (MilestoneCompletionSubmission) {
         uint timestamp = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)));
         uint approvalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)));
         uint disapprovalCount = FundingStorage(_pStorage).getUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)));
@@ -659,7 +570,7 @@ library ProjectStorageAccess {
 
     // // Setters
 
-    function incrementNextId(address _pStorage) internal {
+    function incrementNextProjectId(address _pStorage) internal {
         uint currentId = FundingStorage(_pStorage).getUint(keccak256("project.nextId"));
         FundingStorage(_pStorage).setUint(keccak256("project.nextId"), currentId + 1);
     }
@@ -668,39 +579,39 @@ library ProjectStorageAccess {
         return FundingStorage(_pStorage).setBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)), _isActive);
     }
 
-    function setStatus(address _pStorage, uint _projectId, uint _status) internal {
+    function setProjectStatus(address _pStorage, uint _projectId, uint _status) internal {
         FundingStorage(_pStorage).setUint(keccak256(abi.encodePacked("project.status", _projectId)), _status);
     }
 
-    function setTitle(address _pStorage, uint _projectId, string _title) internal {
+    function setProjectTitle(address _pStorage, uint _projectId, string _title) internal {
         FundingStorage(_pStorage).setString(keccak256(abi.encodePacked("project.title", _projectId)), _title);
     }
 
-    function setDescription(address _pStorage, uint _projectId, string _description) internal {
+    function setProjectDescription(address _pStorage, uint _projectId, string _description) internal {
         FundingStorage(_pStorage).setString(keccak256(abi.encodePacked("project.description", _projectId)), _description);
     }
 
-    function setAbout(address _pStorage, uint _projectId, string _about) internal {
+    function setProjectAbout(address _pStorage, uint _projectId, string _about) internal {
         FundingStorage(_pStorage).setString(keccak256(abi.encodePacked("project.about", _projectId)), _about);
     }
 
-    function setDeveloper(address _pStorage, uint _projectId, address _developer) internal {
+    function setProjectDeveloper(address _pStorage, uint _projectId, address _developer) internal {
         FundingStorage(_pStorage).setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
     }
 
-    function setDeveloperId(address _pStorage, uint _projectId, uint _developerId) internal {
+    function setProjectDeveloperId(address _pStorage, uint _projectId, uint _developerId) internal {
         FundingStorage(_pStorage).setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
     }
 
-    function setContributionGoal(address _pStorage, uint _projectId, uint _goal) internal {
+    function setProjectContributionGoal(address _pStorage, uint _projectId, uint _goal) internal {
         FundingStorage(_pStorage).setUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)), _goal);
     }
 
-    function setNoRefunds(address _pStorage, uint _projectId, bool _noRefunds) internal {
+    function setProjectNoRefunds(address _pStorage, uint _projectId, bool _noRefunds) internal {
         FundingStorage(_pStorage).setBool(keccak256(abi.encodePacked("project.noRefunds", _projectId)), _noRefunds);
     }
 
-    function setNoTimeline(address _pStorage, uint _projectId, bool _noTimeline) internal {
+    function setProjectNoTimeline(address _pStorage, uint _projectId, bool _noTimeline) internal {
         FundingStorage(_pStorage).setBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), _noTimeline);
     }
 
