@@ -6,35 +6,31 @@ import "./openzeppelin/Pausable.sol";
 
 contract FundingVault is Pausable {
 
-    modifier fundingServiceOnly() {
-        require (msg.sender == fundingService);
+    modifier onlyLatestFundingContract() {
+        require(FundingStorage(fundingStorage).boolStorage[keccak256(abi.encodePacked("contract.address", msg.sender))]);
         _;
     }
-    address fundingService;
 
+    address fundingStorage;
 
-    constructor(address _fundingService) public {
-        setFundingServiceContract(_fundingService);
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
     }
 
     function () public payable {
         revert();
     }
 
-    function setFundingServiceContract(address _fundingService) public onlyOwner {
-        fundingService = _fundingService;
-    }
-
     event EthDeposited(uint amount);
 
-    function depositEth() public payable fundingServiceOnly whenNotPaused {
+    function depositEth() public payable onlyLatestFundingContract whenNotPaused {
 
         emit EthDeposited(msg.value);
     }
 
     event EthWithdrawn(address receiver, uint amount);
 
-    function withdrawEth(uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
+    function withdrawEth(uint _amount, address _receiver) public onlyLatestFundingContract whenNotPaused {
         require(_receiver != address(0));
         require(_amount > 0);
         require(getBalance() >= _amount);
@@ -46,7 +42,7 @@ contract FundingVault is Pausable {
 
     event TokenWithdrawn(address tokenAddress, address receiver, uint amount);
 
-    function withdrawToken(address _tokenAddress, uint _amount, address _receiver) public fundingServiceOnly whenNotPaused {
+    function withdrawToken(address _tokenAddress, uint _amount, address _receiver) public onlyLatestFundingContract whenNotPaused {
         require(_receiver != address(0));
         require(_amount > 0);
         ERC20 token = ERC20(_tokenAddress);
@@ -60,5 +56,4 @@ contract FundingVault is Pausable {
     function getBalance() public view returns(uint) {
         return address(this).balance;
     }
-
 }
