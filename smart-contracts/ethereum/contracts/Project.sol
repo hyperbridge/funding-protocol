@@ -22,6 +22,16 @@ contract Project {
     using ProjectTimelineProposalLib for address;
     using ProjectMilestoneCompletionLib for address;
 
+    modifier onlyProjectDeveloper(uint _projectId) {
+        require(msg.sender == fundingStorage.getProjectDeveloper(_projectId), "You must be the project developer to perform this action.");
+        _;
+    }
+
+    modifier onlyProjectContributor() {
+
+        _;
+    }
+
     enum Status {Draft, Pending, Published, Removed, Rejected}
     
     address fundingStorage;
@@ -103,6 +113,7 @@ contract Project {
         uint _percentage
     )
         external
+        onlyProjectDeveloper(_projectId)
     {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
 
@@ -118,29 +129,30 @@ contract Project {
         uint _percentage
     )
         external
+        onlyProjectDeveloper(_projectId)
     {
         require(_percentage <= 100, "Milestone percentage cannot be greater than 100.");
 
         fundingStorage.editMilestone(_projectId, _isPending, _index, _title, _description, _percentage);
     }
 
-    function clearPendingTimeline(uint _projectId) external {
+    function clearPendingTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) {
         fundingStorage.clearPendingTimeline(_projectId);
     }
 
-    function submitProjectForReview(uint _projectId) external {
+    function submitProjectForReview(uint _projectId) external onlyProjectDeveloper(_projectId) {
         fundingStorage.submitProjectForReview(_projectId);
     }
 
-    function proposeNewTimeline(uint _projectId) external {
+    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) {
         fundingStorage.proposeNewTimeline(_projectId);
     }
 
-    function voteOnTimelineProposal(uint _projectId, bool _approved) external {
+    function voteOnTimelineProposal(uint _projectId, bool _approved) external onlyProjectContributor {
         fundingStorage.voteOnTimelineProposal(_projectId, _approved);
     }
 
-    function finalizeTimelineProposal(uint _projectId) external {
+    function finalizeTimelineProposal(uint _projectId) external onlyProjectDeveloper(_projectId) {
         // TimelineProposal must be active
         require(fundingStorage.getTimelineProposalIsActive(_projectId), "There is no timeline proposal active.");
 
@@ -167,15 +179,15 @@ contract Project {
         return ((approvalCount > numContributors * 75 / 100) || (approvalCount > votingThreshold));
     }
 
-    function submitMilestoneCompletion(uint _projectId, string _report) external {
+    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) {
         fundingStorage.submitMilestoneCompletion(_projectId, _report);
     }
 
-    function voteOnMilestoneCompletion(uint _projectId, bool _approved) external {
+    function voteOnMilestoneCompletion(uint _projectId, bool _approved) external onlyProjectContributor {
         fundingStorage.voteOnMilestoneCompletion(_projectId, _approved);
     }
 
-    function finalizeMilestoneCompletion(uint _projectId) external {
+    function finalizeMilestoneCompletion(uint _projectId) external onlyProjectDeveloper(_projectId) {
         // MilestoneCompletionSubmission must be active
         require(fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
 
@@ -187,7 +199,7 @@ contract Project {
         }
     }
 
-    function hasPassedMilestoneCompletionVote(uint _projectId) external view returns (bool) {
+    function hasPassedMilestoneCompletionVote(uint _projectId) private view returns (bool) {
         uint numContributors = fundingStorage.getProjectContributorListLength(_projectId);
         uint approvalCount = fundingStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
         uint disapprovalCount = fundingStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
@@ -210,6 +222,7 @@ contract Project {
         string _rewards
     )
         external
+        onlyProjectDeveloper(_projectId)
     {
         fundingStorage.addTier(_projectId, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
@@ -223,11 +236,12 @@ contract Project {
         string _rewards
     )
         external
+        onlyProjectDeveloper(_projectId)
     {
         fundingStorage.setPendingContributionTier(_projectId, _index, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
-    function finalizeTiers(uint _projectId) external {
+    function finalizeTiers(uint _projectId) external onlyProjectDeveloper(_projectId) {
         fundingStorage.finalizeTiers(_projectId);
     }
 }
