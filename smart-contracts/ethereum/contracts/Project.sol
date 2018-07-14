@@ -27,8 +27,10 @@ contract Project {
         _;
     }
 
-    modifier onlyProjectContributor() {
-
+    modifier onlyProjectContributor(uint _projectId) {
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
+        require(contributorId != 0, "This address is not a contributor.");
+        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address is not a contributor to this project.");
         _;
     }
 
@@ -148,7 +150,7 @@ contract Project {
         fundingStorage.proposeNewTimeline(_projectId);
     }
 
-    function voteOnTimelineProposal(uint _projectId, bool _approved) external onlyProjectContributor {
+    function voteOnTimelineProposal(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
         fundingStorage.voteOnTimelineProposal(_projectId, _approved);
     }
 
@@ -183,7 +185,7 @@ contract Project {
         fundingStorage.submitMilestoneCompletion(_projectId, _report);
     }
 
-    function voteOnMilestoneCompletion(uint _projectId, bool _approved) external onlyProjectContributor {
+    function voteOnMilestoneCompletion(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
         fundingStorage.voteOnMilestoneCompletion(_projectId, _approved);
     }
 
