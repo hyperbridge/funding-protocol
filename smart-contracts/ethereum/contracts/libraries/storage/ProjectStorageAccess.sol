@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../FundingStorage.sol";
+import "../../FundingStorage.sol";
 
 library ProjectStorageAccess {
 

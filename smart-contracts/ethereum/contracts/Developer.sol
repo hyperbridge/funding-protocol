@@ -49,7 +49,7 @@ contract Developer {
             uint[] ownedProjectIds
         )
     {
-        DeveloperStorageAccess.Developer memory developer = pStorage.getDeveloper(_id);
+        DeveloperStorageAccess.Developer memory developer = fundingStorage.getDeveloper(_id);
         return (_id, developer.addr, developer.name, developer.reputation, developer.ownedProjectIds);
     }
 

@@ -1,95 +1,94 @@
 pragma solidity ^0.4.24;
 
-import "../FundingStorage.sol";
 import "../storage/ProjectStorageAccess.sol";
 
 library ProjectTimelineProposalLib {
 
     using ProjectStorageAccess for address;
 
-    function proposeNewTimeline(address _pStorage, uint _projectId) external {
+    function proposeNewTimeline(address _fundingStorage, uint _projectId) external {
         // Can only suggest new timeline if one already exists
-        require(_pStorage.getTimelineIsActive(_projectId), "New timeline cannot be proposed if there is no current active timeline.");
+        require(_fundingStorage.getTimelineIsActive(_projectId), "New timeline cannot be proposed if there is no current active timeline.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
-        require(!_pStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
+        require(!_fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
-        verifyPendingTimelinePercentages(_pStorage, _projectId);
+        verifyPendingTimelinePercentages(_fundingStorage, _projectId);
 
-        _pStorage.setTimelineProposalTimestamp(_projectId, now);
-        _pStorage.setTimelineProposalIsActive(_projectId, true);
+        _fundingStorage.setTimelineProposalTimestamp(_projectId, now);
+        _fundingStorage.setTimelineProposalIsActive(_projectId, true);
     }
 
-    function verifyPendingTimelinePercentages(address _pStorage, uint _projectId) private view {
+    function verifyPendingTimelinePercentages(address _fundingStorage, uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!_pStorage.getNoTimeline(_projectId)) {
-            uint pendingTimelineLength = _pStorage.getPendingTimelineLength(_projectId);
+        if (!_fundingStorage.getNoTimeline(_projectId)) {
+            uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
             require(pendingTimelineLength > 0, "Pending timeline is empty.");
 
             uint percentageAcc = 0;
             for (uint i = 0; i < pendingTimelineLength; i++) {
-                percentageAcc += _pStorage.getPendingTimelineMilestonePercentage(_projectId, i);
+                percentageAcc += _fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
             }
 
             require(percentageAcc == 100, "Milestone percentages must add to 100.");
         }
     }
 
-    function voteOnTimelineProposal(address _pStorage, uint _projectId, bool _approved) external {
+    function voteOnTimelineProposal(address _fundingStorage, uint _projectId, bool _approved) external {
         // TimelineProposal must be active
-        require(_pStorage.getTimelineProposalIsActive(_projectId), "No timeline proposal active.");
+        require(_fundingStorage.getTimelineProposalIsActive(_projectId), "No timeline proposal active.");
 
         // Contributor must not have already voted
-        require(!_pStorage.getTimelineProposalHasVoted(_projectId, msg.sender), "This contributor address has already voted.");
+        require(!_fundingStorage.getTimelineProposalHasVoted(_projectId, msg.sender), "This contributor address has already voted.");
 
         if (_approved) {
-            uint currentApprovalCount = _pStorage.getTimelineProposalApprovalCount(_projectId);
-            _pStorage.setTimelineProposalApprovalCount(_projectId, currentApprovalCount + 1);
+            uint currentApprovalCount = _fundingStorage.getTimelineProposalApprovalCount(_projectId);
+            _fundingStorage.setTimelineProposalApprovalCount(_projectId, currentApprovalCount + 1);
         } else {
-            uint currentDisapprovalCount = _pStorage.getTimelineProposalDisapprovalCount(_projectId);
-            _pStorage.setTimelineProposalDisapprovalCount(_projectId, currentDisapprovalCount + 1);
+            uint currentDisapprovalCount = _fundingStorage.getTimelineProposalDisapprovalCount(_projectId);
+            _fundingStorage.setTimelineProposalDisapprovalCount(_projectId, currentDisapprovalCount + 1);
         }
 
-        _pStorage.setTimelineProposalIsActive(_projectId, true);
+        _fundingStorage.setTimelineProposalIsActive(_projectId, true);
     }
 
-    function succeedTimelineProposal(address _pStorage, uint _projectId) external {
+    function succeedTimelineProposal(address _fundingStorage, uint _projectId) external {
         // Set current timeline to inactive
-        _pStorage.setTimelineIsActive(_projectId, false);
+        _fundingStorage.setTimelineIsActive(_projectId, false);
 
         // Push old timeline into timeline history
-        uint historyLength = _pStorage.getTimelineHistoryLength(_projectId);
-        uint timelineLength = _pStorage.getTimelineLength(_projectId);
+        uint historyLength = _fundingStorage.getTimelineHistoryLength(_projectId);
+        uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
         for (uint i = 0; i < timelineLength; i++) {
-            ProjectStorageAccess.Milestone memory milestone = _pStorage._getTimelineMilestone(_projectId, i);
-            _pStorage.setTimelineHistoryMilestoneTitle(_projectId, historyLength, i, milestone.title);
-            _pStorage.setTimelineHistoryMilestoneDescription(_projectId, historyLength, i, milestone.description);
-            _pStorage.setTimelineHistoryMilestonePercentage(_projectId, historyLength, i, milestone.percentage);
-            _pStorage.setTimelineHistoryMilestoneIsComplete(_projectId, historyLength, i, milestone.isComplete);
+            ProjectStorageAccess.Milestone memory milestone = _fundingStorage._getTimelineMilestone(_projectId, i);
+            _fundingStorage.setTimelineHistoryMilestoneTitle(_projectId, historyLength, i, milestone.title);
+            _fundingStorage.setTimelineHistoryMilestoneDescription(_projectId, historyLength, i, milestone.description);
+            _fundingStorage.setTimelineHistoryMilestonePercentage(_projectId, historyLength, i, milestone.percentage);
+            _fundingStorage.setTimelineHistoryMilestoneIsComplete(_projectId, historyLength, i, milestone.isComplete);
         }
 
-        _pStorage.setTimelineHistoryLength(_projectId, historyLength + 1);
-        _pStorage.setTimelineHistoryMilestonesLength(_projectId, historyLength, timelineLength);
+        _fundingStorage.setTimelineHistoryLength(_projectId, historyLength + 1);
+        _fundingStorage.setTimelineHistoryMilestonesLength(_projectId, historyLength, timelineLength);
 
         // Move pending timeline into timeline
-        uint pendingTimelineLength = _pStorage.getPendingTimelineLength(_projectId);
+        uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
 
         for (uint j = 0; j < pendingTimelineLength; j++) {
-            ProjectStorageAccess.Milestone memory pendingMilestone = _pStorage._getPendingTimelineMilestone(_projectId, j);
-            _pStorage.setTimelineMilestone(_projectId, j, pendingMilestone.title, pendingMilestone.description, pendingMilestone.percentage, pendingMilestone.isComplete);
+            ProjectStorageAccess.Milestone memory pendingMilestone = _fundingStorage._getPendingTimelineMilestone(_projectId, j);
+            _fundingStorage.setTimelineMilestone(_projectId, j, pendingMilestone.title, pendingMilestone.description, pendingMilestone.percentage, pendingMilestone.isComplete);
         }
 
-        _pStorage.setTimelineLength(_projectId, pendingTimelineLength);
+        _fundingStorage.setTimelineLength(_projectId, pendingTimelineLength);
 
         // Set timeline to be active
-        _pStorage.setTimelineIsActive(_projectId, true);
+        _fundingStorage.setTimelineIsActive(_projectId, true);
 
         // Delete pending timeline
-        _pStorage.deletePendingTimeline(_projectId);
+        _fundingStorage.deletePendingTimeline(_projectId);
 
         // Set timeline proposal to inactive
-        _pStorage.setTimelineProposalIsActive(_projectId, false);
+        _fundingStorage.setTimelineProposalIsActive(_projectId, false);
     }
 }

@@ -1,15 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "../Project.sol";
-import "../FundingStorage.sol";
 import "../storage/ProjectStorageAccess.sol";
+import "../../Project.sol";
 
 library ProjectLib {
 
     using ProjectStorageAccess for address;
 
     function createProject(
-        address _pStorage,
+        address _fundingStorage,
         string _title,
         string _description,
         string _about,
@@ -22,47 +21,47 @@ library ProjectLib {
     returns (uint)
     {
         // Get next ID from storage
-        uint id = _pStorage.getNextId();
+        uint id = _fundingStorage.getNextId();
         // Increment next ID
-        _pStorage.incrementNextId();
+        _fundingStorage.incrementNextId();
 
         // Create project
-        _pStorage.setProjectIsActive(id, true);
-        _pStorage.setTitle(id, _title);
-        _pStorage.setDescription(id, _description);
-        _pStorage.setAbout(id, _about);
-        _pStorage.setContributionGoal(id, _contributionGoal);
-        _pStorage.setStatus(id, _status);
-        _pStorage.setDeveloper(id, _developer);
-        _pStorage.setDeveloperId(id, _developerId);
+        _fundingStorage.setProjectIsActive(id, true);
+        _fundingStorage.setTitle(id, _title);
+        _fundingStorage.setDescription(id, _description);
+        _fundingStorage.setAbout(id, _about);
+        _fundingStorage.setContributionGoal(id, _contributionGoal);
+        _fundingStorage.setStatus(id, _status);
+        _fundingStorage.setDeveloper(id, _developer);
+        _fundingStorage.setDeveloperId(id, _developerId);
 
         return id;
     }
 
-    function submitProjectForReview(address _pStorage, uint _projectId) external {
+    function submitProjectForReview(address _fundingStorage, uint _projectId) external {
         // check that project exists
-        require(_pStorage.getProjectIsActive(_projectId), "Project does not exist.");
+        require(_fundingStorage.getProjectIsActive(_projectId), "Project does not exist.");
 
-        verifyProjectMilestones(_pStorage, _projectId);
+        verifyProjectMilestones(_fundingStorage, _projectId);
 
-        verifyProjectTiers(_pStorage, _projectId);
+        verifyProjectTiers(_fundingStorage, _projectId);
 
         // Set project status to "Pending" and change timeline to active
-        initializeTimeline(_pStorage, _projectId);
+        initializeTimeline(_fundingStorage, _projectId);
     }
 
-    function verifyProjectMilestones(address _pStorage, uint _projectId) private view {
+    function verifyProjectMilestones(address _fundingStorage, uint _projectId) private view {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!_pStorage.getNoTimeline(_projectId)) {
-            uint timelineLength = _pStorage.getTimelineLength(_projectId);
+        if (!_fundingStorage.getNoTimeline(_projectId)) {
+            uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
             require(timelineLength > 0, "Project has no milestones.");
 
             uint percentageAcc = 0;
             for (uint i = 0; i < timelineLength; i++) {
-                uint percentage = _pStorage.getTimelineMilestonePercentage(_projectId, i);
+                uint percentage = _fundingStorage.getTimelineMilestonePercentage(_projectId, i);
                 percentageAcc = percentageAcc + percentage;
             }
 
@@ -70,24 +69,24 @@ library ProjectLib {
         }
     }
 
-    function verifyProjectTiers(address _pStorage, uint _projectId) private view {
+    function verifyProjectTiers(address _fundingStorage, uint _projectId) private view {
         // Verify that project has contribution tiers
-        uint tiersLength = _pStorage.getContributionTiersLength(_projectId);
+        uint tiersLength = _fundingStorage.getContributionTiersLength(_projectId);
         require(tiersLength > 0, "Project has no contribution tiers.");
     }
 
 
-    function initializeTimeline(address _pStorage, uint _projectId) private {
+    function initializeTimeline(address _fundingStorage, uint _projectId) private {
         // Check that there isn't already an active timeline
-        require(!_pStorage.getTimelineIsActive(_projectId), "Timeline has already been initialized.");
+        require(!_fundingStorage.getTimelineIsActive(_projectId), "Timeline has already been initialized.");
 
         // Set timeline to active
-        _pStorage.setTimelineIsActive(_projectId, true);
+        _fundingStorage.setTimelineIsActive(_projectId, true);
 
         // Set first milestone as active
-        _pStorage.setActiveMilestoneIndex(_projectId, 0);
+        _fundingStorage.setActiveMilestoneIndex(_projectId, 0);
 
         // Change project status to "Pending"
-        _pStorage.setStatus(_projectId, uint(Project.Status.Pending));
+        _fundingStorage.setStatus(_projectId, uint(Project.Status.Pending));
     }
 }

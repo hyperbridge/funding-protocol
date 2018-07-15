@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../FundingStorage.sol";
+import "../../FundingStorage.sol";
 
 library ContributionStorageAccess {
 
@@ -30,8 +30,8 @@ library ContributionStorageAccess {
     // Getters
 
     function generateNewContributorId(address _fundingStorage) internal view returns (uint) {
-        uint id = getNextId(_fundingStorage);
-        incrementNextId(_fundingStorage);
+        uint id = getNextContributorId(_fundingStorage);
+        incrementNextContributorId(_fundingStorage);
         return id;
     }
 
@@ -59,25 +59,25 @@ library ContributionStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contributor.fundedProjects", _index, _contributorId)));
     }
 
-    function getContributorFundedProjectIds(address _fundingStorage, uint _contributorId) internal view returns (uint[]) {
-        uint length = getFundedProjectsLength(_fundingStorage, _contributorId);
+    function getContributorFundedProjects(address _fundingStorage, uint _contributorId) internal view returns (uint[]) {
+        uint length = getContributorFundedProjectsLength(_fundingStorage, _contributorId);
 
-        uint[] fundedIds;
+        uint[] memory fundedIds;
 
         for (uint i = 0; i < length; i++) {
-            fundedIds.push(getFundedProject(_fundingStorage, _contributorId, i));
+            fundedIds.push(getContributorFundedProject(_fundingStorage, _contributorId, i));
         }
 
         return fundedIds;
     }
 
     function getContributor(address _fundingStorage, uint _contributorId) internal view returns (Contributor) {
-        require(getAddress(_fundingStorage, _contributorId) != address(0), "Contributor does not exist."); // check that contributor exists
+        require(getContributorAddress(_fundingStorage, _contributorId) != address(0), "Contributor does not exist."); // check that contributor exists
 
         Contributor memory contributor = Contributor({
             id: _contributorId,
-            addr: getAddress(_fundingStorage, _contributorId),
-            fundedProjects: getFundedProjects(_fundingStorage, _contributorId)
+            addr: getContributorAddress(_fundingStorage, _contributorId),
+            fundedProjects: getContributorFundedProjects(_fundingStorage, _contributorId)
         });
 
         return contributor;

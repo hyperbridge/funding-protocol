@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+import "./FundingStorage.sol";
 import "./openzeppelin/ERC20.sol";
 import "./openzeppelin/ERC20Basic.sol";
 import "./openzeppelin/Pausable.sol";
