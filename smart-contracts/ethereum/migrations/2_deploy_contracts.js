@@ -43,6 +43,8 @@ async function doDeploy(deployer, network) {
     await deployer.link(ProjectTimelineProposalLib, Project);
 
     await deployer.deploy(Project, fs.address);
+    await deployer.deploy(Developer);
+    // await deployer.deploy(Contribution, fs.address);
 }
 
 module.exports = function(deployer, network) {
