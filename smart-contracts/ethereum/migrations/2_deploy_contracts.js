@@ -1,22 +1,31 @@
-const FundingService = artifacts.require("FundingService");
-const ProjectEternalStorage = artifacts.require("ProjectEternalStorage");
+const FundingStorage = artifacts.require("FundingStorage");
+
+const Project = artifacts.require("Project");
+const ProjectStorageAccess = artifacts.require("ProjectStorageAccess");
 const ProjectLib = artifacts.require("ProjectLib");
+const ProjectTimelineLib = artifacts.require("ProjectTimelineLib");
 const ProjectContributionTierLib = artifacts.require("ProjectContributionTierLib");
 const ProjectMilestoneCompletionLib = artifacts.require("ProjectMilestoneCompletionLib");
-const ProjectStorageAccess = artifacts.require("ProjectStorageAccess");
-const ProjectTimelineLib = artifacts.require("ProjectTimelineLib");
 const ProjectTimelineProposalLib = artifacts.require("ProjectTimelineProposalLib");
-const Project = artifacts.require("Project");
+
+const Contribution = artifacts.require("Contribution");
+const ContributionStorageAccess = artifacts.require("ContributionStorageAccess");
+
+const Developer = artifacts.require("Developer");
+const DeveloperStorageAccess = artifacts.require("DeveloperStorageAccess");
 
 async function doDeploy(deployer, network) {
-    await deployer.deploy(FundingService);
-
-    await deployer.deploy(ProjectEternalStorage);
-
-    const fs = await FundingService.deployed();
+    await deployer.deploy(FundingStorage);
+    const fs = await FundingStorage.deployed();
 
     await deployer.deploy(ProjectStorageAccess);
-    await deployer.link(ProjectStorageAccess, [Project, ProjectLib, ProjectContributionTierLib, ProjectMilestoneCompletionLib, ProjectTimelineLib, ProjectTimelineProposalLib]);
+    await deployer.link(ProjectStorageAccess, [Project, Contribution, ProjectLib, ProjectContributionTierLib, ProjectMilestoneCompletionLib, ProjectTimelineLib, ProjectTimelineProposalLib]);
+
+    await deployer.deploy(ContributionStorageAccess);
+    await deployer.link(ContributionStorageAccess, [Contribution, Project]);
+
+    await deployer.deploy(DeveloperStorageAccess);
+    await deployer.link(DeveloperStorageAccess, [Developer, Project]);
 
     await deployer.deploy(ProjectLib);
     await deployer.link(ProjectLib, Project);
