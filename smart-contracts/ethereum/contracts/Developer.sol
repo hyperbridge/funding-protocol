@@ -15,15 +15,16 @@ contract Developer {
 
     event DeveloperCreated(address developerAddress, uint developerId);
 
-    constructor(address _fundingStorage) public {
+    function () public payable {
+        revert();
+    }
+
+    function initialize(address _fundingStorage) external {
         fundingStorage = _fundingStorage;
+        require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
 
         // reserve developerId 0
         fundingStorage.incrementNextDeveloperId();
-    }
-
-    function () public payable {
-        revert();
     }
 
     function createDeveloper(string _name) external {
