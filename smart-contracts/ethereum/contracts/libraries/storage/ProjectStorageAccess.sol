@@ -114,6 +114,12 @@ library ProjectStorageAccess {
 
     // Getters
 
+    function generateNewProjectId(address _fundingStorage) internal returns (uint) {
+        uint id = getNextProjectId(_fundingStorage);
+        incrementNextProjectId(_fundingStorage);
+        return id;
+    }
+
     function getNextProjectId(address _fundingStorage) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256("project.nextId"));
     }

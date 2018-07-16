@@ -20,10 +20,8 @@ library ProjectLib {
     external
     returns (uint)
     {
-        // Get next ID from storage
-        uint id = _fundingStorage.getNextProjectId();
-        // Increment next ID
-        _fundingStorage.incrementNextProjectId();
+        // Get next ID from storage + increment next ID
+        uint id = _fundingStorage.generateNewProjectId();
 
         // Create project
         _fundingStorage.setProjectIsActive(id, true);
