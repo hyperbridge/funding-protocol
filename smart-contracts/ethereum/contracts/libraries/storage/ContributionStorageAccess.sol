@@ -62,10 +62,10 @@ library ContributionStorageAccess {
     function getContributorFundedProjects(address _fundingStorage, uint _contributorId) internal view returns (uint[]) {
         uint length = getContributorFundedProjectsLength(_fundingStorage, _contributorId);
 
-        uint[] memory fundedIds;
+        uint[] memory fundedIds = new uint[](length);
 
         for (uint i = 0; i < length; i++) {
-            fundedIds.push(getContributorFundedProject(_fundingStorage, _contributorId, i));
+            fundedIds[i] = getContributorFundedProject(_fundingStorage, _contributorId, i);
         }
 
         return fundedIds;

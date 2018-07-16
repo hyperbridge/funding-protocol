@@ -69,10 +69,10 @@ library DeveloperStorageAccess {
     function getDeveloperOwnedProjects(address _fundingStorage, uint _developerId) internal view returns (uint[]) {
         uint length = getDeveloperOwnedProjectsLength(_fundingStorage, _developerId);
 
-        uint[] memory ownedIds;
+        uint[] memory ownedIds = new uint[](length);
 
         for (uint i = 0; i < length; i++) {
-            ownedIds.push(getDeveloperOwnedProject(_fundingStorage, _developerId, i));
+            ownedIds[i] = getDeveloperOwnedProject(_fundingStorage, _developerId, i);
         }
 
         return ownedIds;
