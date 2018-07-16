@@ -78,33 +78,17 @@ contract Project {
         )
     {
         isActive = fundingStorage.getProjectIsActive(_projectId);
-        status = fundingStorage.getStatus(_projectId);
-        title = fundingStorage.getTitle(_projectId);
-        description = fundingStorage.getDescription(_projectId);
-        about = fundingStorage.getAbout(_projectId);
-        contributionGoal = fundingStorage.getContributionGoal(_projectId);
-        developer = fundingStorage.getDeveloper(_projectId);
-        noRefunds = fundingStorage.getNoRefunds(_projectId);
-        noTimeline = fundingStorage.getNoTimeline(_projectId);
-        developerId = fundingStorage.getDeveloperId(_projectId);
+        status = fundingStorage.getProjectStatus(_projectId);
+        title = fundingStorage.getProjectTitle(_projectId);
+        description = fundingStorage.getProjectDescription(_projectId);
+        about = fundingStorage.getProjectAbout(_projectId);
+        contributionGoal = fundingStorage.getProjectContributionGoal(_projectId);
+        developer = fundingStorage.getProjectDeveloper(_projectId);
+        noRefunds = fundingStorage.getProjectNoRefunds(_projectId);
+        noTimeline = fundingStorage.getProjectNoTimeline(_projectId);
+        developerId = fundingStorage.getProjectDeveloperId(_projectId);
 
         return (isActive, status, title, description, about, contributionGoal, noRefunds, noTimeline, developer, developerId);
-    }
-
-    function getProjects() external view returns (uint[]) {
-        uint numProjects = fundingStorage.getNextId();
-
-        uint[] memory activeProjects = new uint[](numProjects);
-
-        uint length = 0;
-        for (uint i = 0; i < numProjects; i++) {
-            if (fundingStorage.getProjectIsActive(i)) {
-                activeProjects[length] = (i);
-                length++;
-            }
-        }
-
-        return activeProjects;
     }
 
     function addMilestone(

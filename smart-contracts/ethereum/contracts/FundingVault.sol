@@ -8,7 +8,7 @@ import "./openzeppelin/Pausable.sol";
 contract FundingVault is Pausable {
 
     modifier onlyLatestFundingContract() {
-        require(FundingStorage(fundingStorage).boolStorage[keccak256(abi.encodePacked("contract.address", msg.sender))]);
+        require(FundingStorage(fundingStorage).getBool(keccak256(abi.encodePacked("contract.address", msg.sender))));
         _;
     }
 

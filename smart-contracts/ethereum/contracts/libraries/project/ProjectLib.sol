@@ -21,19 +21,19 @@ library ProjectLib {
     returns (uint)
     {
         // Get next ID from storage
-        uint id = _fundingStorage.getNextId();
+        uint id = _fundingStorage.getNextProjectId();
         // Increment next ID
-        _fundingStorage.incrementNextId();
+        _fundingStorage.incrementNextProjectId();
 
         // Create project
         _fundingStorage.setProjectIsActive(id, true);
-        _fundingStorage.setTitle(id, _title);
-        _fundingStorage.setDescription(id, _description);
-        _fundingStorage.setAbout(id, _about);
-        _fundingStorage.setContributionGoal(id, _contributionGoal);
-        _fundingStorage.setStatus(id, _status);
-        _fundingStorage.setDeveloper(id, _developer);
-        _fundingStorage.setDeveloperId(id, _developerId);
+        _fundingStorage.setProjectTitle(id, _title);
+        _fundingStorage.setProjectDescription(id, _description);
+        _fundingStorage.setProjectAbout(id, _about);
+        _fundingStorage.setProjectContributionGoal(id, _contributionGoal);
+        _fundingStorage.setProjectStatus(id, _status);
+        _fundingStorage.setProjectDeveloper(id, _developer);
+        _fundingStorage.setProjectDeveloperId(id, _developerId);
 
         return id;
     }
@@ -54,7 +54,7 @@ library ProjectLib {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!_fundingStorage.getNoTimeline(_projectId)) {
+        if (!_fundingStorage.getProjectNoTimeline(_projectId)) {
             uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
             require(timelineLength > 0, "Project has no milestones.");
@@ -87,6 +87,6 @@ library ProjectLib {
         _fundingStorage.setActiveMilestoneIndex(_projectId, 0);
 
         // Change project status to "Pending"
-        _fundingStorage.setStatus(_projectId, uint(Project.Status.Pending));
+        _fundingStorage.setProjectStatus(_projectId, uint(Project.Status.Pending));
     }
 }

@@ -29,7 +29,7 @@ library ContributionStorageAccess {
 
     // Getters
 
-    function generateNewContributorId(address _fundingStorage) internal view returns (uint) {
+    function generateNewContributorId(address _fundingStorage) internal returns (uint) {
         uint id = getNextContributorId(_fundingStorage);
         incrementNextContributorId(_fundingStorage);
         return id;

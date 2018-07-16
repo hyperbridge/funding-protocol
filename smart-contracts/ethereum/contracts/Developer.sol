@@ -7,7 +7,7 @@ contract Developer {
     using DeveloperStorageAccess for address;
 
     modifier onlyLatestFundingContract() {
-        require(FundingStorage(fundingStorage).boolStorage[keccak256(abi.encodePacked("contract.address", msg.sender))]);
+        require(FundingStorage(fundingStorage).getBool(keccak256(abi.encodePacked("contract.address", msg.sender))));
         _;
     }
 
@@ -19,7 +19,7 @@ contract Developer {
         fundingStorage = _fundingStorage;
 
         // reserve developerId 0
-        fundingStorage.incrementNextId();
+        fundingStorage.incrementNextDeveloperId();
     }
 
     function () public payable {
@@ -30,12 +30,12 @@ contract Developer {
         require(fundingStorage.getDeveloperId(msg.sender) == 0, "This account is already a developer.");
 
         // Get next ID from storage + increment next ID
-        uint id = fundingStorage.generateNewId();
+        uint id = fundingStorage.generateNewDeveloperId();
 
         // Create developer
         fundingStorage.setDeveloperId(msg.sender, id);
-        fundingStorage.setName(id, _name);
-        fundingStorage.setAddress(id, msg.sender);
+        fundingStorage.setDeveloperName(id, _name);
+        fundingStorage.setDeveloperAddress(id, msg.sender);
 
         emit DeveloperCreated(msg.sender, id);
     }
@@ -54,7 +54,7 @@ contract Developer {
     }
 
     function updateDeveloperReputation(uint _developerId, uint _val) external onlyLatestFundingContract {
-        uint currentRep = fundingStorage.getReputation(_developerId);
-        fundingStorage.setReputation(_developerId, currentRep + _val);
+        uint currentRep = fundingStorage.getDeveloperReputation(_developerId);
+        fundingStorage.setDeveloperReputation(_developerId, currentRep + _val);
     }
 }

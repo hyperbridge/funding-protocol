@@ -15,7 +15,7 @@ contract Contribution {
         fundingStorage = _fundingStorage;
 
         // reserve contributorId 0
-        fundingStorage.incrementNextId();
+        fundingStorage.incrementNextContributorId();
     }
 
     function () public payable {
@@ -29,18 +29,18 @@ contract Contribution {
 
         // if contributor doesn't exist, create it
         if (contributorId == 0) {
-            contributorId = fundingStorage.generateNewId();
+            contributorId = fundingStorage.generateNewContributorId();
 
             fundingStorage.setContributorId(msg.sender, contributorId);
-            fundingStorage.setAddress(contributorId, msg.sender);
+            fundingStorage.setContributorAddress(contributorId, msg.sender);
         }
 
         // if project is not in contributor's project list, add it
         if (!fundingStorage.getContributesToProject(contributorId, _projectId)) {
             fundingStorage.setContributesToProject(contributorId, _projectId, true);
-            uint index = fundingStorage.getFundedProjectsLength(contributorId);
-            fundingStorage.setFundedProject(contributorId, index, _projectId);
-            fundingStorage.setFundedProjectsLength(contributorId, index + 1);
+            uint index = fundingStorage.getContributorFundedProjectsLength(contributorId);
+            fundingStorage.setContributorFundedProject(contributorId, index, _projectId);
+            fundingStorage.setContributorFundedProjectsLength(contributorId, index + 1);
         }
 
         // add to projectContributorList, if not already present
@@ -54,7 +54,8 @@ contract Contribution {
         uint currentAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
         fundingStorage.setContributionAmount(_projectId, contributorId, currentAmount + msg.value);
 
-        FundingVault fv = FundingVault(fundingStorage.getAddress(keccak256(abi.encodePacked("contract.address", "FundingVault"))));
+        FundingStorage fs = FundingStorage(fundingStorage);
+        FundingVault fv = FundingVault(fs.getAddress(keccak256(abi.encodePacked("contract.address", "FundingVault"))));
         fv.depositEth.value(msg.value)();
     }
 }

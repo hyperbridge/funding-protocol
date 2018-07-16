@@ -17,7 +17,7 @@ library ProjectTimelineLib {
     )
     external
     {
-        require(!_fundingStorage.getNoTimeline(_projectId), "Cannot add a milestone to a project with no timeline.");
+        require(!_fundingStorage.getProjectNoTimeline(_projectId), "Cannot add a milestone to a project with no timeline.");
 
         if (_isPending) {
             require(!_fundingStorage.getTimelineProposalIsActive(_projectId), "Pending milestones cannot be added while a timeline proposal vote is active.");
@@ -76,7 +76,7 @@ library ProjectTimelineLib {
         uint completedMilestonesLength = _fundingStorage.getCompletedMilestonesLength(_projectId);
 
         for (uint i = 0; i < completedMilestonesLength; i++) {
-            ProjectStorageAccess.Milestone memory completedMilestone = _fundingStorage._getCompletedMilestone(_projectId, i);
+            ProjectStorageAccess.Milestone memory completedMilestone = _fundingStorage.getCompletedMilestone(_projectId, i);
             _fundingStorage.setPendingTimelineMilestone(
                 _projectId,
                 i,
@@ -89,7 +89,7 @@ library ProjectTimelineLib {
 
         uint activeMilestoneIndex = _fundingStorage.getActiveMilestoneIndex(_projectId);
 
-        ProjectStorageAccess.Milestone memory activeMilestone = _fundingStorage._getTimelineMilestone(_projectId, activeMilestoneIndex);
+        ProjectStorageAccess.Milestone memory activeMilestone = _fundingStorage.getTimelineMilestone(_projectId, activeMilestoneIndex);
         _fundingStorage.setPendingTimelineMilestone(
             _projectId,
             completedMilestonesLength,
@@ -113,6 +113,6 @@ library ProjectTimelineLib {
         _fundingStorage.setActiveMilestoneIndex(_projectId, 0);
 
         // Change project status to "Pending"
-        _fundingStorage.setStatus(_projectId, uint(Project.Status.Pending));
+        _fundingStorage.setProjectStatus(_projectId, uint(Project.Status.Pending));
     }
 }

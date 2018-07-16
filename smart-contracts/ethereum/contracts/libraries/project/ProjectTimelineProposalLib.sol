@@ -22,7 +22,7 @@ library ProjectTimelineProposalLib {
         // If project has a timeline, verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
-        if (!_fundingStorage.getNoTimeline(_projectId)) {
+        if (!_fundingStorage.getProjectNoTimeline(_projectId)) {
             uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
             require(pendingTimelineLength > 0, "Pending timeline is empty.");
 
@@ -62,7 +62,7 @@ library ProjectTimelineProposalLib {
         uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
         for (uint i = 0; i < timelineLength; i++) {
-            ProjectStorageAccess.Milestone memory milestone = _fundingStorage._getTimelineMilestone(_projectId, i);
+            ProjectStorageAccess.Milestone memory milestone = _fundingStorage.getTimelineMilestone(_projectId, i);
             _fundingStorage.setTimelineHistoryMilestoneTitle(_projectId, historyLength, i, milestone.title);
             _fundingStorage.setTimelineHistoryMilestoneDescription(_projectId, historyLength, i, milestone.description);
             _fundingStorage.setTimelineHistoryMilestonePercentage(_projectId, historyLength, i, milestone.percentage);
@@ -76,7 +76,7 @@ library ProjectTimelineProposalLib {
         uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
 
         for (uint j = 0; j < pendingTimelineLength; j++) {
-            ProjectStorageAccess.Milestone memory pendingMilestone = _fundingStorage._getPendingTimelineMilestone(_projectId, j);
+            ProjectStorageAccess.Milestone memory pendingMilestone = _fundingStorage.getPendingTimelineMilestone(_projectId, j);
             _fundingStorage.setTimelineMilestone(_projectId, j, pendingMilestone.title, pendingMilestone.description, pendingMilestone.percentage, pendingMilestone.isComplete);
         }
 

@@ -28,7 +28,7 @@ library DeveloperStorageAccess {
 
     // Getters
 
-    function generateNewDeveloperId(address _fundingStorage) internal view returns (uint) {
+    function generateNewDeveloperId(address _fundingStorage) internal returns (uint) {
         uint id = getNextDeveloperId(_fundingStorage);
         incrementNextDeveloperId(_fundingStorage);
         return id;

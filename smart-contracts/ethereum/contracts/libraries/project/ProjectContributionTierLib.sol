@@ -21,7 +21,7 @@ library ProjectContributionTierLib {
         uint length = _fundingStorage.getPendingContributionTiersLength(_projectId);
 
         for (uint i = 0; i < length; i++) {
-            ProjectStorageAccess.ContributionTier memory tier = _fundingStorage._getPendingContributionTier(_projectId, i);
+            ProjectStorageAccess.ContributionTier memory tier = _fundingStorage.getPendingContributionTier(_projectId, i);
 
             _fundingStorage.setContributionTier(_projectId, i, tier.contributorLimit, tier.minContribution, tier.maxContribution, tier.rewards);
         }

@@ -47,7 +47,7 @@ library ProjectMilestoneCompletionLib {
         // Update completed milestones
         uint completedMilestonesLength = _fundingStorage.getCompletedMilestonesLength(_projectId);
 
-        ProjectStorageAccess.Milestone memory activeMilestone = _fundingStorage._getTimelineMilestone(_projectId, activeIndex);
+        ProjectStorageAccess.Milestone memory activeMilestone = _fundingStorage.getTimelineMilestone(_projectId, activeIndex);
 
         _fundingStorage.setCompletedMilestone(_projectId, completedMilestonesLength, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
 
@@ -68,7 +68,7 @@ library ProjectMilestoneCompletionLib {
           funds.
         */
         for (uint i = 0; i < completedMilestonesLength; i++) {
-            ProjectStorageAccess.Milestone memory completedMilestone = _fundingStorage._getCompletedMilestone(_projectId, i);
+            ProjectStorageAccess.Milestone memory completedMilestone = _fundingStorage.getCompletedMilestone(_projectId, i);
             _fundingStorage.setPendingTimelineMilestone(_projectId, i, completedMilestone.title, completedMilestone.description, completedMilestone.percentage, completedMilestone.isComplete);
         }
 
@@ -81,7 +81,7 @@ library ProjectMilestoneCompletionLib {
             activeIndex++;
 
             // Add currently active milestone to pendingTimeline
-            ProjectStorageAccess.Milestone memory currentMilestone = _fundingStorage._getTimelineMilestone(_projectId, activeIndex);
+            ProjectStorageAccess.Milestone memory currentMilestone = _fundingStorage.getTimelineMilestone(_projectId, activeIndex);
 
             uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
 
