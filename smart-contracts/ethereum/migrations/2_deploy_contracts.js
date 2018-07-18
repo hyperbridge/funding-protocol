@@ -1,50 +1,45 @@
 const FundingStorage = artifacts.require("FundingStorage");
-
-const Project = artifacts.require("Project");
 const ProjectStorageAccess = artifacts.require("ProjectStorageAccess");
-const ProjectLib = artifacts.require("ProjectLib");
-const ProjectTimelineLib = artifacts.require("ProjectTimelineLib");
-const ProjectContributionTierLib = artifacts.require("ProjectContributionTierLib");
-const ProjectMilestoneCompletionLib = artifacts.require("ProjectMilestoneCompletionLib");
-const ProjectTimelineProposalLib = artifacts.require("ProjectTimelineProposalLib");
-
-const Contribution = artifacts.require("Contribution");
+const DeveloperStorageAccess = artifacts.require("DeveloperStorageAccess");
 const ContributionStorageAccess = artifacts.require("ContributionStorageAccess");
 
+const ProjectBase = artifacts.require("ProjectBase");
+const ProjectRegistration = artifacts.require("ProjectRegistration");
+const ProjectTimeline = artifacts.require("ProjectTimeline");
+const ProjectContributionTier = artifacts.require("ProjectContributionTier");
+const ProjectMilestoneCompletion = artifacts.require("ProjectMilestoneCompletion");
+const ProjectTimelineProposal = artifacts.require("ProjectTimelineProposal");
+
+const ProjectHelpersLibrary = artifacts.require("ProjectHelpersLibrary");
+
+const Contribution = artifacts.require("Contribution");
+
 const Developer = artifacts.require("Developer");
-const DeveloperStorageAccess = artifacts.require("DeveloperStorageAccess");
 
 async function doDeploy(deployer, network) {
     await deployer.deploy(FundingStorage);
     const fs = await FundingStorage.deployed();
 
     await deployer.deploy(ProjectStorageAccess);
-    await deployer.link(ProjectStorageAccess, [Project, Contribution, ProjectLib, ProjectContributionTierLib, ProjectMilestoneCompletionLib, ProjectTimelineLib, ProjectTimelineProposalLib]);
-
-    await deployer.deploy(ContributionStorageAccess);
-    await deployer.link(ContributionStorageAccess, [Contribution, Project]);
+    await deployer.link(ProjectStorageAccess, [ProjectBase, ProjectHelpersLibrary, Contribution]);
 
     await deployer.deploy(DeveloperStorageAccess);
-    await deployer.link(DeveloperStorageAccess, [Developer, Project]);
+    await deployer.link(DeveloperStorageAccess, [Developer, ProjectBase]);
 
-    await deployer.deploy(ProjectLib);
-    await deployer.link(ProjectLib, Project);
+    await deployer.deploy(ContributionStorageAccess);
+    await deployer.link(ContributionStorageAccess, [Contribution, ProjectBase]);
 
-    await deployer.deploy(ProjectContributionTierLib);
-    await deployer.link(ProjectContributionTierLib, Project);
+    await deployer.deploy(ProjectHelpersLibrary);
+    await deployer.link(ProjectHelpersLibrary, [ProjectTimelineProposal, ProjectRegistration, ProjectMilestoneCompletion]);
 
-    await deployer.deploy(ProjectMilestoneCompletionLib);
-    await deployer.link(ProjectMilestoneCompletionLib, Project);
+    await deployer.deploy(ProjectRegistration);
+    await deployer.deploy(ProjectTimeline, fs.address);
+    await deployer.deploy(ProjectContributionTier, fs.address);
+    await deployer.deploy(ProjectMilestoneCompletion, fs.address);
+    await deployer.deploy(ProjectTimelineProposal, fs.address);
 
-    await deployer.deploy(ProjectTimelineLib);
-    await deployer.link(ProjectTimelineLib, Project);
-
-    await deployer.deploy(ProjectTimelineProposalLib);
-    await deployer.link(ProjectTimelineProposalLib, Project);
-
-    await deployer.deploy(Project, fs.address);
     await deployer.deploy(Developer);
-    // await deployer.deploy(Contribution, fs.address);
+    await deployer.deploy(Contribution);
 }
 
 module.exports = function(deployer, network) {

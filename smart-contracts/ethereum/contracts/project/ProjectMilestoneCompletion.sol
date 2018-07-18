@@ -4,8 +4,11 @@ import "../FundingStorage.sol";
 import "./ProjectBase.sol";
 import "../Developer.sol";
 import "../FundingVault.sol";
+import "../libraries/project/ProjectHelpersLibrary.sol";
 
 contract ProjectMilestoneCompletion is ProjectBase {
+
+    using ProjectHelpersLibrary for address;
 
     constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
@@ -72,6 +75,9 @@ contract ProjectMilestoneCompletion is ProjectBase {
         uint activeIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
         fundingStorage.setTimelineMilestoneIsComplete(_projectId, activeIndex, true);
 
+        // Set milestone completion submission to inactive
+        fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, false);
+
         // Update completedMilestones, remove any pending milestones, and add the completed milestones + current active
         // milestone to the start of the pending timeline. This is to ensure that any future timeline proposals take
         // into account the milestones that have already released their funds.
@@ -83,21 +89,9 @@ contract ProjectMilestoneCompletion is ProjectBase {
 
         fundingStorage.setCompletedMilestone(_projectId, completedMilestonesLength, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
 
-        fundingStorage.setCompletedMilestonesLength(_projectId, ++completedMilestonesLength);
+        fundingStorage.setCompletedMilestonesLength(_projectId, completedMilestonesLength + 1);
 
-        // Set milestone completion submission to inactive
-        fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, false);
-
-        /* Add the completed milestones + current active milestone to the start of the pending timeline. This is to
-          ensure that any future timeline proposals take into account the milestones that have already released their
-          funds.
-        */
-        for (uint i = 0; i < completedMilestonesLength; i++) {
-            ProjectStorageAccess.Milestone memory completedMilestone = fundingStorage.getCompletedMilestone(_projectId, i);
-            fundingStorage.setPendingTimelineMilestone(_projectId, i, completedMilestone.title, completedMilestone.description, completedMilestone.percentage, completedMilestone.isComplete);
-        }
-
-        fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
+        fundingStorage.moveCompletedMilestonesIntoPendingTimeline(_projectId);
 
         // Increase developer reputation
         FundingStorage fs = FundingStorage(fundingStorage);
@@ -113,6 +107,7 @@ contract ProjectMilestoneCompletion is ProjectBase {
 
             // Add currently active milestone to pendingTimeline
             ProjectStorageAccess.Milestone memory currentMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
+            completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
 
             fundingStorage.setPendingTimelineMilestone(_projectId, completedMilestonesLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
             fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);

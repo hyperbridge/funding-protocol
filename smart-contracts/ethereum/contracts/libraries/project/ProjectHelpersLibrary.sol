@@ -47,4 +47,16 @@ library ProjectHelpersLibrary {
         _fundingStorage.setContributionTiersLength(_projectId, length);
         _fundingStorage.setPendingContributionTiersLength(_projectId, 0);
     }
+
+    function moveCompletedMilestonesIntoPendingTimeline(address _fundingStorage, uint _projectId) external {
+        uint completedMilestonesLength = _fundingStorage.getCompletedMilestonesLength(_projectId);
+
+        // Add the completed milestones to the start of the pending timeline
+        for (uint i = 0; i < completedMilestonesLength; i++) {
+            ProjectStorageAccess.Milestone memory completedMilestone = _fundingStorage.getCompletedMilestone(_projectId, i);
+            _fundingStorage.setPendingTimelineMilestone(_projectId, i, completedMilestone.title, completedMilestone.description, completedMilestone.percentage, completedMilestone.isComplete);
+        }
+
+        _fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
+    }
 }
