@@ -7,6 +7,10 @@ import "../FundingVault.sol";
 
 contract ProjectMilestoneCompletion is ProjectBase {
 
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
+    }
+
     function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) {
         // Can only submit for milestone completion if timeline is active
         require(fundingStorage.getTimelineIsActive(_projectId), "There is no active timeline.");
