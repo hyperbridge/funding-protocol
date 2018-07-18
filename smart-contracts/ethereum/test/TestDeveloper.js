@@ -62,4 +62,23 @@ contract('Developer', function(accounts) {
             console.log(e.message);
         }
     });
+
+    it("should be able to update a developer's reputation.", async () => {
+        const repChange = 5;
+        const devId = 1;
+
+        try {
+            await fundingStorage.registerContract("Contract", blankAddress, accounts[9]);
+            let developer = await developerContract.getDeveloper(devId);
+            const initialReputation = developer[3].toNumber();
+            await developerContract.updateDeveloperReputation(devId, repChange, { from: accounts[9] });
+            developer = await developerContract.getDeveloper(devId);
+            const newReputation = developer[3].toNumber();
+
+            assert.equal(newReputation, initialReputation + repChange, "Developer reputation was not increased.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
 });
