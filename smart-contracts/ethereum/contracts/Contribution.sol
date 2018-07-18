@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "./libraries/storage/ContributionStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
 import "./FundingVault.sol";
+import "./project/ProjectBase.sol";
 
 contract Contribution {
 
@@ -11,19 +12,23 @@ contract Contribution {
 
     address public fundingStorage;
 
-    constructor(address _fundingStorage) public {
-        fundingStorage = _fundingStorage;
-
-        // reserve contributorId 0
-        fundingStorage.incrementNextContributorId();
-    }
+    event ContributorCreated(address contributorAddress, uint contributorId);
 
     function () public payable {
         revert();
     }
 
+    function initialize(address _fundingStorage) external {
+        fundingStorage = _fundingStorage;
+        require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
+
+        // reserve contributorId 0
+        fundingStorage.incrementNextContributorId();
+    }
+
     function contributeToProject(uint _projectId) external payable {
-        require(fundingStorage.getProjectIsActive(_projectId), "Project does not exist."); // check that project exists
+        require(msg.value > 0);
+        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Published), "Project does not exist."); // check that project exists
 
         uint contributorId = fundingStorage.getContributorId(msg.sender);
 
@@ -33,6 +38,8 @@ contract Contribution {
 
             fundingStorage.setContributorId(msg.sender, contributorId);
             fundingStorage.setContributorAddress(contributorId, msg.sender);
+
+            emit ContributorCreated(msg.sender, contributorId);
         }
 
         // if project is not in contributor's project list, add it
@@ -55,7 +62,7 @@ contract Contribution {
         fundingStorage.setContributionAmount(_projectId, contributorId, currentAmount + msg.value);
 
         FundingStorage fs = FundingStorage(fundingStorage);
-        FundingVault fv = FundingVault(fs.getAddress(keccak256(abi.encodePacked("contract.address", "FundingVault"))));
+        FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
         fv.depositEth.value(msg.value)();
     }
 }

@@ -11,6 +11,8 @@ contract Developer {
         _;
     }
 
+    uint constant public MILESTONE_COMPLETION_REPUTATION = 5;
+
     address public fundingStorage;
 
     event DeveloperCreated(address developerAddress, uint developerId);

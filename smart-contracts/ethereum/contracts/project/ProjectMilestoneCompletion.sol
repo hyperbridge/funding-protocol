@@ -1,0 +1,119 @@
+pragma solidity ^0.4.24;
+
+import "../FundingStorage.sol";
+import "./ProjectBase.sol";
+import "../Developer.sol";
+import "../FundingVault.sol";
+
+contract ProjectMilestoneCompletion is ProjectBase {
+
+    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) {
+        // Can only submit for milestone completion if timeline is active
+        require(fundingStorage.getTimelineIsActive(_projectId), "There is no active timeline.");
+        // Can only submit for milestone completion if there is not already a vote on milestone completion
+        require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "There is already a vote on milestone completion active.");
+        // Can only submit for milestone completion if there is not already a vote on a timeline proposal
+        require(!fundingStorage.getTimelineProposalIsActive(_projectId), "Cannot submit milestone completion if there is an active vote to change the timeline.");
+
+        fundingStorage.setMilestoneCompletionSubmission(_projectId, now, 0, 0, _report, true, false);
+    }
+
+    function voteOnMilestoneCompletion(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
+        // MilestoneCompletionSubmission must be active
+        require(fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
+
+        // Contributor must not have already voted
+        require(!fundingStorage.getMilestoneCompletionSubmissionHasVoted(_projectId, msg.sender), "This contributor address has already voted.");
+
+
+        if (_approved) {
+            uint currentApprovalCount = fundingStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
+            fundingStorage.setMilestoneCompletionSubmissionApprovalCount(_projectId, currentApprovalCount + 1);
+        } else {
+            uint currentDisapprovalCount = fundingStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
+            fundingStorage.setMilestoneCompletionSubmissionDisapprovalCount(_projectId, currentDisapprovalCount + 1);
+        }
+
+        fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, true);
+    }
+
+    function finalizeMilestoneCompletion(uint _projectId) external onlyProjectDeveloper(_projectId) {
+        // MilestoneCompletionSubmission must be active
+        require(fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
+
+        if (hasPassedMilestoneCompletionVote(_projectId)) {
+            succeedMilestoneCompletion(_projectId);
+        } else {
+            // Set milestone completion submission has failed
+            fundingStorage.setMilestoneCompletionSubmissionHasFailed(_projectId, true);
+        }
+    }
+
+    function hasPassedMilestoneCompletionVote(uint _projectId) private view returns (bool) {
+        uint numContributors = fundingStorage.getProjectContributorListLength(_projectId);
+        uint approvalCount = fundingStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
+        uint disapprovalCount = fundingStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
+        uint numVoters = approvalCount + disapprovalCount;
+        bool isTwoWeeksLater = now >= fundingStorage.getMilestoneCompletionSubmissionTimestamp(_projectId) + 2 weeks;
+        uint votingThreshold = numVoters * 75 / 100;
+
+        // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
+        require((approvalCount > numContributors * 75 / 100) || isTwoWeeksLater,
+            "Conditions for finalizing milestone completion have not yet been achieved.");
+
+        return ((approvalCount > numContributors * 75 / 100) || (approvalCount > votingThreshold));
+    }
+
+    function succeedMilestoneCompletion(uint _projectId) private {
+        uint activeIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
+        fundingStorage.setTimelineMilestoneIsComplete(_projectId, activeIndex, true);
+
+        // Update completedMilestones, remove any pending milestones, and add the completed milestones + current active
+        // milestone to the start of the pending timeline. This is to ensure that any future timeline proposals take
+        // into account the milestones that have already released their funds.
+
+        // Add current milestone to completed milestones list
+        uint completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
+
+        ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
+
+        fundingStorage.setCompletedMilestone(_projectId, completedMilestonesLength, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
+
+        fundingStorage.setCompletedMilestonesLength(_projectId, ++completedMilestonesLength);
+
+        // Set milestone completion submission to inactive
+        fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, false);
+
+        /* Add the completed milestones + current active milestone to the start of the pending timeline. This is to
+          ensure that any future timeline proposals take into account the milestones that have already released their
+          funds.
+        */
+        for (uint i = 0; i < completedMilestonesLength; i++) {
+            ProjectStorageAccess.Milestone memory completedMilestone = fundingStorage.getCompletedMilestone(_projectId, i);
+            fundingStorage.setPendingTimelineMilestone(_projectId, i, completedMilestone.title, completedMilestone.description, completedMilestone.percentage, completedMilestone.isComplete);
+        }
+
+        fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
+
+        // Increase developer reputation
+        FundingStorage fs = FundingStorage(fundingStorage);
+        Developer devContract = Developer(fs.getContractAddress("Developer"));
+        uint repChange = devContract.MILESTONE_COMPLETION_REPUTATION();
+        uint devId = fundingStorage.getProjectDeveloperId(_projectId);
+        devContract.updateDeveloperReputation(devId, repChange);
+
+        // Increment active milestone and release funds if this was not the last milestone
+        if (activeIndex < fundingStorage.getTimelineLength(_projectId) - 1) {
+            // Increment the active milestone
+            fundingStorage.setActiveMilestoneIndex(_projectId, ++activeIndex);
+
+            // Add currently active milestone to pendingTimeline
+            ProjectStorageAccess.Milestone memory currentMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
+
+            fundingStorage.setPendingTimelineMilestone(_projectId, completedMilestonesLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
+            fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
+
+            // TODO - transfer money for next milestone to developer
+        }
+    }
+}

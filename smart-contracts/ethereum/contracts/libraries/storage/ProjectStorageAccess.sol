@@ -124,10 +124,6 @@ library ProjectStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256("project.nextId"));
     }
 
-    function getProjectIsActive(address _fundingStorage, uint _projectId) internal view returns (bool) {
-        return FundingStorage(_fundingStorage).getBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)));
-    }
-
     function getProjectStatus(address _fundingStorage, uint _projectId) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.status", _projectId)));
     }
@@ -557,21 +553,6 @@ library ProjectStorageAccess {
         return submission;
     }
 
-    // Miscellaneous
-
-    function getProject(address _fundingStorage, uint _projectId) internal view returns (bool, uint, string, string, string, uint, address, uint) {
-        bool isActive = FundingStorage(_fundingStorage).getBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)));
-        uint status = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.status", _projectId)));
-        string memory title = FundingStorage(_fundingStorage).getString(keccak256(abi.encodePacked("project.title", _projectId)));
-        string memory description = FundingStorage(_fundingStorage).getString(keccak256(abi.encodePacked("project.description", _projectId)));
-        string memory about = FundingStorage(_fundingStorage).getString(keccak256(abi.encodePacked("project.about", _projectId)));
-        uint contributionGoal = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)));
-        address developer = FundingStorage(_fundingStorage).getAddress(keccak256(abi.encodePacked("project.developer", _projectId)));
-        uint developerId = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
-
-        return (isActive, status, title, description, about, contributionGoal, developer, developerId);
-    }
-
 
 
     // // Setters
@@ -579,10 +560,6 @@ library ProjectStorageAccess {
     function incrementNextProjectId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("project.nextId"));
         FundingStorage(_fundingStorage).setUint(keccak256("project.nextId"), currentId + 1);
-    }
-
-    function setProjectIsActive(address _fundingStorage, uint _projectId, bool _isActive) internal {
-        return FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.activeProjects", _projectId)), _isActive);
     }
 
     function setProjectStatus(address _fundingStorage, uint _projectId, uint _status) internal {
@@ -956,85 +933,5 @@ library ProjectStorageAccess {
         FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)), _report);
         FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)), _isActive);
         FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)), _hasFailed);
-    }
-
-    // Miscellaneous
-
-    function setProject(
-        address _fundingStorage,
-        uint _projectId,
-        string _title,
-        string _description,
-        string _about,
-        uint _contributionGoal,
-        uint _status,
-        address _developer,
-        uint _developerId
-    )
-    internal
-    {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.status", _projectId)), _status);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.title", _projectId)), _title);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.description", _projectId)), _description);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.about", _projectId)), _about);
-        FundingStorage(_fundingStorage).setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)), _contributionGoal);
-    }
-
-
-
-    // // Deletion
-
-    function deleteContributionTiers(address _fundingStorage, uint _projectId) internal {
-        uint length = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)));
-
-        for (uint i = 0; i < length; i++) {
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.contributionTiers.rewards", i, _projectId)));
-        }
-
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)), 0);
-    }
-
-    function deletePendingContributionTiers(address _fundingStorage, uint _projectId) internal {
-        uint length = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)));
-
-        for (uint i = 0; i < length; i++) {
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", i, _projectId)));
-        }
-
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.length", _projectId)), 0);
-    }
-
-    function deleteTimeline(address _fundingStorage, uint _projectId) internal {
-        uint length = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
-
-        for (uint i = 0; i < length; i++) {
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.timeline.milestones.title", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.timeline.milestones.description", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", i, _projectId)));
-        }
-
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)), 0);
-    }
-
-    function deletePendingTimeline(address _fundingStorage, uint _projectId) internal {
-        uint length = FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)));
-
-        for (uint i = 0; i < length; i++) {
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", i, _projectId)));
-            FundingStorage(_fundingStorage).deleteBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", i, _projectId)));
-        }
-
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingTimeline.length", _projectId)), 0);
     }
 }
