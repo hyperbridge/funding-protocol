@@ -126,13 +126,13 @@ contract ProjectRegistration is ProjectBase {
         // - Milestones are present
         // - Milestone percentages add up to 100
 
-        uint timelineLength = fundingStorage.getTimelineLength(_projectId);
+        uint timelineLength = fundingStorage.getPendingTimelineLength(_projectId);
 
-        require(timelineLength > 0, "Project has no milestones.");
+        require(timelineLength > 0, "Project has no pending milestones.");
 
         uint percentageAcc = 0;
         for (uint i = 0; i < timelineLength; i++) {
-            uint percentage = fundingStorage.getTimelineMilestonePercentage(_projectId, i);
+            uint percentage = fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
             percentageAcc = percentageAcc + percentage;
         }
 
@@ -141,7 +141,7 @@ contract ProjectRegistration is ProjectBase {
 
     function verifyProjectTiers(uint _projectId) private view {
         // Verify that project has contribution tiers
-        uint tiersLength = fundingStorage.getContributionTiersLength(_projectId);
+        uint tiersLength = fundingStorage.getPendingContributionTiersLength(_projectId);
         require(tiersLength > 0, "Project has no contribution tiers.");
     }
 }
