@@ -18,7 +18,6 @@ contract ProjectContributionTier is ProjectBase {
     )
         external
         onlyProjectDeveloper(_projectId)
-        onlyDraftProject(_projectId)
     {
         uint currentLength = fundingStorage.getPendingContributionTiersLength(_projectId);
 
@@ -37,22 +36,31 @@ contract ProjectContributionTier is ProjectBase {
     )
         external
         onlyProjectDeveloper(_projectId)
-        onlyDraftProject(_projectId)
     {
         fundingStorage.setPendingContributionTier(_projectId, _index, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
-    function clearPendingContributionTiers(uint _projectId) external {
+    function clearPendingContributionTiers(uint _projectId) external onlyProjectDeveloper(_projectId) {
         fundingStorage.setPendingContributionTiersLength(_projectId, 0);
     }
 
-    function getPendingContributionTier(uint _projectId, uint _index) external view returns (uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) {
+    function getPendingContributionTiersLength(uint _projectId) external view returns (uint length) {
+        length = fundingStorage.getPendingContributionTiersLength(_projectId);
+        return length;
+    }
+
+    function getPendingContributionTier(uint _projectId, uint _index) external view returns (uint contributorLimit, uint maxContribution, uint minContribution, string rewards) {
         ProjectStorageAccess.ContributionTier memory tier = fundingStorage.getPendingContributionTier(_projectId, _index);
 
         return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);
     }
 
-    function getContributionTier(uint _projectId, uint _index) external view returns (uint _contributorLimit, uint _maxContribution, uint _minContribution, string _rewards) {
+    function getContributionTiersLength(uint _projectId) external view returns (uint length) {
+        length = fundingStorage.getContributionTiersLength(_projectId);
+        return length;
+    }
+
+    function getContributionTier(uint _projectId, uint _index) external view returns (uint contributorLimit, uint maxContribution, uint minContribution, string rewards) {
         ProjectStorageAccess.ContributionTier memory tier = fundingStorage.getContributionTier(_projectId, _index);
 
         return (tier.contributorLimit, tier.maxContribution, tier.minContribution, tier.rewards);

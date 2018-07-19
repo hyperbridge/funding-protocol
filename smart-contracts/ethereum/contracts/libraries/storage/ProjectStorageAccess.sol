@@ -792,8 +792,8 @@ library ProjectStorageAccess {
         uint _projectId,
         uint _index,
         uint _contributorLimit,
-        uint _minContribution,
         uint _maxContribution,
+        uint _minContribution,
         string _rewards
     )
     internal
@@ -829,8 +829,8 @@ library ProjectStorageAccess {
         uint _projectId,
         uint _index,
         uint _contributorLimit,
-        uint _minContribution,
         uint _maxContribution,
+        uint _minContribution,
         string _rewards
     )
     internal

@@ -48,19 +48,39 @@ contract ProjectTimeline is ProjectBase {
         fundingStorage.setPendingTimelineMilestone(_projectId, _index, _title, _description, _percentage, false);
     }
 
-    function getPendingTimelineMilestone(uint _projectId, uint _index) external view returns (string _title, string _description, uint _percentage, bool _isComplete) {
+    function getPendingTimelineLength(uint _projectId) external view returns (uint length) {
+        length = fundingStorage.getPendingTimelineLength(_projectId);
+        return length;
+    }
+
+    function getPendingTimelineMilestone(uint _projectId, uint _index) external view returns (string title, string description, uint percentage, bool isComplete) {
         ProjectStorageAccess.Milestone memory milestone = fundingStorage.getPendingTimelineMilestone(_projectId, _index);
 
         return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
-    function getTimelineMilestone(uint _projectId, uint _index) external view returns (string _title, string _description, uint _percentage, bool _isComplete) {
+    function getTimelineLength(uint _projectId) external view returns (uint length) {
+        length = fundingStorage.getTimelineLength(_projectId);
+        return length;
+    }
+
+    function getTimelineMilestone(uint _projectId, uint _index) external view returns (string title, string description, uint percentage, bool isComplete) {
         ProjectStorageAccess.Milestone memory milestone = fundingStorage.getTimelineMilestone(_projectId, _index);
 
         return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
     }
 
-    function getTimelineHistoryMilestone(uint _projectId, uint _timelineIndex, uint _milestoneIndex) external view returns (string _title, string _description, uint _percentage, bool _isComplete) {
+    function getTimelineHistoryLength(uint _projectId) external view returns (uint length) {
+        length = fundingStorage.getTimelineHistoryLength(_projectId);
+        return length;
+    }
+
+    function getTimelineHistoryLength(uint _projectId, uint _historyIndex) external view returns (uint length) {
+        length = fundingStorage.getTimelineHistoryMilestonesLength(_projectId, _historyIndex);
+        return length;
+    }
+
+    function getTimelineHistoryMilestone(uint _projectId, uint _timelineIndex, uint _milestoneIndex) external view returns (string title, string description, uint percentage, bool isComplete) {
         ProjectStorageAccess.Milestone memory milestone = fundingStorage.getTimelineHistoryMilestone(_projectId, _timelineIndex, _milestoneIndex);
 
         return (milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
