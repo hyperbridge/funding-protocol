@@ -319,4 +319,20 @@ contract('ProjectReview', function(accounts) {
             assert.equal(project[1].toNumber(), 0, "Project status should still be Status: Pending.");
         }
     });
+
+    it("project with noTimeline term set can be submitted for review with no milestones", async () => {
+        try {
+            await projectRegistrationContract.editProject(projectId, projectTitle, projectDescription, projectAbout, projectContributionGoal, noRefunds, true, { from: developerAccount });
+
+            await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+
+            await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+
+            const project = await projectRegistrationContract.getProject(projectId);
+            assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Pending.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
 });
