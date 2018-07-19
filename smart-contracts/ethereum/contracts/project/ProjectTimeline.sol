@@ -106,18 +106,22 @@ contract ProjectTimeline is ProjectBase {
             );
         }
 
-        uint activeMilestoneIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
+        Status status = Status(fundingStorage.getProjectStatus(_projectId));
 
-        ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeMilestoneIndex);
-        fundingStorage.setPendingTimelineMilestone(
-            _projectId,
-            completedMilestonesLength,
-            activeMilestone.title,
-            activeMilestone.description,
-            activeMilestone.percentage,
-            activeMilestone.isComplete
-        );
+        if (status == Status.Published) {
+            uint activeMilestoneIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
 
-        fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
+            ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeMilestoneIndex);
+            fundingStorage.setPendingTimelineMilestone(
+                _projectId,
+                completedMilestonesLength,
+                activeMilestone.title,
+                activeMilestone.description,
+                activeMilestone.percentage,
+                activeMilestone.isComplete
+            );
+
+            fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
+        }
     }
 }

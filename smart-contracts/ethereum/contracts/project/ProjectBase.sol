@@ -23,10 +23,14 @@ contract ProjectBase {
     }
 
     modifier onlyDraftProject(uint _projectId) {
-        require(fundingStorage.getProjectStatus(_projectId) == 0, "This action can only be performed on a draft project.");
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Draft, "This action can only be performed on a draft project.");
         _;
     }
 
+    modifier onlyPublishedProject(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Published, "This action can only be performed on a published project.");
+        _;
+    }
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
     address fundingStorage;

@@ -12,9 +12,7 @@ contract ProjectTimelineProposal is ProjectBase {
         fundingStorage = fundingStorage;
     }
 
-    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) {
-        // Can only suggest new timeline if one already exists
-        require(fundingStorage.getTimelineIsActive(_projectId), "New timeline cannot be proposed if there is no current active timeline.");
+    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyPublishedProject(_projectId) {
         // Can only suggest new timeline if there is not currently a vote on milestone completion
         require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
@@ -56,7 +54,7 @@ contract ProjectTimelineProposal is ProjectBase {
             fundingStorage.setTimelineProposalDisapprovalCount(_projectId, currentDisapprovalCount + 1);
         }
 
-        fundingStorage.setTimelineProposalIsActive(_projectId, true);    
+        fundingStorage.setTimelineProposalHasVoted(_projectId, msg.sender, true);
     }
 
     function finalizeTimelineProposal(uint _projectId) external onlyProjectDeveloper(_projectId) {
@@ -83,7 +81,7 @@ contract ProjectTimelineProposal is ProjectBase {
         require(((approvalCount > numContributors * 75 / 100) || isTwoWeeksLater),
             "Conditions for finalizing timeline proposal have not yet been achieved.");
 
-        return ((approvalCount > numContributors * 75 / 100) || (approvalCount > votingThreshold));
+        return (approvalCount > votingThreshold);
     }
 
     function succeedTimelineProposal(uint _projectId) private {

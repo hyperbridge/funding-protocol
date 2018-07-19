@@ -6,7 +6,6 @@ library ProjectStorageAccess {
 
     struct Timeline {
         Milestone[] milestones;
-        bool isActive;
     }
 
     struct Milestone {
@@ -65,7 +64,6 @@ library ProjectStorageAccess {
             bool noRefunds                                                  (project.noRefunds)
             bool noTimeline                                                 (project.noTimeline)
             Timeline timeline
-                bool isActive                                               (project.timeline.isActive)
                 Milestone[] milestones
                     Milestone
                         string title                                        (project.timeline.milestones.title)
@@ -74,7 +72,6 @@ library ProjectStorageAccess {
                         bool isComplete                                     (project.timeline.milestones.isComplete)
             uint activeMilestoneIndex                                       (project.activeMilestoneIndex)
             Timeline pendingTimeline
-                bool isActive                                               (project.pendingTimeline.isActive)
                 Milestone[] milestones
                     Milestone
                         string title                                        (project.pendingTimeline.milestones.title)
@@ -165,10 +162,6 @@ library ProjectStorageAccess {
     }
 
     // Timeline
-
-    function getTimelineIsActive(address _fundingStorage, uint _projectId) internal view returns (bool) {
-        return FundingStorage(_fundingStorage).getBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)));
-    }
 
     function getTimelineLength(address _fundingStorage, uint _projectId) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)));
@@ -604,10 +597,6 @@ library ProjectStorageAccess {
 
     // Timeline
 
-    function setTimelineIsActive(address _fundingStorage, uint _projectId, bool _isActive) internal {
-        return FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timeline.isActive", _projectId)), _isActive);
-    }
-
     function setTimelineLength(address _fundingStorage, uint _projectId, uint _length) internal {
         return FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timeline.length", _projectId)), _length);
     }
@@ -863,8 +852,8 @@ library ProjectStorageAccess {
         return FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)), _hasFailed);
     }
 
-    function setTimelineProposalHasVoted(address _fundingStorage, uint _projectId, address _address, bool _vote) internal {
-        return FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)), _vote);
+    function setTimelineProposalHasVoted(address _fundingStorage, uint _projectId, address _address, bool _hasVoted) internal {
+        return FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineProposal.voters", _address, _projectId)), _hasVoted);
     }
 
     function setTimelineProposal(
