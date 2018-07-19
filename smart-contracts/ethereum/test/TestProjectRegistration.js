@@ -263,10 +263,23 @@ contract('ProjectReview', function(accounts) {
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
             await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
 
+            let initialPendingContributionTiersLength = await projectContributionTierContract.getPendingContributionTiersLength(projectId);
+            let initialPendingTimelineLength = await projectTimelineContract.getPendingTimelineLength(projectId);
+
             await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
 
-            const project = await projectRegistrationContract.getProject(projectId);
+            let newPendingContributionTiersLength = await projectContributionTierContract.getPendingContributionTiersLength(projectId);
+            let newContributionTiersLength = await projectContributionTierContract.getContributionTiersLength(projectId);
 
+            let newPendingTimelineLength = await projectTimelineContract.getPendingTimelineLength(projectId);
+            let newTimelineLength = await projectTimelineContract.getTimelineLength(projectId);
+
+            assert.equal(newPendingContributionTiersLength.toNumber(), 0, "Pending contribution tiers were not removed.");
+            assert.equal(newContributionTiersLength.toNumber(), initialPendingContributionTiersLength.toNumber(), "Pending contribution tiers were not moved into active tiers.");
+            assert.equal(newPendingTimelineLength.toNumber(), 0, "Pending timeline was not removed.");
+            assert.equal(newTimelineLength.toNumber(), initialPendingTimelineLength.toNumber(), "Pending milestones were not moved into active timeline.");
+
+            const project = await projectRegistrationContract.getProject(projectId);
             assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Pending.");
         } catch (e) {
             console.log(e.message);
