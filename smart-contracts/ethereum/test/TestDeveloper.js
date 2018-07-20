@@ -44,8 +44,7 @@ contract('Developer', function(accounts) {
             assert.equal(createdDeveloper[0].toNumber(), developerId, "Developer ID is incorrect.");
             assert.equal(createdDeveloper[1], accounts[0], "Developer address is incorrect.");
             assert.equal(createdDeveloper[2], developerName, "Developer name is incorrect.");
-            assert.equal(createdDeveloper[3], 0, "Developer reputation should be initialized to 0.");
-            assert.equal(createdDeveloper[4].length, 0, "Developer should not own any projects upon initialization.");
+            assert.equal(createdDeveloper[3].length, 0, "Developer should not own any projects upon initialization.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -60,25 +59,6 @@ contract('Developer', function(accounts) {
             assert.fail();
         } catch (e) {
             console.log(e.message);
-        }
-    });
-
-    it("should be able to update a developer's reputation.", async () => {
-        const repChange = 5;
-        const devId = 1;
-
-        try {
-            await fundingStorage.registerContract("Contract", blankAddress, accounts[9]);
-            let developer = await developerContract.getDeveloper(devId);
-            const initialReputation = developer[3].toNumber();
-            await developerContract.updateDeveloperReputation(devId, repChange, { from: accounts[9] });
-            developer = await developerContract.getDeveloper(devId);
-            const newReputation = developer[3].toNumber();
-
-            assert.equal(newReputation, initialReputation + repChange, "Developer reputation was not increased.");
-        } catch (e) {
-            console.log(e.message);
-            assert.fail();
         }
     });
 });
