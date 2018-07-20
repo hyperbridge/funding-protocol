@@ -36,7 +36,7 @@ library ContributionStorageAccess {
     }
 
     function getNextContributorId(address _fundingStorage) internal view returns (uint) {
-        return FundingStorage(_fundingStorage).getUint(keccak256("contributor.nextId"));
+        return FundingStorage(_fundingStorage).getUint(keccak256("contribution.nextContributorId"));
     }
 
     function getContributorId(address _fundingStorage, address _contributorAddress) internal view returns (uint) {
@@ -100,8 +100,8 @@ library ContributionStorageAccess {
     // Setters
 
     function incrementNextContributorId(address _fundingStorage) internal {
-        uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("contributor.nextId"));
-        FundingStorage(_fundingStorage).setUint(keccak256("contributor.nextId"), currentId + 1);
+        uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("contribution.nextContributorId"));
+        FundingStorage(_fundingStorage).setUint(keccak256("contribution.nextContributorId"), currentId + 1);
     }
 
     function setContributorId(address _fundingStorage, address _contributorAddress, uint _contributorId) internal {
