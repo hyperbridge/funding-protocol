@@ -33,7 +33,7 @@ library DeveloperStorageAccess {
     }
 
     function getNextDeveloperId(address _fundingStorage) internal view returns (uint) {
-        return FundingStorage(_fundingStorage).getUint(keccak256("developer.nextId"));
+        return FundingStorage(_fundingStorage).getUint(keccak256("developer.nextDeveloperId"));
     }
 
     function getDeveloperId(address _fundingStorage, address _developerAddress) internal view returns (uint) {
@@ -90,8 +90,8 @@ library DeveloperStorageAccess {
     // Setters
 
     function incrementNextDeveloperId(address _fundingStorage) internal {
-        uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("developer.nextId"));
-        FundingStorage(_fundingStorage).setUint(keccak256("developer.nextId"), currentId + 1);
+        uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("developer.nextDeveloperId"));
+        FundingStorage(_fundingStorage).setUint(keccak256("developer.nextDeveloperId"), currentId + 1);
     }
 
     function setDeveloperId(address _fundingStorage, address _developerAddress, uint _developerId) internal {
