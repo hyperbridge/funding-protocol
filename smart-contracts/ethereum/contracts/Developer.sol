@@ -11,8 +11,6 @@ contract Developer {
         _;
     }
 
-    uint constant public MILESTONE_COMPLETION_REPUTATION = 5;
-
     address public fundingStorage;
 
     event DeveloperCreated(address developerAddress, uint developerId);
@@ -48,16 +46,10 @@ contract Developer {
             uint id,
             address addr,
             string name,
-            uint reputation,
             uint[] ownedProjectIds
         )
     {
         DeveloperStorageAccess.Developer memory developer = fundingStorage.getDeveloper(_id);
-        return (_id, developer.addr, developer.name, developer.reputation, developer.ownedProjectIds);
-    }
-
-    function updateDeveloperReputation(uint _developerId, uint _val) external onlyLatestFundingContract {
-        uint currentRep = fundingStorage.getDeveloperReputation(_developerId);
-        fundingStorage.setDeveloperReputation(_developerId, currentRep + _val);
+        return (_id, developer.addr, developer.name, developer.ownedProjectIds);
     }
 }

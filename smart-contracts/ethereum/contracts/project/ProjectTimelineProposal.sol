@@ -13,30 +13,14 @@ contract ProjectTimelineProposal is ProjectBase {
     }
 
     function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyPublishedProject(_projectId) {
+        // Can only suggest new timeline if there is not already a timeline proposal active
+        require(!fundingStorage.getTimelineProposalIsActive(_projectId), "New timeline cannot be proposed if there is already an active timeline proposal.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
         require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "New timeline cannot be proposed if there is an active vote on milestone completion.");
 
-        verifyPendingTimelinePercentages(_projectId);
+        fundingStorage.verifyPendingMilestones(_projectId);
 
-        fundingStorage.setTimelineProposalTimestamp(_projectId, now);
-        fundingStorage.setTimelineProposalIsActive(_projectId, true);
-    }
-
-    function verifyPendingTimelinePercentages(uint _projectId) private view {
-        // If project has a timeline, verify:
-        // - Milestones are present
-        // - Milestone percentages add up to 100
-        if (!fundingStorage.getProjectNoTimeline(_projectId)) {
-            uint pendingTimelineLength = fundingStorage.getPendingTimelineLength(_projectId);
-            require(pendingTimelineLength > 0, "Pending timeline is empty.");
-
-            uint percentageAcc = 0;
-            for (uint i = 0; i < pendingTimelineLength; i++) {
-                percentageAcc += fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
-            }
-
-            require(percentageAcc == 100, "Milestone percentages must add to 100.");
-        }
+        fundingStorage.setTimelineProposal(_projectId, now, 0, 0, true, false);
     }
 
     function voteOnTimelineProposal(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
@@ -72,32 +56,33 @@ contract ProjectTimelineProposal is ProjectBase {
     function hasPassedTimelineProposalVote(uint _projectId) private view returns (bool) {
         uint numContributors = fundingStorage.getProjectContributorListLength(_projectId);
         uint approvalCount = fundingStorage.getTimelineProposalApprovalCount(_projectId);
-        uint disapprovalCount = fundingStorage.getTimelineProposalDisapprovalCount(_projectId);
-        uint numVoters = approvalCount + disapprovalCount;
         bool isTwoWeeksLater = now >= fundingStorage.getTimelineProposalTimestamp(_projectId) + 2 weeks;
-        uint votingThreshold = numVoters * 75 / 100;
 
         // Proposal needs >75% total approval, or for 2 weeks to have passed and >75% approval among voters
         require(((approvalCount > numContributors * 75 / 100) || isTwoWeeksLater),
             "Conditions for finalizing timeline proposal have not yet been achieved.");
 
+        uint disapprovalCount = fundingStorage.getTimelineProposalDisapprovalCount(_projectId);
+        uint numVoters = approvalCount + disapprovalCount;
+        uint votingThreshold = numVoters * 75 / 100;
+
         return (approvalCount > votingThreshold);
     }
 
     function succeedTimelineProposal(uint _projectId) private {
-        // Set current timeline to inactive
-        fundingStorage.setTimelineIsActive(_projectId, false);
-
         // Push old timeline into timeline history
         fundingStorage.moveTimelineIntoTimelineHistory(_projectId);
 
         // Move pending timeline into timeline
         fundingStorage.movePendingMilestonesIntoTimeline(_projectId);
 
-        // Set timeline to be active
-        fundingStorage.setTimelineIsActive(_projectId, true);
-
         // Set timeline proposal to inactive
         fundingStorage.setTimelineProposalIsActive(_projectId, false);
+    }
+
+    function getTimelineProposal(uint _projectId) external view returns (uint timestamp, uint approvalCount, uint disapprovalCount, bool isActive, bool hasFailed) {
+        ProjectStorageAccess.TimelineProposal memory proposal = fundingStorage.getTimelineProposal(_projectId);
+
+        return (proposal.timestamp, proposal.approvalCount, proposal.disapprovalCount, proposal.isActive, proposal.hasFailed);
     }
 }

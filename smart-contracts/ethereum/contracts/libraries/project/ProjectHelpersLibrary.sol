@@ -12,10 +12,7 @@ library ProjectHelpersLibrary {
 
         for (uint i = 0; i < timelineLength; i++) {
             ProjectStorageAccess.Milestone memory milestone = _fundingStorage.getTimelineMilestone(_projectId, i);
-            _fundingStorage.setTimelineHistoryMilestoneTitle(_projectId, historyLength, i, milestone.title);
-            _fundingStorage.setTimelineHistoryMilestoneDescription(_projectId, historyLength, i, milestone.description);
-            _fundingStorage.setTimelineHistoryMilestonePercentage(_projectId, historyLength, i, milestone.percentage);
-            _fundingStorage.setTimelineHistoryMilestoneIsComplete(_projectId, historyLength, i, milestone.isComplete);
+            _fundingStorage.setTimelineHistoryMilestone(_projectId, historyLength, i, milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
         }
 
         _fundingStorage.setTimelineHistoryLength(_projectId, historyLength + 1);
@@ -58,5 +55,23 @@ library ProjectHelpersLibrary {
         }
 
         _fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
+    }
+
+    function verifyPendingMilestones(address _fundingStorage, uint _projectId) external view {
+        // Verify:
+        // - Milestones are present
+        // - Milestone percentages add up to 100
+
+        uint timelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
+
+        require(timelineLength > 0, "Project has no pending milestones.");
+
+        uint percentageAcc = 0;
+        for (uint i = 0; i < timelineLength; i++) {
+            uint percentage = _fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
+            percentageAcc = percentageAcc + percentage;
+        }
+
+        require(percentageAcc == 100, "Milestone percentages must add to 100.");
     }
 }

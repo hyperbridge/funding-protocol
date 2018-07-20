@@ -19,11 +19,7 @@ contract ProjectContributionTier is ProjectBase {
         external
         onlyProjectDeveloper(_projectId)
     {
-        uint currentLength = fundingStorage.getPendingContributionTiersLength(_projectId);
-
-        fundingStorage.setPendingContributionTier(_projectId, currentLength, _contributorLimit, _maxContribution, _minContribution, _rewards);
-
-        fundingStorage.setPendingContributionTiersLength(_projectId, currentLength + 1);
+        fundingStorage.pushPendingContributionTier(_projectId, currentLength, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
     function editContributionTier(

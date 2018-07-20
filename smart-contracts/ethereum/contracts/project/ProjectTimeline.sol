@@ -22,13 +22,7 @@ contract ProjectTimeline is ProjectBase {
         require(!fundingStorage.getProjectNoTimeline(_projectId), "Cannot add a milestone to a project with no timeline.");
         require(!fundingStorage.getTimelineProposalIsActive(_projectId), "Pending milestones cannot be added while a timeline proposal vote is active.");
 
-        // Get next available milestone index
-        uint index = fundingStorage.getPendingTimelineLength(_projectId);
-
-        fundingStorage.setPendingTimelineMilestone(_projectId, index, _title, _description, _percentage, false);
-
-        // Increment pending timeline length
-        fundingStorage.setPendingTimelineLength(_projectId, index + 1);
+        fundingStorage.pushPendingTimelineMilestone(_projectId, _title, _description, _percentage, false);
     }
 
     function editMilestone(

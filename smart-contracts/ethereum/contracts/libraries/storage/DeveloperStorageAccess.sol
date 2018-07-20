@@ -8,7 +8,6 @@ library DeveloperStorageAccess {
         uint id;
         address addr;
         string name;
-        uint reputation;
         mapping(uint => bool) ownsProject; // project id => owned by this dev
         uint[] ownedProjectIds; // the projects belonging to this developer
     }
@@ -18,7 +17,6 @@ library DeveloperStorageAccess {
         associated namespace:
             address addr                                                    (developer.addr)
             string name                                                     (developer.name)
-            uint reputation                                                 (developer.reputation)
             mapping(uint (id) => bool) ownsProject                          (developer.ownsProject)
             uint[] ownedProjectIds                                          (developer.projectIds)
 
@@ -40,10 +38,6 @@ library DeveloperStorageAccess {
 
     function getDeveloperId(address _fundingStorage, address _developerAddress) internal view returns (uint) {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)));
-    }
-
-    function getDeveloperReputation(address _fundingStorage, uint _developerId) internal view returns (uint) {
-        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("developer.reputation", _developerId)));
     }
 
     function getDeveloperAddress(address _fundingStorage, uint _developerId) internal view returns (address) {
@@ -85,7 +79,6 @@ library DeveloperStorageAccess {
             id: _developerId,
             addr: getDeveloperAddress(_fundingStorage, _developerId),
             name: getDeveloperName(_fundingStorage, _developerId),
-            reputation: getDeveloperReputation(_fundingStorage, _developerId),
             ownedProjectIds: getDeveloperOwnedProjects(_fundingStorage, _developerId)
         });
 
@@ -103,10 +96,6 @@ library DeveloperStorageAccess {
 
     function setDeveloperId(address _fundingStorage, address _developerAddress, uint _developerId) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.developerMap", _developerAddress)), _developerId);
-    }
-
-    function setDeveloperReputation(address _fundingStorage, uint _developerId, uint _rep) internal {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("developer.reputation", _developerId)), _rep);
     }
 
     function setDeveloperAddress(address _fundingStorage, uint _developerId, address _address) internal {

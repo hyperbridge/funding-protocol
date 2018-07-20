@@ -31,6 +31,7 @@ contract ProjectBase {
         require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Published, "This action can only be performed on a published project.");
         _;
     }
+
     enum Status {Draft, Pending, Published, Removed, Rejected}
 
     address fundingStorage;

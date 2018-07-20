@@ -111,32 +111,13 @@ contract ProjectRegistration is ProjectBase {
 
         // If project has a timeline, verify that milestone percentages add up to 100% and set active timeline
         if (!noTimeline) {
-            verifyProjectMilestones(_projectId);
+            fundingStorage.verifyPendingMilestones(_projectId);
             fundingStorage.movePendingMilestonesIntoTimeline(_projectId);
             fundingStorage.movePendingContributionTiersIntoActiveContributionTiers(_projectId);
-            fundingStorage.setTimelineIsActive(_projectId, true);
         }
 
         // Change project status to "Pending"
         fundingStorage.setProjectStatus(_projectId, uint(Status.Pending));
-    }
-
-    function verifyProjectMilestones(uint _projectId) private view {
-        // If project has a timeline, verify:
-        // - Milestones are present
-        // - Milestone percentages add up to 100
-
-        uint timelineLength = fundingStorage.getPendingTimelineLength(_projectId);
-
-        require(timelineLength > 0, "Project has no pending milestones.");
-
-        uint percentageAcc = 0;
-        for (uint i = 0; i < timelineLength; i++) {
-            uint percentage = fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
-            percentageAcc = percentageAcc + percentage;
-        }
-
-        require(percentageAcc == 100, "Milestone percentages must add to 100.");
     }
 
     function verifyProjectTiers(uint _projectId) private view {
