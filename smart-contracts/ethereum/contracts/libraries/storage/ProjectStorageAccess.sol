@@ -214,7 +214,7 @@ library ProjectStorageAccess {
             description: description,
             percentage: percentage,
             isComplete: isComplete
-            });
+        });
 
         return milestone;
     }
@@ -636,12 +636,29 @@ library ProjectStorageAccess {
         uint _percentage,
         bool _isComplete
     )
-    internal
+        internal
     {
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.timeline.milestones.title", _index, _projectId)), _title);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.timeline.milestones.description", _index, _projectId)), _description);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timeline.milestones.percentage", _index, _projectId)), _percentage);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timeline.milestones.isComplete", _index, _projectId)), _isComplete);
+        setTimelineMilestoneTitle(_fundingStorage, _projectId, _index, _title);
+        setTimelineMilestoneDescription(_fundingStorage, _projectId, _index, _description);
+        setTimelineMilestonePercentage(_fundingStorage, _projectId, _index, _percentage);
+        setTimelineMilestoneIsComplete(_fundingStorage, _projectId, _index, _isComplete);
+    }
+
+    function pushTimelineMilestone(
+        address _fundingStorage,
+        uint _projectId,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+        internal
+    {
+        uint length = getTimelineLength(_fundingStorage, _projectId);
+
+        setTimelineMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
+
+        setTimelineLength(_fundingStorage, _projectId, length + 1);
     }
 
     function setPendingTimelineMilestoneTitle(address _fundingStorage, uint _projectId, uint _index, string _title) internal {
@@ -671,10 +688,27 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.title", _index, _projectId)), _title);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.pendingTimeline.milestones.description", _index, _projectId)), _description);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingTimeline.milestones.percentage", _index, _projectId)), _percentage);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.pendingTimeline.milestones.isComplete", _index, _projectId)), _isComplete);
+        setPendingTimelineMilestoneTitle(_fundingStorage, _projectId, _index, _title);
+        setPendingTimelineMilestoneDescription(_fundingStorage, _projectId, _index, _description);
+        setPendingTimelineMilestonePercentage(_fundingStorage, _projectId, _index, _percentage);
+        setPendingTimelineMilestoneIsComplete(_fundingStorage, _projectId, _index, _isComplete);
+    }
+
+    function pushPendingTimelineMilestone(
+        address _fundingStorage,
+        uint _projectId,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+    internal
+    {
+        uint length = getPendingTimelineLength(_fundingStorage, _projectId);
+
+        setPendingTimelineMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
+
+        setPendingTimelineLength(_fundingStorage, _projectId, length + 1);
     }
 
     function setCompletedMilestonesLength(address _fundingStorage, uint _projectId, uint _length) internal {
@@ -706,12 +740,29 @@ library ProjectStorageAccess {
         uint _percentage,
         bool _isComplete
     )
-    internal
+        internal
     {
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.completedMilestones.title", _index, _projectId)), _title);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.completedMilestones.description", _index, _projectId)), _description);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.completedMilestones.percentage", _index, _projectId)), _percentage);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.completedMilestones.isComplete", _index, _projectId)), _isComplete);
+        setCompletedMilestoneTitle(_fundingStorage, _projectId, _index, _title);
+        setCompletedMilestoneDescription(_fundingStorage, _projectId, _index, _description);
+        setCompletedMilestonePercentage(_fundingStorage, _projectId, _index, _percentage);
+        setCompletedMilestoneIsComplete(_fundingStorage, _projectId, _index, _isComplete);
+    }
+
+    function pushCompletedMilestone(
+        address _fundingStorage,
+        uint _projectId,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+        internal
+    {
+        uint length = getCompletedMilestonesLength(_fundingStorage, _projectId);
+
+        setCompletedMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
+
+        setCompletedMilestonesLength(_fundingStorage, _projectId, length + 1);
     }
 
     function setTimelineHistoryMilestonesLength(address _fundingStorage, uint _projectId, uint _timelineIndex, uint _length) internal {
@@ -746,10 +797,28 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.title", _projectId, _timelineIndex, _milestoneIndex)), _title);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.timelineHistory.milestones.description", _projectId, _timelineIndex, _milestoneIndex)), _description);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timelineHistory.milestones.percentage", _projectId, _timelineIndex, _milestoneIndex)), _percentage);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineHistory.milestones.isComplete", _projectId, _timelineIndex, _milestoneIndex)), _isComplete);
+        setTimelineHistoryMilestoneTitle(_fundingStorage, _projectId, _timelineIndex, _milestoneIndex, _title);
+        setTimelineHistoryMilestoneDescription(_fundingStorage, _projectId, _timelineIndex, _milestoneIndex, _description);
+        setTimelineHistoryMilestonePercentage(_fundingStorage, _projectId, _timelineIndex, _milestoneIndex, _percentage);
+        setTimelineHistoryMilestoneIsComplete(_fundingStorage, _projectId, _timelineIndex, _milestoneIndex, _isComplete);
+    }
+
+    function pushTimelineHistoryMilestone(
+        address _fundingStorage,
+        uint _projectId,
+        uint _timelineIndex,
+        string _title,
+        string _description,
+        uint _percentage,
+        bool _isComplete
+    )
+    internal
+    {
+        uint length = getTimelineHistoryMilestonesLength(_fundingStorage, _projectId, _timelineIndex);
+
+        setTimelineHistoryMilestone(_fundingStorage, _projectId, _timelineIndex, length, _title, _description, _percentage, _isComplete);
+
+        setTimelineHistoryMilestonesLength(_fundingStorage, _projectId, _timelineIndex, length + 1);
     }
 
 
@@ -787,10 +856,27 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionTiers.contributorLimit", _index, _projectId)), _contributorLimit);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionTiers.minContribution", _index, _projectId)), _minContribution);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionTiers.maxContribution", _index, _projectId)), _maxContribution);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.contributionTiers.rewards", _index, _projectId)), _rewards);
+        setContributionTierContributorLimit(_fundingStorage, _projectId, _index, _contributorLimit);
+        setContributionTierMaxContribution(_fundingStorage, _projectId, _index, _maxContribution);
+        setContributionTierMinContribution(_fundingStorage, _projectId, _index, _minContribution);
+        setContributionTierRewards(_fundingStorage, _projectId, _index, _rewards);
+    }
+
+    function pushContributionTier(
+        address _fundingStorage,
+        uint _projectId,
+        uint _contributorLimit,
+        uint _maxContribution,
+        uint _minContribution,
+        string _rewards
+    )
+        internal
+    {
+        uint length = getContributionTiersLength(_fundingStorage, _projectId);
+
+        setContributionTier(_fundingStorage, _projectId, length, _contributorLimit, _maxContribution, _minContribution, _rewards);
+
+        setContributionTiersLength(_fundingStorage, _projectId, length + 1);
     }
 
     function setPendingContributionTiersLength(address _fundingStorage, uint _projectId, uint _length) internal {
@@ -824,10 +910,27 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.contributorLimit", _index, _projectId)), _contributorLimit);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.minContribution", _index, _projectId)), _minContribution);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.pendingContributionTiers.maxContribution", _index, _projectId)), _maxContribution);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.pendingContributionTiers.rewards", _index, _projectId)), _rewards);
+        setPendingContributionTierContributorLimit(_fundingStorage, _projectId, _index, _contributorLimit);
+        setPendingContributionTierMaxContribution(_fundingStorage, _projectId, _index, _maxContribution);
+        setPendingContributionTierMinContribution(_fundingStorage, _projectId, _index, _minContribution);
+        setPendingContributionTierRewards(_fundingStorage, _projectId, _index, _rewards);
+    }
+
+    function pushPendingContributionTier(
+        address _fundingStorage,
+        uint _projectId,
+        uint _contributorLimit,
+        uint _maxContribution,
+        uint _minContribution,
+        string _rewards
+    )
+    internal
+    {
+        uint length = getPendingContributionTiersLength(_fundingStorage, _projectId);
+
+        setPendingContributionTier(_fundingStorage, _projectId, length, _contributorLimit, _maxContribution, _minContribution, _rewards);
+
+        setPendingContributionTiersLength(_fundingStorage, _projectId, length + 1);
     }
 
     // TimelineProposal
@@ -867,11 +970,11 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timelineProposal.timestamp", _projectId)), _timestamp);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timelineProposal.approvalCount", _projectId)), _approvalCount);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.timelineProposal.disapprovalCount", _projectId)), _disapprovalCount);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineProposal.isActive", _projectId)), _isActive);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.timelineProposal.hasFailed", _projectId)), _hasFailed);
+        setTimelineProposalTimestamp(_fundingStorage, _projectId, _timestamp);
+        setTimelineProposalApprovalCount(_fundingStorage, _projectId, _approvalCount);
+        setTimelineProposalDisapprovalCount(_fundingStorage, _projectId, _disapprovalCount);
+        setTimelineProposalIsActive(_fundingStorage, _projectId, _isActive);
+        setTimelineProposalHasFailed(_fundingStorage, _projectId, _hasFailed);
     }
 
     // MilestoneCompletionSubmission
@@ -916,11 +1019,11 @@ library ProjectStorageAccess {
     )
     internal
     {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.timestamp", _projectId)), _timestamp);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.approvalCount", _projectId)), _approvalCount);
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.disapprovalCount", _projectId)), _disapprovalCount);
-        FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.report", _projectId)), _report);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.isActive", _projectId)), _isActive);
-        FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.milestoneCompletionSubmission.hasFailed", _projectId)), _hasFailed);
+        setMilestoneCompletionSubmissionTimestamp(_fundingStorage, _projectId, _timestamp);
+        setMilestoneCompletionSubmissionApprovalCount(_fundingStorage, _projectId, _approvalCount);
+        setMilestoneCompletionSubmissionDisapprovalCount(_fundingStorage, _projectId, _disapprovalCount);
+        setMilestoneCompletionSubmissionReport(_fundingStorage, _projectId, _report);
+        setMilestoneCompletionSubmissionIsActive(_fundingStorage, _projectId, _isActive);
+        setMilestoneCompletionSubmissionHasFailed(_fundingStorage, _projectId, _hasFailed);
     }
 }
