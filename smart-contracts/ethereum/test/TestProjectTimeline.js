@@ -116,9 +116,10 @@ contract('ProjectTimeline', function(accounts) {
         }
     });
 
+    // TODO
     it("should retain funded milestones in cleared pending timeline", async () => {
         try {
-            
+
         } catch (e) {
             console.log(e.message);
             assert.fail();
