@@ -2,6 +2,7 @@ const HDWalletProvider = require("truffle-hdwallet-provider");
 const mnemonic = "load machine oxygen defense unique rural bulk napkin congress any balcony cash";
 
 module.exports = {
+    contracts_build_directory: "./build",
     networks: {
         development: {
             host: "localhost",
