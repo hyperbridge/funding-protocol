@@ -1,0 +1,2861 @@
+{
+  "contractName": "ProjectBase",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a7230582017b2e4d3462d60520a634ffab3e0622f27d2a77cd484d9c56e1b232354ed266c0029",
+  "deployedBytecode": "0x6080604052600080fd00a165627a7a7230582017b2e4d3462d60520a634ffab3e0622f27d2a77cd484d9c56e1b232354ed266c0029",
+  "sourceMap": "202:1260:15:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;202:1260:15;;;;;;;",
+  "deployedSourceMap": "202:1260:15:-;;;;;",
+  "source": "pragma solidity ^0.4.24;\n\nimport \"../libraries/storage/ProjectStorageAccess.sol\";\nimport \"../libraries/storage/DeveloperStorageAccess.sol\";\nimport \"../libraries/storage/ContributionStorageAccess.sol\";\n\ncontract ProjectBase {\n\n    using ProjectStorageAccess for address;\n    using DeveloperStorageAccess for address;\n    using ContributionStorageAccess for address;\n\n    modifier onlyProjectDeveloper(uint _projectId) {\n        require(msg.sender == fundingStorage.getProjectDeveloper(_projectId), \"You must be the project developer to perform this action.\");\n        _;\n    }\n\n    modifier onlyProjectContributor(uint _projectId) {\n        uint contributorId = fundingStorage.getContributorId(msg.sender);\n        require(contributorId != 0, \"This address is not a contributor.\");\n        require(fundingStorage.getContributesToProject(contributorId, _projectId), \"This address is not a contributor to this project.\");\n        _;\n    }\n\n    modifier onlyDraftProject(uint _projectId) {\n        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Draft, \"This action can only be performed on a draft project.\");\n        _;\n    }\n\n    modifier onlyPublishedProject(uint _projectId) {\n        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Published, \"This action can only be performed on a published project.\");\n        _;\n    }\n\n    enum Status {Draft, Pending, Published, Removed, Rejected}\n\n    address fundingStorage;\n}\n",
+  "sourcePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/project/ProjectBase.sol",
+  "ast": {
+    "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/project/ProjectBase.sol",
+    "exportedSymbols": {
+      "ProjectBase": [
+        8346
+      ]
+    },
+    "id": 8347,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 8240,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:15"
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/ProjectStorageAccess.sol",
+        "file": "../libraries/storage/ProjectStorageAccess.sol",
+        "id": 8241,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 8018,
+        "src": "26:55:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/DeveloperStorageAccess.sol",
+        "file": "../libraries/storage/DeveloperStorageAccess.sol",
+        "id": 8242,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 3160,
+        "src": "82:57:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/ContributionStorageAccess.sol",
+        "file": "../libraries/storage/ContributionStorageAccess.sol",
+        "id": 8243,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 2315,
+        "src": "140:60:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 8346,
+        "linearizedBaseContracts": [
+          8346
+        ],
+        "name": "ProjectBase",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 8246,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8244,
+              "name": "ProjectStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 8017,
+              "src": "236:20:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ProjectStorageAccess_$8017",
+                "typeString": "library ProjectStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "230:39:15",
+            "typeName": {
+              "id": 8245,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "261:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "id": 8249,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8247,
+              "name": "DeveloperStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 3159,
+              "src": "280:22:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_DeveloperStorageAccess_$3159",
+                "typeString": "library DeveloperStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "274:41:15",
+            "typeName": {
+              "id": 8248,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "307:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "id": 8252,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8250,
+              "name": "ContributionStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 2314,
+              "src": "326:25:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ContributionStorageAccess_$2314",
+                "typeString": "library ContributionStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "320:44:15",
+            "typeName": {
+              "id": 8251,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "356:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "body": {
+              "id": 8268,
+              "nodeType": "Block",
+              "src": "417:158:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 8263,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8257,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 10102,
+                            "src": "435:3:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 8258,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "435:10:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "id": 8261,
+                              "name": "_projectId",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 8254,
+                              "src": "484:10:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": null,
+                              "id": 8259,
+                              "name": "fundingStorage",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 8345,
+                              "src": "449:14:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            "id": 8260,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "getProjectDeveloper",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 3368,
+                            "src": "449:34:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_address_$bound_to$_t_address_$",
+                              "typeString": "function (address,uint256) view returns (address)"
+                            }
+                          },
+                          "id": 8262,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "449:46:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "435:60:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "596f75206d757374206265207468652070726f6a65637420646576656c6f70657220746f20706572666f726d207468697320616374696f6e2e",
+                        "id": 8264,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "497:59:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_97e9ca7532691841f16fb5e7eaebc3c94d5e0b17b2102ce773f5719855267386",
+                          "typeString": "literal_string \"You must be the project developer to perform this action.\""
+                        },
+                        "value": "You must be the project developer to perform this action."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_97e9ca7532691841f16fb5e7eaebc3c94d5e0b17b2102ce773f5719855267386",
+                          "typeString": "literal_string \"You must be the project developer to perform this action.\""
+                        }
+                      ],
+                      "id": 8256,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "427:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8265,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "427:130:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8266,
+                  "nodeType": "ExpressionStatement",
+                  "src": "427:130:15"
+                },
+                {
+                  "id": 8267,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "567:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8269,
+            "name": "onlyProjectDeveloper",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8255,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8254,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8269,
+                  "src": "400:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8253,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "400:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "399:17:15"
+            },
+            "src": "370:205:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8298,
+              "nodeType": "Block",
+              "src": "630:305:15",
+              "statements": [
+                {
+                  "assignments": [
+                    8274
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 8274,
+                      "name": "contributorId",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 8299,
+                      "src": "640:18:15",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 8273,
+                        "name": "uint",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "640:4:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 8280,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 8277,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 10102,
+                          "src": "693:3:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 8278,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "693:10:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 8275,
+                        "name": "fundingStorage",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 8345,
+                        "src": "661:14:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "id": 8276,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getContributorId",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1817,
+                      "src": "661:31:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_address_$_t_address_$returns$_t_uint256_$bound_to$_t_address_$",
+                        "typeString": "function (address,address) view returns (uint256)"
+                      }
+                    },
+                    "id": 8279,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "661:43:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "640:64:15"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 8284,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 8282,
+                          "name": "contributorId",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 8274,
+                          "src": "722:13:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "!=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 8283,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "739:1:15",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "722:18:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "546869732061646472657373206973206e6f74206120636f6e7472696275746f722e",
+                        "id": 8285,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "742:36:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_ed7e4e4dff08c4b5e5eb67f0023fba782aac0853d2f68c177a6f5c605bcacb66",
+                          "typeString": "literal_string \"This address is not a contributor.\""
+                        },
+                        "value": "This address is not a contributor."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_ed7e4e4dff08c4b5e5eb67f0023fba782aac0853d2f68c177a6f5c605bcacb66",
+                          "typeString": "literal_string \"This address is not a contributor.\""
+                        }
+                      ],
+                      "id": 8281,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "714:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8286,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "714:65:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8287,
+                  "nodeType": "ExpressionStatement",
+                  "src": "714:65:15"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "id": 8291,
+                            "name": "contributorId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8274,
+                            "src": "836:13:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          {
+                            "argumentTypes": null,
+                            "id": 8292,
+                            "name": "_projectId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8271,
+                            "src": "851:10:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            },
+                            {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8289,
+                            "name": "fundingStorage",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8345,
+                            "src": "797:14:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "id": 8290,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "getContributesToProject",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 1866,
+                          "src": "797:38:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$_t_uint256_$returns$_t_bool_$bound_to$_t_address_$",
+                            "typeString": "function (address,uint256,uint256) view returns (bool)"
+                          }
+                        },
+                        "id": 8293,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "797:65:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "546869732061646472657373206973206e6f74206120636f6e7472696275746f7220746f20746869732070726f6a6563742e",
+                        "id": 8294,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "864:52:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_bcecff7053d85ccb3ad51a13ecb8c7c3fb08e050c2b62ef39f1e2e61bca7e9c2",
+                          "typeString": "literal_string \"This address is not a contributor to this project.\""
+                        },
+                        "value": "This address is not a contributor to this project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_bcecff7053d85ccb3ad51a13ecb8c7c3fb08e050c2b62ef39f1e2e61bca7e9c2",
+                          "typeString": "literal_string \"This address is not a contributor to this project.\""
+                        }
+                      ],
+                      "id": 8288,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "789:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8295,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "789:128:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8296,
+                  "nodeType": "ExpressionStatement",
+                  "src": "789:128:15"
+                },
+                {
+                  "id": 8297,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "927:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8299,
+            "name": "onlyProjectContributor",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8272,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8271,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8299,
+                  "src": "613:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8270,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "613:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "612:17:15"
+            },
+            "src": "581:354:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8317,
+              "nodeType": "Block",
+              "src": "984:161:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_enum$_Status_$8343",
+                          "typeString": "enum ProjectBase.Status"
+                        },
+                        "id": 8312,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "arguments": [
+                                {
+                                  "argumentTypes": null,
+                                  "id": 8307,
+                                  "name": "_projectId",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8301,
+                                  "src": "1041:10:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": [
+                                  {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 8305,
+                                  "name": "fundingStorage",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8345,
+                                  "src": "1009:14:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_address",
+                                    "typeString": "address"
+                                  }
+                                },
+                                "id": 8306,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "getProjectStatus",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": 3276,
+                                "src": "1009:31:15",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_uint256_$bound_to$_t_address_$",
+                                  "typeString": "function (address,uint256) view returns (uint256)"
+                                }
+                              },
+                              "id": 8308,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "kind": "functionCall",
+                              "lValueRequested": false,
+                              "names": [],
+                              "nodeType": "FunctionCall",
+                              "src": "1009:43:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 8304,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1002:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8309,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1002:51:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8310,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1057:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8311,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberName": "Draft",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "1057:12:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "src": "1002:67:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "5468697320616374696f6e2063616e206f6e6c7920626520706572666f726d6564206f6e20612064726166742070726f6a6563742e",
+                        "id": 8313,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1071:55:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_6a8905144cdbba6a872b48030baf252db3df82ccda3b68788f1dfa18dc72a6ad",
+                          "typeString": "literal_string \"This action can only be performed on a draft project.\""
+                        },
+                        "value": "This action can only be performed on a draft project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_6a8905144cdbba6a872b48030baf252db3df82ccda3b68788f1dfa18dc72a6ad",
+                          "typeString": "literal_string \"This action can only be performed on a draft project.\""
+                        }
+                      ],
+                      "id": 8303,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "994:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8314,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "994:133:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8315,
+                  "nodeType": "ExpressionStatement",
+                  "src": "994:133:15"
+                },
+                {
+                  "id": 8316,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "1137:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8318,
+            "name": "onlyDraftProject",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8302,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8301,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8318,
+                  "src": "967:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8300,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "967:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "966:17:15"
+            },
+            "src": "941:204:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8336,
+              "nodeType": "Block",
+              "src": "1198:169:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_enum$_Status_$8343",
+                          "typeString": "enum ProjectBase.Status"
+                        },
+                        "id": 8331,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "arguments": [
+                                {
+                                  "argumentTypes": null,
+                                  "id": 8326,
+                                  "name": "_projectId",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8320,
+                                  "src": "1255:10:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": [
+                                  {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 8324,
+                                  "name": "fundingStorage",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8345,
+                                  "src": "1223:14:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_address",
+                                    "typeString": "address"
+                                  }
+                                },
+                                "id": 8325,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "getProjectStatus",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": 3276,
+                                "src": "1223:31:15",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_uint256_$bound_to$_t_address_$",
+                                  "typeString": "function (address,uint256) view returns (uint256)"
+                                }
+                              },
+                              "id": 8327,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "kind": "functionCall",
+                              "lValueRequested": false,
+                              "names": [],
+                              "nodeType": "FunctionCall",
+                              "src": "1223:43:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 8323,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1216:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8328,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1216:51:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8329,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1271:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8330,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberName": "Published",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "1271:16:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "src": "1216:71:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "5468697320616374696f6e2063616e206f6e6c7920626520706572666f726d6564206f6e2061207075626c69736865642070726f6a6563742e",
+                        "id": 8332,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1289:59:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_0635b4acb9763e42bf0dd443ef844a41cbe7b16dc33acb7d2b451c4f831b2451",
+                          "typeString": "literal_string \"This action can only be performed on a published project.\""
+                        },
+                        "value": "This action can only be performed on a published project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_0635b4acb9763e42bf0dd443ef844a41cbe7b16dc33acb7d2b451c4f831b2451",
+                          "typeString": "literal_string \"This action can only be performed on a published project.\""
+                        }
+                      ],
+                      "id": 8322,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "1208:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8333,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1208:141:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8334,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1208:141:15"
+                },
+                {
+                  "id": 8335,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "1359:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8337,
+            "name": "onlyPublishedProject",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8321,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8320,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8337,
+                  "src": "1181:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8319,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1181:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1180:17:15"
+            },
+            "src": "1151:216:15",
+            "visibility": "internal"
+          },
+          {
+            "canonicalName": "ProjectBase.Status",
+            "id": 8343,
+            "members": [
+              {
+                "id": 8338,
+                "name": "Draft",
+                "nodeType": "EnumValue",
+                "src": "1386:5:15"
+              },
+              {
+                "id": 8339,
+                "name": "Pending",
+                "nodeType": "EnumValue",
+                "src": "1393:7:15"
+              },
+              {
+                "id": 8340,
+                "name": "Published",
+                "nodeType": "EnumValue",
+                "src": "1402:9:15"
+              },
+              {
+                "id": 8341,
+                "name": "Removed",
+                "nodeType": "EnumValue",
+                "src": "1413:7:15"
+              },
+              {
+                "id": 8342,
+                "name": "Rejected",
+                "nodeType": "EnumValue",
+                "src": "1422:8:15"
+              }
+            ],
+            "name": "Status",
+            "nodeType": "EnumDefinition",
+            "src": "1373:58:15"
+          },
+          {
+            "constant": false,
+            "id": 8345,
+            "name": "fundingStorage",
+            "nodeType": "VariableDeclaration",
+            "scope": 8346,
+            "src": "1437:22:15",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 8344,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "1437:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 8347,
+        "src": "202:1260:15"
+      }
+    ],
+    "src": "0:1463:15"
+  },
+  "legacyAST": {
+    "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/project/ProjectBase.sol",
+    "exportedSymbols": {
+      "ProjectBase": [
+        8346
+      ]
+    },
+    "id": 8347,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 8240,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:15"
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/ProjectStorageAccess.sol",
+        "file": "../libraries/storage/ProjectStorageAccess.sol",
+        "id": 8241,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 8018,
+        "src": "26:55:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/DeveloperStorageAccess.sol",
+        "file": "../libraries/storage/DeveloperStorageAccess.sol",
+        "id": 8242,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 3160,
+        "src": "82:57:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/ude/hb/projects/funding-protocol/smart-contracts/ethereum/contracts/libraries/storage/ContributionStorageAccess.sol",
+        "file": "../libraries/storage/ContributionStorageAccess.sol",
+        "id": 8243,
+        "nodeType": "ImportDirective",
+        "scope": 8347,
+        "sourceUnit": 2315,
+        "src": "140:60:15",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 8346,
+        "linearizedBaseContracts": [
+          8346
+        ],
+        "name": "ProjectBase",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 8246,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8244,
+              "name": "ProjectStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 8017,
+              "src": "236:20:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ProjectStorageAccess_$8017",
+                "typeString": "library ProjectStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "230:39:15",
+            "typeName": {
+              "id": 8245,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "261:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "id": 8249,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8247,
+              "name": "DeveloperStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 3159,
+              "src": "280:22:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_DeveloperStorageAccess_$3159",
+                "typeString": "library DeveloperStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "274:41:15",
+            "typeName": {
+              "id": 8248,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "307:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "id": 8252,
+            "libraryName": {
+              "contractScope": null,
+              "id": 8250,
+              "name": "ContributionStorageAccess",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 2314,
+              "src": "326:25:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ContributionStorageAccess_$2314",
+                "typeString": "library ContributionStorageAccess"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "320:44:15",
+            "typeName": {
+              "id": 8251,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "356:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            }
+          },
+          {
+            "body": {
+              "id": 8268,
+              "nodeType": "Block",
+              "src": "417:158:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 8263,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8257,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 10102,
+                            "src": "435:3:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 8258,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "435:10:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "id": 8261,
+                              "name": "_projectId",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 8254,
+                              "src": "484:10:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": null,
+                              "id": 8259,
+                              "name": "fundingStorage",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 8345,
+                              "src": "449:14:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            "id": 8260,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "getProjectDeveloper",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 3368,
+                            "src": "449:34:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_address_$bound_to$_t_address_$",
+                              "typeString": "function (address,uint256) view returns (address)"
+                            }
+                          },
+                          "id": 8262,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "449:46:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "435:60:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "596f75206d757374206265207468652070726f6a65637420646576656c6f70657220746f20706572666f726d207468697320616374696f6e2e",
+                        "id": 8264,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "497:59:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_97e9ca7532691841f16fb5e7eaebc3c94d5e0b17b2102ce773f5719855267386",
+                          "typeString": "literal_string \"You must be the project developer to perform this action.\""
+                        },
+                        "value": "You must be the project developer to perform this action."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_97e9ca7532691841f16fb5e7eaebc3c94d5e0b17b2102ce773f5719855267386",
+                          "typeString": "literal_string \"You must be the project developer to perform this action.\""
+                        }
+                      ],
+                      "id": 8256,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "427:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8265,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "427:130:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8266,
+                  "nodeType": "ExpressionStatement",
+                  "src": "427:130:15"
+                },
+                {
+                  "id": 8267,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "567:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8269,
+            "name": "onlyProjectDeveloper",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8255,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8254,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8269,
+                  "src": "400:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8253,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "400:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "399:17:15"
+            },
+            "src": "370:205:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8298,
+              "nodeType": "Block",
+              "src": "630:305:15",
+              "statements": [
+                {
+                  "assignments": [
+                    8274
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 8274,
+                      "name": "contributorId",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 8299,
+                      "src": "640:18:15",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 8273,
+                        "name": "uint",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "640:4:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 8280,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 8277,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 10102,
+                          "src": "693:3:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 8278,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "693:10:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 8275,
+                        "name": "fundingStorage",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 8345,
+                        "src": "661:14:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "id": 8276,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getContributorId",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1817,
+                      "src": "661:31:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_address_$_t_address_$returns$_t_uint256_$bound_to$_t_address_$",
+                        "typeString": "function (address,address) view returns (uint256)"
+                      }
+                    },
+                    "id": 8279,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "661:43:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "640:64:15"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 8284,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 8282,
+                          "name": "contributorId",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 8274,
+                          "src": "722:13:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "!=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 8283,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "739:1:15",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "722:18:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "546869732061646472657373206973206e6f74206120636f6e7472696275746f722e",
+                        "id": 8285,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "742:36:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_ed7e4e4dff08c4b5e5eb67f0023fba782aac0853d2f68c177a6f5c605bcacb66",
+                          "typeString": "literal_string \"This address is not a contributor.\""
+                        },
+                        "value": "This address is not a contributor."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_ed7e4e4dff08c4b5e5eb67f0023fba782aac0853d2f68c177a6f5c605bcacb66",
+                          "typeString": "literal_string \"This address is not a contributor.\""
+                        }
+                      ],
+                      "id": 8281,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "714:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8286,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "714:65:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8287,
+                  "nodeType": "ExpressionStatement",
+                  "src": "714:65:15"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "id": 8291,
+                            "name": "contributorId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8274,
+                            "src": "836:13:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          {
+                            "argumentTypes": null,
+                            "id": 8292,
+                            "name": "_projectId",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8271,
+                            "src": "851:10:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            },
+                            {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8289,
+                            "name": "fundingStorage",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8345,
+                            "src": "797:14:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "id": 8290,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "getContributesToProject",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 1866,
+                          "src": "797:38:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$_t_uint256_$returns$_t_bool_$bound_to$_t_address_$",
+                            "typeString": "function (address,uint256,uint256) view returns (bool)"
+                          }
+                        },
+                        "id": 8293,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "797:65:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "546869732061646472657373206973206e6f74206120636f6e7472696275746f7220746f20746869732070726f6a6563742e",
+                        "id": 8294,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "864:52:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_bcecff7053d85ccb3ad51a13ecb8c7c3fb08e050c2b62ef39f1e2e61bca7e9c2",
+                          "typeString": "literal_string \"This address is not a contributor to this project.\""
+                        },
+                        "value": "This address is not a contributor to this project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_bcecff7053d85ccb3ad51a13ecb8c7c3fb08e050c2b62ef39f1e2e61bca7e9c2",
+                          "typeString": "literal_string \"This address is not a contributor to this project.\""
+                        }
+                      ],
+                      "id": 8288,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "789:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8295,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "789:128:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8296,
+                  "nodeType": "ExpressionStatement",
+                  "src": "789:128:15"
+                },
+                {
+                  "id": 8297,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "927:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8299,
+            "name": "onlyProjectContributor",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8272,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8271,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8299,
+                  "src": "613:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8270,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "613:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "612:17:15"
+            },
+            "src": "581:354:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8317,
+              "nodeType": "Block",
+              "src": "984:161:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_enum$_Status_$8343",
+                          "typeString": "enum ProjectBase.Status"
+                        },
+                        "id": 8312,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "arguments": [
+                                {
+                                  "argumentTypes": null,
+                                  "id": 8307,
+                                  "name": "_projectId",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8301,
+                                  "src": "1041:10:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": [
+                                  {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 8305,
+                                  "name": "fundingStorage",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8345,
+                                  "src": "1009:14:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_address",
+                                    "typeString": "address"
+                                  }
+                                },
+                                "id": 8306,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "getProjectStatus",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": 3276,
+                                "src": "1009:31:15",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_uint256_$bound_to$_t_address_$",
+                                  "typeString": "function (address,uint256) view returns (uint256)"
+                                }
+                              },
+                              "id": 8308,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "kind": "functionCall",
+                              "lValueRequested": false,
+                              "names": [],
+                              "nodeType": "FunctionCall",
+                              "src": "1009:43:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 8304,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1002:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8309,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1002:51:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8310,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1057:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8311,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberName": "Draft",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "1057:12:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "src": "1002:67:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "5468697320616374696f6e2063616e206f6e6c7920626520706572666f726d6564206f6e20612064726166742070726f6a6563742e",
+                        "id": 8313,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1071:55:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_6a8905144cdbba6a872b48030baf252db3df82ccda3b68788f1dfa18dc72a6ad",
+                          "typeString": "literal_string \"This action can only be performed on a draft project.\""
+                        },
+                        "value": "This action can only be performed on a draft project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_6a8905144cdbba6a872b48030baf252db3df82ccda3b68788f1dfa18dc72a6ad",
+                          "typeString": "literal_string \"This action can only be performed on a draft project.\""
+                        }
+                      ],
+                      "id": 8303,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "994:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8314,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "994:133:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8315,
+                  "nodeType": "ExpressionStatement",
+                  "src": "994:133:15"
+                },
+                {
+                  "id": 8316,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "1137:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8318,
+            "name": "onlyDraftProject",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8302,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8301,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8318,
+                  "src": "967:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8300,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "967:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "966:17:15"
+            },
+            "src": "941:204:15",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 8336,
+              "nodeType": "Block",
+              "src": "1198:169:15",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_enum$_Status_$8343",
+                          "typeString": "enum ProjectBase.Status"
+                        },
+                        "id": 8331,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "arguments": [
+                                {
+                                  "argumentTypes": null,
+                                  "id": 8326,
+                                  "name": "_projectId",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8320,
+                                  "src": "1255:10:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": [
+                                  {
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                  }
+                                ],
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 8324,
+                                  "name": "fundingStorage",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 8345,
+                                  "src": "1223:14:15",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_address",
+                                    "typeString": "address"
+                                  }
+                                },
+                                "id": 8325,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "getProjectStatus",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": 3276,
+                                "src": "1223:31:15",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_function_internal_view$_t_address_$_t_uint256_$returns$_t_uint256_$bound_to$_t_address_$",
+                                  "typeString": "function (address,uint256) view returns (uint256)"
+                                }
+                              },
+                              "id": 8327,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "kind": "functionCall",
+                              "lValueRequested": false,
+                              "names": [],
+                              "nodeType": "FunctionCall",
+                              "src": "1223:43:15",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 8323,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1216:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8328,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1216:51:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 8329,
+                            "name": "Status",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 8343,
+                            "src": "1271:6:15",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_enum$_Status_$8343_$",
+                              "typeString": "type(enum ProjectBase.Status)"
+                            }
+                          },
+                          "id": 8330,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "memberName": "Published",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "1271:16:15",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_enum$_Status_$8343",
+                            "typeString": "enum ProjectBase.Status"
+                          }
+                        },
+                        "src": "1216:71:15",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "5468697320616374696f6e2063616e206f6e6c7920626520706572666f726d6564206f6e2061207075626c69736865642070726f6a6563742e",
+                        "id": 8332,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1289:59:15",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_0635b4acb9763e42bf0dd443ef844a41cbe7b16dc33acb7d2b451c4f831b2451",
+                          "typeString": "literal_string \"This action can only be performed on a published project.\""
+                        },
+                        "value": "This action can only be performed on a published project."
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_0635b4acb9763e42bf0dd443ef844a41cbe7b16dc33acb7d2b451c4f831b2451",
+                          "typeString": "literal_string \"This action can only be performed on a published project.\""
+                        }
+                      ],
+                      "id": 8322,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        10105,
+                        10106
+                      ],
+                      "referencedDeclaration": 10106,
+                      "src": "1208:7:15",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 8333,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1208:141:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 8334,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1208:141:15"
+                },
+                {
+                  "id": 8335,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "1359:1:15"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 8337,
+            "name": "onlyPublishedProject",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 8321,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8320,
+                  "name": "_projectId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8337,
+                  "src": "1181:15:15",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8319,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1181:4:15",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1180:17:15"
+            },
+            "src": "1151:216:15",
+            "visibility": "internal"
+          },
+          {
+            "canonicalName": "ProjectBase.Status",
+            "id": 8343,
+            "members": [
+              {
+                "id": 8338,
+                "name": "Draft",
+                "nodeType": "EnumValue",
+                "src": "1386:5:15"
+              },
+              {
+                "id": 8339,
+                "name": "Pending",
+                "nodeType": "EnumValue",
+                "src": "1393:7:15"
+              },
+              {
+                "id": 8340,
+                "name": "Published",
+                "nodeType": "EnumValue",
+                "src": "1402:9:15"
+              },
+              {
+                "id": 8341,
+                "name": "Removed",
+                "nodeType": "EnumValue",
+                "src": "1413:7:15"
+              },
+              {
+                "id": 8342,
+                "name": "Rejected",
+                "nodeType": "EnumValue",
+                "src": "1422:8:15"
+              }
+            ],
+            "name": "Status",
+            "nodeType": "EnumDefinition",
+            "src": "1373:58:15"
+          },
+          {
+            "constant": false,
+            "id": 8345,
+            "name": "fundingStorage",
+            "nodeType": "VariableDeclaration",
+            "scope": 8346,
+            "src": "1437:22:15",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 8344,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "1437:7:15",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 8347,
+        "src": "202:1260:15"
+      }
+    ],
+    "src": "0:1463:15"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-07-21T05:29:00.590Z"
+}

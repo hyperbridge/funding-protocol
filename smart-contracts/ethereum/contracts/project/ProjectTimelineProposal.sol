@@ -8,8 +8,8 @@ contract ProjectTimelineProposal is ProjectBase {
 
     using ProjectHelpersLibrary for address;
 
-    constructor(address fundingStorage) public {
-        fundingStorage = fundingStorage;
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
     }
 
     function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyPublishedProject(_projectId) {

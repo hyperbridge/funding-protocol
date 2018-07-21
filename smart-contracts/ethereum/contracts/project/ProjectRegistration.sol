@@ -10,12 +10,8 @@ contract ProjectRegistration is ProjectBase {
 
     event ProjectCreated(uint projectId);
 
-    function initialize(address _fundingStorage) external {
+    constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
-        require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
-
-        // Reserve project ID 0
-        fundingStorage.incrementNextProjectId();
     }
 
     function createProject(

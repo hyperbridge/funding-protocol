@@ -23,6 +23,10 @@ contract Curation is Ownable {
 
     event CuratorCreated(address curatorAddress, uint curatorId);
 
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
+    }
+    
     function () public payable {
         revert();
     }
