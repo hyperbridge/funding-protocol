@@ -19,7 +19,7 @@ contract ProjectContributionTier is ProjectBase {
         external
         onlyProjectDeveloper(_projectId)
     {
-        fundingStorage.pushPendingContributionTier(_projectId, currentLength, _contributorLimit, _maxContribution, _minContribution, _rewards);
+        fundingStorage.pushPendingContributionTier(_projectId, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
     function editContributionTier(
