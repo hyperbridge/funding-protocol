@@ -24,11 +24,11 @@ contract('ProjectCreation', function(accounts) {
 
         projectRegistrationContract = await ProjectRegistration.deployed();
         await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
-        await projectRegistrationContract.initialize(fundingStorage.address);
+        await projectRegistrationContract.initialize();
 
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
-        await developerContract.initialize(fundingStorage.address);
+        await developerContract.initialize();
 
         developerAccount = accounts[1];
 
@@ -59,7 +59,7 @@ contract('ProjectCreation', function(accounts) {
 
             const project = await projectRegistrationContract.getProject(projectId);
 
-            assert.notEqual(project[0], 0, "Project ID 0 should be reserved.");
+            assert.notEqual(project[0].toNumber(), 0, "Project ID 0 should be reserved.");
             assert.equal(project[0].toNumber(), projectId, "Project ID is incorrect.");
             assert.equal(project[1].toNumber(), 0, "Project should be set to Status: Draft.");
             assert.equal(project[2], projectTitle, "Project title is incorrect.");
@@ -101,7 +101,7 @@ contract('ProjectEditing', function(accounts) {
 
         projectRegistrationContract = await ProjectRegistration.deployed();
         await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
-        await projectRegistrationContract.initialize(fundingStorage.address);
+        await projectRegistrationContract.initialize();
 
         projectTimelineContract = await ProjectTimeline.deployed();
         await fundingStorage.registerContract("ProjectTimeline", blankAddress, projectTimelineContract.address);
@@ -111,7 +111,7 @@ contract('ProjectEditing', function(accounts) {
 
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
-        await developerContract.initialize(fundingStorage.address);
+        await developerContract.initialize();
 
         developerAccount = accounts[1];
 
@@ -221,7 +221,7 @@ contract('ProjectReview', function(accounts) {
 
         projectRegistrationContract = await ProjectRegistration.deployed();
         await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
-        await projectRegistrationContract.initialize(fundingStorage.address);
+        await projectRegistrationContract.initialize();
 
         projectTimelineContract = await ProjectTimeline.deployed();
         await fundingStorage.registerContract("ProjectTimeline", blankAddress, projectTimelineContract.address);
@@ -231,7 +231,7 @@ contract('ProjectReview', function(accounts) {
 
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
-        await developerContract.initialize(fundingStorage.address);
+        await developerContract.initialize();
 
         developerAccount = accounts[1];
 
