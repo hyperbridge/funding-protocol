@@ -1,20 +1,16 @@
-import Project from './communication-api/ethereum/models/Project'
-import Contribution from './communication-api/ethereum/models/Contribution'
-import Developer from './communication-api/ethereum/models/Developer'
-import FundingStorage from './communication-api/ethereum/models/FundingStorage'
-import FundingVault from './communication-api/ethereum/models/FundingVault'
+import * as funding from './communication-api/ethereum/modules/funding'
+import * as project from './communication-api/ethereum/modules/project'
 
 export default {
-    Ethereum: {
-        Contracts: {
-            Project: require('./smart-contracts/ethereum/build/Project.json')
+    ethereum: {
+        contracts: {
+            ProjectRegistration: require('./smart-contracts/ethereum/build/ProjectRegistration.json'),
+            ProjectTimeline: require('./smart-contracts/ethereum/build/ProjectTimeline.json'),
+            ProjectTimelineProposal: require('./smart-contracts/ethereum/build/ProjectTimelineProposal.json')
         },
-        Models: {
-            Project: Project,
-            Contribution: Contribution,
-            Developer: Developer,
-            FundingStorage: FundingStorage,
-            FundingVault: FundingVault,
+        modules: {
+            funding: funding,
+            project: project
         }
     }
 }

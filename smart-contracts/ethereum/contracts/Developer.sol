@@ -15,6 +15,10 @@ contract Developer {
 
     event DeveloperCreated(address developerAddress, uint developerId);
 
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
+    }
+
     function () public payable {
         revert();
     }

@@ -14,6 +14,10 @@ contract Contribution {
 
     event ContributorCreated(address contributorAddress, uint contributorId);
 
+    constructor(address _fundingStorage) public {
+        fundingStorage = _fundingStorage;
+    }
+
     function () public payable {
         revert();
     }

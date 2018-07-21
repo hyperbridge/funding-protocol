@@ -38,15 +38,15 @@ async function doDeploy(deployer, network) {
     await deployer.deploy(ProjectHelpersLibrary);
     await deployer.link(ProjectHelpersLibrary, [ProjectTimelineProposal, ProjectRegistration, ProjectMilestoneCompletion]);
 
-    await deployer.deploy(ProjectRegistration);
+    await deployer.deploy(ProjectRegistration, fs.address);
     await deployer.deploy(ProjectTimeline, fs.address);
     await deployer.deploy(ProjectContributionTier, fs.address);
     await deployer.deploy(ProjectMilestoneCompletion, fs.address);
     await deployer.deploy(ProjectTimelineProposal, fs.address);
 
-    await deployer.deploy(Developer);
-    await deployer.deploy(Contribution);
-    await deployer.deploy(Curation);
+    await deployer.deploy(Developer, fs.address);
+    await deployer.deploy(Contribution, fs.address);
+    await deployer.deploy(Curation, fs.address);
 }
 
 module.exports = function(deployer, network) {

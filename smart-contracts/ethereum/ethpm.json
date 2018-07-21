@@ -1,16 +1,16 @@
 {
-    "package_name": "nat",
+    "package_name": "funding-protocol",
     "version": "0.0.1",
-    "description": "Contracts for NAT",
+    "description": "Contracts for Funding Protocol",
     "authors": [
         "Eric Muyser <eric@muyser.com>"
     ],
     "keywords": [
         "ethereum",
-        "nat"
+        "hyperbridge"
     ],
     "dependencies": {
         "owned": "^0.0.1"
     },
-    "license": "MIT"
+    "license": "SEE LICENSE IN LICENSE.md"
 }
