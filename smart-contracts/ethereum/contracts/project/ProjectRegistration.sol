@@ -16,6 +16,13 @@ contract ProjectRegistration is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
+    function initialize() external {
+        require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
+
+        // reserve projectId 0
+        fundingStorage.incrementNextProjectId();
+    }
+
     function createProject(
         string _title,
         string _description,
