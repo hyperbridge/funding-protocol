@@ -1,0 +1,20 @@
+{
+    "name": "ethereum",
+    "version": "1.0.0",
+    "description": "",
+    "main": "truffle-config.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "truffle": "truffle",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "dependencies": {
+        "truffle": "4.1.11",
+        "openzeppelin-solidity": "1.10.0"
+    }
+}
