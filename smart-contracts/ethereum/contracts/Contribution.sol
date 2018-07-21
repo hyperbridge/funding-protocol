@@ -22,8 +22,7 @@ contract Contribution {
         revert();
     }
 
-    function initialize(address _fundingStorage) external {
-        fundingStorage = _fundingStorage;
+    function initialize() external {
         require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
 
         // reserve contributorId 0

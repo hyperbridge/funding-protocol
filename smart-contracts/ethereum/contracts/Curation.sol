@@ -31,8 +31,7 @@ contract Curation is Ownable {
         revert();
     }
 
-    function initialize(address _fundingStorage) external {
-        fundingStorage = _fundingStorage;
+    function initialize() external {
         require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
 
         // reserve curatorId 0
@@ -76,6 +75,8 @@ contract Curation is Ownable {
         } else {
             fundingStorage.setProjectStatus(_projectId, uint(ProjectBase.Status.Rejected));
         }
+
+        fundingStorage.setDraftCurationIsActive(_projectId, false);
     }
 
     function getCurationThreshold() external view returns (uint threshold) {
