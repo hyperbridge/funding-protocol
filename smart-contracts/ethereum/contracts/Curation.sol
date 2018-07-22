@@ -50,8 +50,7 @@ contract Curation is Ownable {
         emit CuratorCreated(msg.sender, id);
     }
 
-    function curate(uint _projectId, bool _isApproved) public onlyCurator {
-        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Pending), "This project is not seeking curator approval at this time.");
+    function curate(uint _projectId, bool _isApproved) external onlyCurator {
         require(fundingStorage.getDraftCurationIsActive(_projectId), "This project is not open for curation.");
 
         uint currentApprovalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
@@ -59,11 +58,13 @@ contract Curation is Ownable {
         if (_isApproved) {
             fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount + 1);
         } else {
-            fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount - 1);
+            uint newCount;
+            (currentApprovalCount > 0) ? newCount = currentApprovalCount - 1 : newCount = 0;
+            fundingStorage.setDraftCurationApprovalCount(_projectId, newCount);
         }
     }
 
-    function publishProject(uint _projectId) public onlyDeveloper(_projectId) {
+    function publishProject(uint _projectId) external onlyDeveloper(_projectId) {
         require(fundingStorage.getDraftCurationIsActive(_projectId), "This project is not open for curation.");
         require(now < fundingStorage.getDraftCurationTimestamp(_projectId) + 4 weeks, "The project curation window has not closed.");
 
@@ -77,6 +78,12 @@ contract Curation is Ownable {
         }
 
         fundingStorage.setDraftCurationIsActive(_projectId, false);
+    }
+
+    function getDraftCuration(uint _projectId) external view returns (uint timestamp, uint approvalCount, bool isActive) {
+        CurationStorageAccess.DraftCuration memory draftCuration = fundingStorage.getDraftCuration(_projectId);
+
+        return (draftCuration.timestamp, draftCuration.approvalCount, draftCuration.isActive);
     }
 
     function getCurationThreshold() external view returns (uint threshold) {

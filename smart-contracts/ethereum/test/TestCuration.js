@@ -1,0 +1,183 @@
+const FundingStorage = artifacts.require("FundingStorage");
+const Curation = artifacts.require("Curation");
+const ProjectRegistration = artifacts.require("ProjectRegistration");
+const ProjectTimeline = artifacts.require("ProjectTimeline");
+const ProjectContributionTier = artifacts.require("ProjectContributionTier");
+const Developer = artifacts.require("Developer");
+
+contract('CuratorCreation', function(accounts) {
+    const blankAddress = 0x0000000000000000000000000000000000000000;
+
+    let curationContract;
+    let fundingStorage;
+    let curatorAddress;
+
+    before(async () => {
+        curationContract = await Curation.deployed();
+        fundingStorage = await FundingStorage.deployed();
+        await fundingStorage.registerContract("Curation", blankAddress, curationContract.address);
+        await curationContract.initialize();
+
+        curatorAddress = accounts[1];
+    });
+
+    it("should deploy the curation contract", async () => {
+        try {
+            assert.ok(curationContract.address);
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should be able to create a curator", async () => {
+        let curatorId;
+
+        try {
+            let watcher = curationContract.CuratorCreated().watch(function (error, result) {
+                if (!error) {
+                    curatorId = result.args.curatorId.toNumber();
+                }
+            });
+
+            await curationContract.createCurator({ from: curatorAddress });
+
+            watcher.stopWatching();
+
+            assert.notEqual(curatorId, 0, "Curator ID 0 is reserved.");
+            assert.equal(curatorId, 1, "Curator ID is incorrect.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("should not be able to create a second curator from the same address", async () => {
+        try {
+            await curationContract.createCurator({ from: curatorAddress });
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+});
+
+const blankAddress = 0x0000000000000000000000000000000000000000;
+const projectTitle = "BlockHub";
+const projectDescription = "This is a description of BlockHub.";
+const projectAbout = "This is all about BlockHub.";
+const projectContributionGoal = 1000;
+const noRefunds = true;
+const noTimeline = true;
+
+contract('CuratingProjects', function(accounts) {
+    const blankAddress = 0x0000000000000000000000000000000000000000;
+
+    let curationContract;
+    let fundingStorage;
+    let curatorAddress;
+    let projectRegistrationContract;
+    let projectTimelineContract;
+    let projectContributionTierContract;
+    let developerContract;
+    let developerAccount;
+    let developerId;
+    let projectId;
+
+    before(async () => {
+        curationContract = await Curation.deployed();
+        fundingStorage = await FundingStorage.deployed();
+        await fundingStorage.registerContract("Curation", blankAddress, curationContract.address);
+        await curationContract.initialize();
+        curatorAddress = accounts[2];
+        await curationContract.setCurationThreshold(1);
+        await curationContract.createCurator({ from: curatorAddress });
+
+        projectRegistrationContract = await ProjectRegistration.deployed();
+        await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
+        await projectRegistrationContract.initialize();
+
+        projectTimelineContract = await ProjectTimeline.deployed();
+        await fundingStorage.registerContract("ProjectTimeline", blankAddress, projectTimelineContract.address);
+
+        projectContributionTierContract = await ProjectContributionTier.deployed();
+        await fundingStorage.registerContract("ProjectContributionTier", blankAddress, projectContributionTierContract.address);
+
+        developerContract = await Developer.deployed();
+        await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
+        await developerContract.initialize();
+
+        developerAccount = accounts[1];
+
+        let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
+            if (!error) {
+                developerId = result.args.developerId;
+            }
+        });
+
+        await developerContract.createDeveloper("Hyperbridge", { from: developerAccount });
+
+        devWatcher.stopWatching();
+    });
+
+    beforeEach(async () => {
+        let projWatcher = projectRegistrationContract.ProjectCreated().watch(function (error, result) {
+            if (!error) {
+                projectId = result.args.projectId;
+            }
+        });
+
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectContributionGoal, noRefunds, false, { from: developerAccount });
+
+        projWatcher.stopWatching();
+
+        await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+        await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+    });
+
+    it("curator should be able to curate a project", async () => {
+        try {
+            await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+
+            let draftCuration = await curationContract.getDraftCuration(projectId);
+            const initialApprovalCount = draftCuration[1].toNumber();
+
+            await curationContract.curate(projectId, true, { from: curatorAddress });
+
+            draftCuration = await curationContract.getDraftCuration(projectId);
+            const newApprovalCount = draftCuration[1].toNumber();
+
+            assert.equal(newApprovalCount, initialApprovalCount + 1, "Curator vote was not registered.");
+
+            await curationContract.curate(projectId, false, { from: curatorAddress });
+
+            draftCuration = await curationContract.getDraftCuration(projectId);
+            const newerApprovalCount = draftCuration[1].toNumber();
+
+            assert.equal(newerApprovalCount, newApprovalCount - 1, "Curator vote was not registered.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("non-curator should not be able to curate a project", async () => {
+        try {
+            await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+
+            await curationContract.curate(projectId, true);
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+
+    it("curator should not be able to curate a project if project is not seek curation", async () => {
+        try {
+            await curationContract.curate(projectId, true);
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
+});
