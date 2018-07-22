@@ -7,11 +7,11 @@ let state = {
     toAddress: null,
     contracts: {
         FundingStorage: {
-            meta: require('../../../smart-contracts/ethereum/build/FundingStorage.json'),
+            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
             address: null
         },
         FundingVault: {
-            meta: require('../../../smart-contracts/ethereum/build/FundingVault.json'),
+            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
             address: null
         }
     }
@@ -46,7 +46,7 @@ export const deployContract = async (contractName, params) => {
 }
 
 export const call = async (contractName, methodName, params) => {
-    console.log('Calling ' + contractName + '.' + methodName + ' with arguments: ', arguments)
+    console.log('Calling ' + contractName + '.' + methodName + ' with params: ', params)
 
     if (contractName === 'test' && methodName === 'test') {
 

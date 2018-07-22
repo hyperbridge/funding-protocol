@@ -7,31 +7,38 @@ let state = {
     toAddress: null,
     contracts: {
         Contribution: {
-            meta: require('../../../smart-contracts/ethereum/build/Contribution.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/Contribution.json'),
             address: null
         },
         Developer: {
-            meta: require('../../../smart-contracts/ethereum/build/Developer.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/Developer.json'),
             address: null
         },
         FundingStorage: {
-            meta: require('../../../smart-contracts/ethereum/build/FundingStorage.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
             address: null
         },
         FundingVault: {
-            meta: require('../../../smart-contracts/ethereum/build/FundingVault.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
             address: null
         },
         ProjectRegistration: {
-            meta: require('../../../smart-contracts/ethereum/build/ProjectRegistration.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
             address: null
         },
         ProjectTimeline: {
-            meta: require('../../../smart-contracts/ethereum/build/ProjectTimeline.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectTimeline.json'),
             address: null
         },
         ProjectTimelineProposal: {
-            meta: require('../../../smart-contracts/ethereum/build/ProjectTimelineProposal.json'),
+            deployed: null,
+            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectTimelineProposal.json'),
             address: null
         }
     }
@@ -43,7 +50,17 @@ export const init = (fromAddress, toAddress) => {
 }
 
 export const setContractAddress = (contractName, address) => {
-    state.contracts[contractName].address = address
+    const meta = state.contracts[contractName].meta
+    const contract = new web3.eth.Contract(meta.abi, address, {
+        from: state.fromAddress,
+        gas: 6500000
+    })
+
+    contract.options.address = address
+
+    state.contracts[contractName].deployed = contract
+    state.contracts[contractName].deployed._address = address
+    state.contracts[contractName].deployed.options.address = address
 }
 
 export const deployContract = async (contractName, params) => {
@@ -52,18 +69,39 @@ export const deployContract = async (contractName, params) => {
 
     return await new Promise((resolve) => {
         contract.deploy({
-            data: meta.bytecode,
+            data: meta.bytecode.replace(/__ProjectHelpersLibrary_________________/g, web3.utils.fromAscii('__ProjectHelpersLibrary_________________').replace('0x', '')),
             arguments: params
         }).send({
             from: state.fromAddress,
             gas: 6500000
         }).then((res) => {
-            state.contracts[contractName].address = res._address
+            state.contracts[contractName].deployed = contract
+            state.contracts[contractName].deployed._address = res._address
+            state.contracts[contractName].deployed.options.address = res._address
 
             resolve(res)
         })
     })
 }
+
+export const call = async (contractName, methodName, params) => {
+    console.log('Calling ' + contractName + '.' + methodName + ' with params: ', params)
+
+    if (contractName === 'test' && methodName === 'test') {
+
+    } else {
+        return await new Promise((resolve) => {
+            const data = state.contracts[contractName].deployed.methods[methodName]
+                .apply(null, params)
+                .call({ from: state.fromAddress, gas: 3000000 }, (err, res) => {
+                    if (err) throw err
+                    resolve(res)
+                })
+        })
+    }
+}
+
+
 
 // export const createProject = async (title, description, about, contributionGoal, noRefunds, noTimeline) => {
 //     console.log('Calling Project.createProject with arguments: ', arguments)
@@ -107,20 +145,3 @@ export const deployContract = async (contractName, params) => {
 // export const submitMilestoneCompletion = async (_projectId, _report) => {
 
 // }
-
-export const call = async (contractName, methodName, params) => {
-    console.log('Calling ' + contractName + '.' + methodName + ' with arguments: ', arguments)
-
-    if (contractName === 'test' && methodName === 'test') {
-
-    } else {
-        return await new Promise((resolve) => {
-            const data = state.contracts[contractName].methods[methodName]
-                .apply(null, params)
-                .call({ from: state.fromAddress, gas: 3000000 }, (err, res) => {
-                    if (err) throw err
-                    resolve(res)
-                })
-        })
-    }
-}
