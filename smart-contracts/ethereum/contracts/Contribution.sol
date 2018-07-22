@@ -80,4 +80,16 @@ contract Contribution {
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
         fv.depositEth.value(msg.value)();
     }
+
+    function refund(uint _projectId) external {
+        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Refundable), "This project is not refundable.");
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
+        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address has not contributed to this project.");
+
+        uint contributedAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
+
+        FundingStorage fs = FundingStorage(fundingStorage);
+        FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
+        fv.withdrawEth(contributedAmount, msg.sender);
+    }
 }
