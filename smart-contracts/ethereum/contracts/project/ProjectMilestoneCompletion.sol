@@ -4,11 +4,11 @@ import "../FundingStorage.sol";
 import "./ProjectBase.sol";
 import "../Developer.sol";
 import "../FundingVault.sol";
-import "../libraries/project/ProjectHelpersLibrary.sol";
+import "../libraries/ProjectTimelineHelpersLibrary.sol";
 
 contract ProjectMilestoneCompletion is ProjectBase {
 
-    using ProjectHelpersLibrary for address;
+    using ProjectTimelineHelpersLibrary for address;
 
     constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
@@ -103,7 +103,7 @@ contract ProjectMilestoneCompletion is ProjectBase {
             fundingStorage.setPendingTimelineMilestone(_projectId, completedMilestonesLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
             fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
 
-            // TODO - transfer money for next milestone to developer
+            fundingStorage.releaseMilestoneFunds(_projectId, activeIndex);
         }
     }
 

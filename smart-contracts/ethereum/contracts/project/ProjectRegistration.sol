@@ -2,12 +2,14 @@ pragma solidity ^0.4.24;
 
 import "../FundingStorage.sol";
 import "./ProjectBase.sol";
-import "../libraries/project/ProjectHelpersLibrary.sol";
 import "../libraries/storage/CurationStorageAccess.sol";
+import "../libraries/ProjectTimelineHelpersLibrary.sol";
+import "../libraries/ProjectContributionTierHelpersLibrary.sol";
 
 contract ProjectRegistration is ProjectBase {
 
-    using ProjectHelpersLibrary for address;
+    using ProjectTimelineHelpersLibrary for address;
+    using ProjectContributionTierHelpersLibrary for address;
     using CurationStorageAccess for address;
 
     event ProjectCreated(uint projectId);
@@ -155,6 +157,7 @@ contract ProjectRegistration is ProjectBase {
 
         if (fundsRaised >= minGoal) {
             fundingStorage.setProjectStatus(_projectId, uint(Status.InDevelopment));
+            fundingStorage.releaseMilestoneFunds(_projectId, 0);
         } else {
             fundingStorage.setProjectStatus(_projectId, uint(Status.Refundable));
         }

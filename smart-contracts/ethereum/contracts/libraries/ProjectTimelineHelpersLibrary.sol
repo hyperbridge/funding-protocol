@@ -1,10 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "../storage/ProjectStorageAccess.sol";
+import "./storage/ProjectStorageAccess.sol";
+import "./storage/ContributionStorageAccess.sol";
+import "../FundingVault.sol";
+import "../FundingStorage.sol";
 
-library ProjectHelpersLibrary {
+library ProjectTimelineHelpersLibrary {
 
     using ProjectStorageAccess for address;
+    using ContributionStorageAccess for address;
 
     function moveTimelineIntoTimelineHistory(address _fundingStorage, uint _projectId) external {
         uint historyLength = _fundingStorage.getTimelineHistoryLength(_projectId);
@@ -30,19 +34,6 @@ library ProjectHelpersLibrary {
 
         _fundingStorage.setTimelineLength(_projectId, pendingTimelineLength);
         _fundingStorage.setPendingTimelineLength(_projectId, 0);
-    }
-
-    function movePendingContributionTiersIntoActiveContributionTiers(address _fundingStorage, uint _projectId) external {
-        uint length = _fundingStorage.getPendingContributionTiersLength(_projectId);
-
-        for (uint i = 0; i < length; i++) {
-            ProjectStorageAccess.ContributionTier memory tier = _fundingStorage.getPendingContributionTier(_projectId, i);
-
-            _fundingStorage.setContributionTier(_projectId, i, tier.contributorLimit, tier.minContribution, tier.maxContribution, tier.rewards);
-        }
-
-        _fundingStorage.setContributionTiersLength(_projectId, length);
-        _fundingStorage.setPendingContributionTiersLength(_projectId, 0);
     }
 
     function moveCompletedMilestonesIntoPendingTimeline(address _fundingStorage, uint _projectId) external {
@@ -73,5 +64,15 @@ library ProjectHelpersLibrary {
         }
 
         require(percentageAcc == 100, "Milestone percentages must add to 100.");
+    }
+
+    function releaseMilestoneFunds(address _fundingStorage, uint _projectId, uint _index) external {
+        uint fundsRaised = _fundingStorage.getProjectFundsRaised(_projectId);
+        uint percentageToSend = _fundingStorage.getTimelineMilestonePercentage(_projectId, _index);
+        uint amountToSend = fundsRaised * percentageToSend / 100;
+        address developer = _fundingStorage.getProjectDeveloper(_projectId);
+        FundingStorage fs = FundingStorage(_fundingStorage);
+        FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
+        fv.withdrawEth(amountToSend, developer);
     }
 }

@@ -11,7 +11,8 @@ const ProjectContributionTier = artifacts.require("ProjectContributionTier");
 const ProjectMilestoneCompletion = artifacts.require("ProjectMilestoneCompletion");
 const ProjectTimelineProposal = artifacts.require("ProjectTimelineProposal");
 
-const ProjectHelpersLibrary = artifacts.require("ProjectHelpersLibrary");
+const ProjectTimelineHelpersLibrary = artifacts.require("ProjectTimelineHelpersLibrary");
+const ProjectContributionTierHelpersLibrary = artifacts.require("ProjectContributionTierHelpersLibrary");
 
 const Contribution = artifacts.require("Contribution");
 
@@ -24,7 +25,7 @@ async function doDeploy(deployer, network) {
     const fs = await FundingStorage.deployed();
 
     await deployer.deploy(ProjectStorageAccess);
-    await deployer.link(ProjectStorageAccess, [ProjectBase, ProjectHelpersLibrary, Contribution, Curation]);
+    await deployer.link(ProjectStorageAccess, [ProjectBase, ProjectTimelineHelpersLibrary, ProjectContributionTierHelpersLibrary, Contribution, Curation]);
 
     await deployer.deploy(DeveloperStorageAccess);
     await deployer.link(DeveloperStorageAccess, [Developer, ProjectBase]);
@@ -35,8 +36,11 @@ async function doDeploy(deployer, network) {
     await deployer.deploy(CurationStorageAccess);
     await deployer.link(CurationStorageAccess, Curation);
 
-    await deployer.deploy(ProjectHelpersLibrary);
-    await deployer.link(ProjectHelpersLibrary, [ProjectTimelineProposal, ProjectRegistration, ProjectMilestoneCompletion]);
+    await deployer.deploy(ProjectTimelineHelpersLibrary);
+    await deployer.link(ProjectTimelineHelpersLibrary, [ProjectTimelineProposal, ProjectRegistration, ProjectMilestoneCompletion]);
+
+    await deployer.deploy(ProjectContributionTierHelpersLibrary);
+    await deployer.link(ProjectContributionTierHelpersLibrary, ProjectRegistration);
 
     await deployer.deploy(ProjectRegistration, fs.address);
     await deployer.deploy(ProjectTimeline, fs.address);

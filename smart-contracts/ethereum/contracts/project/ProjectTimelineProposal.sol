@@ -2,11 +2,11 @@ pragma solidity ^0.4.24;
 
 import "../FundingStorage.sol";
 import "./ProjectBase.sol";
-import "../libraries/project/ProjectHelpersLibrary.sol";
+import "../libraries/ProjectTimelineHelpersLibrary.sol";
 
 contract ProjectTimelineProposal is ProjectBase {
 
-    using ProjectHelpersLibrary for address;
+    using ProjectTimelineHelpersLibrary for address;
 
     constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
