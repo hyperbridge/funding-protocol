@@ -86,23 +86,24 @@ contract ProjectTimeline is ProjectBase {
 
         fundingStorage.setPendingTimelineLength(_projectId, 0);
 
-        uint completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
+        if (status == Status.InDevelopment) {
 
-        for (uint i = 0; i < completedMilestonesLength; i++) {
-            ProjectStorageAccess.Milestone memory completedMilestone = fundingStorage.getCompletedMilestone(_projectId, i);
-            fundingStorage.setPendingTimelineMilestone(
-                _projectId,
-                i,
-                completedMilestone.title,
-                completedMilestone.description,
-                completedMilestone.percentage,
-                completedMilestone.isComplete
-            );
-        }
+            uint completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
 
-        Status status = Status(fundingStorage.getProjectStatus(_projectId));
+            for (uint i = 0; i < completedMilestonesLength; i++) {
+                ProjectStorageAccess.Milestone memory completedMilestone = fundingStorage.getCompletedMilestone(_projectId, i);
+                fundingStorage.setPendingTimelineMilestone(
+                    _projectId,
+                    i,
+                    completedMilestone.title,
+                    completedMilestone.description,
+                    completedMilestone.percentage,
+                    completedMilestone.isComplete
+                );
+            }
 
-        if (status == Status.Published) {
+            Status status = Status(fundingStorage.getProjectStatus(_projectId));
+
             uint activeMilestoneIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
 
             ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeMilestoneIndex);

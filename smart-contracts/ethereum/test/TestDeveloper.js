@@ -11,7 +11,7 @@ contract('Developer', function(accounts) {
         developerContract = await Developer.deployed();
         fundingStorage = await FundingStorage.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
-        await developerContract.initialize(fundingStorage.address);
+        await developerContract.initialize();
     });
 
     it("should deploy the developer contract", async () => {

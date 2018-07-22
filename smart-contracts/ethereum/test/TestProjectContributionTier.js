@@ -7,7 +7,9 @@ const blankAddress = 0x0000000000000000000000000000000000000000;
 const projectTitle = "BlockHub";
 const projectDescription = "This is a description of BlockHub.";
 const projectAbout = "This is all about BlockHub.";
-const projectContributionGoal = 1000;
+const projectMinContributionGoal = 1000;
+const projectMaxContributionGoal = 10000;
+const projectContributionPeriod = 4;
 const noRefunds = true;
 const noTimeline = true;
 
@@ -25,14 +27,14 @@ contract('ProjectContributionTier', function(accounts) {
 
         projectRegistrationContract = await ProjectRegistration.deployed();
         await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
-        await projectRegistrationContract.initialize(fundingStorage.address);
+        await projectRegistrationContract.initialize();
 
         projectContributionTierContract = await ProjectContributionTier.deployed();
         await fundingStorage.registerContract("ProjectContributionTier", blankAddress, projectContributionTierContract.address);
 
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
-        await developerContract.initialize(fundingStorage.address);
+        await developerContract.initialize();
 
         developerAccount = accounts[1];
 
@@ -52,7 +54,7 @@ contract('ProjectContributionTier', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectContributionGoal, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
 
         projWatcher.stopWatching();
     });

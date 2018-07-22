@@ -22,8 +22,7 @@ contract Contribution {
         revert();
     }
 
-    function initialize(address _fundingStorage) external {
-        fundingStorage = _fundingStorage;
+    function initialize() external {
         require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
 
         // reserve contributorId 0
@@ -31,8 +30,18 @@ contract Contribution {
     }
 
     function contributeToProject(uint _projectId) external payable {
+        // Contribution must have value
         require(msg.value > 0);
-        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Published), "Project does not exist."); // check that project exists
+        // Project must be accepting contributions
+        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Contributable), "Project is not accepting contributions.");
+        // It must be within the contribution period set by the developer
+        uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
+        uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
+        require(now <= periodStart + contributionPeriod * 1 weeks);
+        // The maximum contribution goal must not be reached
+        uint maxGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
+        uint currentFunds = fundingStorage.getProjectFundsRaised(_projectId);
+        require(currentFunds + msg.value <= maxGoal);
 
         uint contributorId = fundingStorage.getContributorId(msg.sender);
 
@@ -54,19 +63,33 @@ contract Contribution {
             fundingStorage.setContributorFundedProjectsLength(contributorId, index + 1);
         }
 
+        uint currentContribution = fundingStorage.getContributionAmount(_projectId, contributorId);
+
         // add to projectContributorList, if not already present
-        if (fundingStorage.getContributionAmount(_projectId, contributorId) == 0) {
+        if (currentContribution == 0) {
             uint length = fundingStorage.getProjectContributorListLength(_projectId);
             fundingStorage.setProjectContributor(_projectId, length, contributorId);
             fundingStorage.setProjectContributorListLength(_projectId, length + 1);
         }
 
         // add contribution amount to project
-        uint currentAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
-        fundingStorage.setContributionAmount(_projectId, contributorId, currentAmount + msg.value);
+        fundingStorage.setContributionAmount(_projectId, contributorId, currentContribution + msg.value);
+        fundingStorage.setProjectFundsRaised(_projectId, currentFunds + msg.value);
 
         FundingStorage fs = FundingStorage(fundingStorage);
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
         fv.depositEth.value(msg.value)();
+    }
+
+    function refund(uint _projectId) external {
+        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Refundable), "This project is not refundable.");
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
+        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address has not contributed to this project.");
+
+        uint contributedAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
+
+        FundingStorage fs = FundingStorage(fundingStorage);
+        FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
+        fv.withdrawEth(contributedAmount, msg.sender);
     }
 }

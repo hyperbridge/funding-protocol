@@ -4,17 +4,17 @@ import "../FundingStorage.sol";
 import "./ProjectBase.sol";
 import "../Developer.sol";
 import "../FundingVault.sol";
-import "../libraries/project/ProjectHelpersLibrary.sol";
+import "../libraries/ProjectTimelineHelpersLibrary.sol";
 
 contract ProjectMilestoneCompletion is ProjectBase {
 
-    using ProjectHelpersLibrary for address;
+    using ProjectTimelineHelpersLibrary for address;
 
     constructor(address _fundingStorage) public {
         fundingStorage = _fundingStorage;
     }
 
-    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) onlyPublishedProject(_projectId) {
+    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) onlyProjectInDevelopment(_projectId) {
         // Can only submit for milestone completion if there is not already a vote on milestone completion
         require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "There is already a vote on milestone completion active.");
         // Can only submit for milestone completion if there is not already a vote on a timeline proposal
@@ -103,7 +103,7 @@ contract ProjectMilestoneCompletion is ProjectBase {
             fundingStorage.setPendingTimelineMilestone(_projectId, completedMilestonesLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
             fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
 
-            // TODO - transfer money for next milestone to developer
+            fundingStorage.releaseMilestoneFunds(_projectId, activeIndex);
         }
     }
 
