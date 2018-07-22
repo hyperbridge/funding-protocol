@@ -32,7 +32,7 @@ contract ProjectBase {
         _;
     }
 
-    enum Status {Draft, Pending, Contributible, InDevelopment, Refundable, Removed, Rejected}
+    enum Status {Draft, Pending, Contributable, InDevelopment, Refundable, Removed, Rejected}
 
     address fundingStorage;
 }

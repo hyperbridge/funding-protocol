@@ -8,6 +8,7 @@ contract Curation is Ownable {
 
     using CurationStorageAccess for address;
     using ProjectStorageAccess for address;
+    using ContributionStorageAccess for address;
 
     modifier onlyCurator() {
         require(fundingStorage.getCuratorId(msg.sender) != 0, "You must be a curator to perform this action.");
@@ -72,7 +73,8 @@ contract Curation is Ownable {
         uint curationThreshold = fundingStorage.getCurationThreshold();
 
         if (approvalCount >= curationThreshold) {
-            fundingStorage.setProjectStatus(_projectId, uint(ProjectBase.Status.Published));
+            fundingStorage.setProjectStatus(_projectId, uint(ProjectBase.Status.Contributable));
+            fundingStorage.setProjectContributionPeriodStart(_projectId, now);
         } else {
             fundingStorage.setProjectStatus(_projectId, uint(ProjectBase.Status.Rejected));
         }

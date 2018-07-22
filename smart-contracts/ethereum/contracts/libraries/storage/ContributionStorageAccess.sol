@@ -19,12 +19,16 @@ library ContributionStorageAccess {
             mapping(uint => bool) contributesToProject                                  (contributor.contributesToProject)
             uint[] fundedProjects                                                       (contributor.fundedProjects)
 
-        The FundingStorage tracks contribution amounts:
+        The FundingStorage tracks contribution amounts and total funds raised for each project:
             mapping(uint (projID) => mapping (uint (id) => uint)) contributionAmount    (contribution.contributionAmount)
             mapping(uint (projID) => address[]) contributorList                         (contribution.contributorList)
+            mapping(uint (projID) => uint fundsRaised)                                  (contribution.fundsRaised)
 
         There is a registry of contributors:
             mapping(address => uint (id)) contributorMap                                (contribution.contributorMap)
+
+        Each project stores the timestamp denoting the beginning of its contribution period:
+            mapping(uint (projID) => uint contributionPeriodStart)                      (contribution.contributionPeriodStart)
     */
 
     // Getters
@@ -95,6 +99,14 @@ library ContributionStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributorList", _projectId, _index)));
     }
 
+    function getProjectContributionPeriodStart(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.contributionPeriodStart", _projectId)));
+    }
+
+    function getProjectFundsRaised(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("contribution.fundsRaised", _projectId)));
+    }
+
 
 
     // Setters
@@ -134,5 +146,13 @@ library ContributionStorageAccess {
 
     function setProjectContributor(address _fundingStorage, uint _projectId, uint _index, uint _contributorId) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributorList", _projectId, _index)), _contributorId);
+    }
+
+    function setProjectContributionPeriodStart(address _fundingStorage, uint _projectId, uint _timestamp) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.contributionPeriodStart", _projectId)), _timestamp);
+    }
+
+    function setProjectFundsRaised(address _fundingStorage, uint _projectId, uint _fundsRaised) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("contribution.fundsRaised", _projectId)), _fundsRaised);
     }
 }

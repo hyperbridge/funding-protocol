@@ -146,4 +146,17 @@ contract ProjectRegistration is ProjectBase {
         uint tiersLength = fundingStorage.getPendingContributionTiersLength(_projectId);
         require(tiersLength > 0, "Project has no contribution tiers.");
     }
+
+    function beginProjectDevelopment(uint _projectId) external onlyProjectDeveloper(_projectId) {
+        require(fundingStorage.getProjectStatus(_projectId) == uint(Status.Contributable), "This project is not currently accepting contributions.");
+
+        uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
+        uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
+
+        if (fundsRaised >= minGoal) {
+            fundingStorage.setProjectStatus(_projectId, uint(Status.InDevelopment));
+        } else {
+            fundingStorage.setProjectStatus(_projectId, uint(Status.Refundable));
+        }
+    }
 }
