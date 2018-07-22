@@ -50,7 +50,11 @@ library ProjectStorageAccess {
             string about                                                    (project.about)
             address developer                                               (project.developer)
             uint developerId                                                (project.developerId)
-            uint contributionGoal                                           (project.contributionGoal)
+            uint minContributionGoal                                        (project.minContributionGoal)
+            uint maxContributionGoal                                        (project.maxContributionGoal)
+            uint contributionPeriod                                         (project.contributionPeriod)
+            bool noRefunds                                                  (project.noRefunds)
+            bool noTimeline                                                 (project.noTimeline)
             ContributionTier[] contributionTiers
                 uint contributorLimit                                       (project.contributionTiers.contributorLimit)
                 uint minContribution                                        (project.contributionTiers.minContribution)
@@ -61,8 +65,6 @@ library ProjectStorageAccess {
                 uint minContribution                                        (project.pendingContributionTiers.minContribution)
                 uint maxContribution                                        (project.pendingContributionTiers.maxContribution)
                 string rewards                                              (project.pendingContributionTiers.rewards)
-            bool noRefunds                                                  (project.noRefunds)
-            bool noTimeline                                                 (project.noTimeline)
             Timeline timeline
                 Milestone[] milestones
                     Milestone
@@ -145,8 +147,16 @@ library ProjectStorageAccess {
         return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.developerId", _projectId)));
     }
 
-    function getProjectContributionGoal(address _fundingStorage, uint _projectId) internal view returns (uint) {
-        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)));
+    function getProjectMinContributionGoal(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.minContributionGoal", _projectId)));
+    }
+
+    function getProjectMaxContributionGoal(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.maxContributionGoal", _projectId)));
+    }
+
+    function getProjectContributionPeriod(address _fundingStorage, uint _projectId) internal view returns (uint) {
+        return FundingStorage(_fundingStorage).getUint(keccak256(abi.encodePacked("project.contributionPeriod", _projectId)));
     }
 
     function getProjectNoRefunds(address _fundingStorage, uint _projectId) internal view returns (bool) {
@@ -579,8 +589,16 @@ library ProjectStorageAccess {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
     }
 
-    function setProjectContributionGoal(address _fundingStorage, uint _projectId, uint _goal) internal {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionGoal", _projectId)), _goal);
+    function setProjectMinContributionGoal(address _fundingStorage, uint _projectId, uint _goal) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.minContributionGoal", _projectId)), _goal);
+    }
+
+    function setProjectMaxContributionGoal(address _fundingStorage, uint _projectId, uint _goal) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.maxContributionGoal", _projectId)), _goal);
+    }
+
+    function setProjectContributionPeriod(address _fundingStorage, uint _projectId, uint _weeks) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionPeriod", _projectId)), _weeks);
     }
 
     function setProjectNoRefunds(address _fundingStorage, uint _projectId, bool _noRefunds) internal {

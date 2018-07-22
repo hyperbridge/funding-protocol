@@ -27,7 +27,9 @@ contract ProjectRegistration is ProjectBase {
         string _title,
         string _description,
         string _about,
-        uint _contributionGoal,
+        uint _minContributionGoal,
+        uint _maxContributionGoal,
+        uint _contributionPeriod,
         bool _noRefunds,
         bool _noTimeline
     )
@@ -45,7 +47,9 @@ contract ProjectRegistration is ProjectBase {
         fundingStorage.setProjectTitle(projectId, _title);
         fundingStorage.setProjectDescription(projectId, _description);
         fundingStorage.setProjectAbout(projectId, _about);
-        fundingStorage.setProjectContributionGoal(projectId, _contributionGoal);
+        fundingStorage.setProjectMinContributionGoal(projectId, _minContributionGoal);
+        fundingStorage.setProjectMaxContributionGoal(projectId, _maxContributionGoal);
+        fundingStorage.setProjectContributionPeriod(projectId, _contributionPeriod);
         fundingStorage.setProjectNoRefunds(projectId, _noRefunds);
         fundingStorage.setProjectNoTimeline(projectId, _noTimeline);
         fundingStorage.setProjectDeveloper(projectId, msg.sender);
@@ -59,7 +63,9 @@ contract ProjectRegistration is ProjectBase {
         string _title,
         string _description,
         string _about,
-        uint _contributionGoal,
+        uint _minContributionGoal,
+        uint _maxContributionGoal,
+        uint _contributionPeriod,
         bool _noRefunds,
         bool _noTimeline
     )
@@ -71,7 +77,9 @@ contract ProjectRegistration is ProjectBase {
         fundingStorage.setProjectTitle(_projectId, _title);
         fundingStorage.setProjectDescription(_projectId, _description);
         fundingStorage.setProjectAbout(_projectId, _about);
-        fundingStorage.setProjectContributionGoal(_projectId, _contributionGoal);
+        fundingStorage.setProjectMinContributionGoal(_projectId, _minContributionGoal);
+        fundingStorage.setProjectMaxContributionGoal(_projectId, _maxContributionGoal);
+        fundingStorage.setProjectContributionPeriod(_projectId, _contributionPeriod);
         fundingStorage.setProjectNoRefunds(_projectId, _noRefunds);
         fundingStorage.setProjectNoTimeline(_projectId, _noTimeline);
     }
@@ -87,7 +95,9 @@ contract ProjectRegistration is ProjectBase {
             string title,
             string description,
             string about,
-            uint contributionGoal,
+            uint minContributionGoal,
+            uint maxContributionGoal,
+            uint contributionPeriod,
             bool noRefunds,
             bool noTimeline,
             address developer,
@@ -99,13 +109,15 @@ contract ProjectRegistration is ProjectBase {
         title = fundingStorage.getProjectTitle(_projectId);
         description = fundingStorage.getProjectDescription(_projectId);
         about = fundingStorage.getProjectAbout(_projectId);
-        contributionGoal = fundingStorage.getProjectContributionGoal(_projectId);
+        minContributionGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
+        maxContributionGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
+        contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         developer = fundingStorage.getProjectDeveloper(_projectId);
         noRefunds = fundingStorage.getProjectNoRefunds(_projectId);
         noTimeline = fundingStorage.getProjectNoTimeline(_projectId);
         developerId = fundingStorage.getProjectDeveloperId(_projectId);
 
-        return (id, status, title, description, about, contributionGoal, noRefunds, noTimeline, developer, developerId);
+        return (id, status, title, description, about, minContributionGoal, maxContributionGoal, contributionPeriod, noRefunds, noTimeline, developer, developerId);
     }
 
     function submitProjectForReview(uint _projectId) external onlyProjectDeveloper(_projectId) onlyDraftProject(_projectId) {
