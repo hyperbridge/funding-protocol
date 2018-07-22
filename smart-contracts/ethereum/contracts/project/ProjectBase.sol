@@ -27,12 +27,12 @@ contract ProjectBase {
         _;
     }
 
-    modifier onlyPublishedProject(uint _projectId) {
-        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Published, "This action can only be performed on a published project.");
+    modifier onlyProjectInDevelopment(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.InDevelopment, "This action can only be performed on a published project.");
         _;
     }
 
-    enum Status {Draft, Pending, Published, Removed, Rejected}
+    enum Status {Draft, Pending, Contributible, InDevelopment, Refundable, Removed, Rejected}
 
     address fundingStorage;
 }

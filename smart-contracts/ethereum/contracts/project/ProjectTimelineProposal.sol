@@ -12,7 +12,7 @@ contract ProjectTimelineProposal is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
-    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyPublishedProject(_projectId) {
+    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyProjectInDevelopment(_projectId) {
         // Can only suggest new timeline if there is not already a timeline proposal active
         require(!fundingStorage.getTimelineProposalIsActive(_projectId), "New timeline cannot be proposed if there is already an active timeline proposal.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion
