@@ -44,6 +44,12 @@ contract ProjectRegistration is ProjectBase {
         // Get next ID from storage + increment next ID
         uint projectId = fundingStorage.generateNewProjectId();
 
+        // Minimum goal must be less than maximum goal
+        require(_minContributionGoal < _maxContributionGoal, "Minimum goal must be less than maximum goal.");
+
+        // Contribution period must be greater than 0
+        require(_contributionPeriod > 0, "Contribution period must be at least 1 week.");
+
         // Set new project attributes
         fundingStorage.setProjectStatus(projectId, uint(Status.Draft));
         fundingStorage.setProjectTitle(projectId, _title);
@@ -75,6 +81,12 @@ contract ProjectRegistration is ProjectBase {
         onlyProjectDeveloper(_projectId)
         onlyDraftProject(_projectId)
     {
+        // Minimum goal must be less than maximum goal
+        require(_minContributionGoal < _maxContributionGoal, "Minimum goal must be less than maximum goal.");
+
+        // Contribution period must be greater than 0
+        require(_contributionPeriod > 0, "Contribution period must be at least 1 week.");
+
         // Set project attributes
         fundingStorage.setProjectTitle(_projectId, _title);
         fundingStorage.setProjectDescription(_projectId, _description);
@@ -151,6 +163,11 @@ contract ProjectRegistration is ProjectBase {
 
     function beginProjectDevelopment(uint _projectId) external onlyProjectDeveloper(_projectId) {
         require(fundingStorage.getProjectStatus(_projectId) == uint(Status.Contributable), "This project is not currently accepting contributions.");
+
+        // It must be within the contribution period set by the developer
+        uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
+        uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
+        require(now <= periodStart + contributionPeriod * 1 weeks);
 
         uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
         uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);

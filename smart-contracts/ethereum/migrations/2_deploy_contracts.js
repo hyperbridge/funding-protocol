@@ -1,4 +1,6 @@
 const FundingStorage = artifacts.require("FundingStorage");
+const FundingVault = artifacts.require("FundingVault");
+
 const ProjectStorageAccess = artifacts.require("ProjectStorageAccess");
 const DeveloperStorageAccess = artifacts.require("DeveloperStorageAccess");
 const ContributionStorageAccess = artifacts.require("ContributionStorageAccess");
@@ -23,6 +25,8 @@ const Curation = artifacts.require("Curation");
 async function doDeploy(deployer, network) {
     await deployer.deploy(FundingStorage);
     const fs = await FundingStorage.deployed();
+
+    await deployer.deploy(FundingVault, fs.address);
 
     await deployer.deploy(ProjectStorageAccess);
     await deployer.link(ProjectStorageAccess, [ProjectBase, ProjectTimelineHelpersLibrary, ProjectContributionTierHelpersLibrary, Contribution, Curation]);

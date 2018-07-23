@@ -92,4 +92,8 @@ contract Contribution {
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
         fv.withdrawEth(contributedAmount, msg.sender);
     }
+
+    function getProjectFundsRaised(uint _projectId) external view returns (uint) {
+        return fundingStorage.getProjectFundsRaised(_projectId);
+    }
 }

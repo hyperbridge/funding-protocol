@@ -40,7 +40,7 @@ contract('ProjectContributionTier', function(accounts) {
 
         let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 
@@ -50,7 +50,7 @@ contract('ProjectContributionTier', function(accounts) {
 
         let projWatcher = projectRegistrationContract.ProjectCreated().watch(function (error, result) {
             if (!error) {
-                projectId = result.args.projectId;
+                projectId = result.args.projectId.toNumber();
             }
         });
 

@@ -113,7 +113,7 @@ contract('CuratingProjects', function(accounts) {
 
         let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 
@@ -125,7 +125,7 @@ contract('CuratingProjects', function(accounts) {
     beforeEach(async () => {
         let projWatcher = projectRegistrationContract.ProjectCreated().watch(function (error, result) {
             if (!error) {
-                projectId = result.args.projectId;
+                projectId = result.args.projectId.toNumber();
             }
         });
 
@@ -174,7 +174,7 @@ contract('CuratingProjects', function(accounts) {
         }
     });
 
-    it("curator should not be able to curate a project if project is not seek curation", async () => {
+    it("curator should not be able to curate a project if project is not seeking curation", async () => {
         try {
             await curationContract.curate(projectId, true);
             assert.fail();

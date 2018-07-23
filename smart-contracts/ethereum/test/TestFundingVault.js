@@ -1,61 +1,65 @@
 const FundingVault = artifacts.require("FundingVault");
+const FundingStorage = artifacts.require("FundingStorage");
 
 const BigNumber = web3.BigNumber;
 
 const should = require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
+    .use(require('chai-as-promised'))
+    .use(require('chai-bignumber')(BigNumber))
+    .should();
 
 
-contract('FundingVault', function([owner, fundingServiceAddress, randomAddress]) {
+contract('FundingVault', function(accounts) {
+    const blankAddress = 0x0000000000000000000000000000000000000000;
 
     let fundingVault;
+    let fundingStorage;
     let value;
+    let owner;
+    let testAccount;
+    let unregistedAccount;
 
     before(async () => {
-          fundingVault = await FundingVault.new(fundingServiceAddress);
-          value = 1000;
+        fundingStorage = await FundingStorage.deployed();
+        await fundingStorage.registerContract("TestAccount", blankAddress, accounts[1]);
+        testAccount = accounts[1];
+        unregistedAccount = accounts[2];
+        owner = accounts[0];
+
+        fundingVault = await FundingVault.deployed();
+        value = 1000;
     });
 
     it("should deploy a FundingVault contract", async () => {
         fundingVault.should.not.be.undefined;
     });
 
-    it("should allow fundingService contract to deposite ETH", async () => {
+    it("should allow approved address to deposit ETH", async () => {
 
-        await fundingVault.depositEth({value: value, from: fundingServiceAddress}).should.be.fulfilled;
+        await fundingVault.depositEth({value: value, from: testAccount}).should.be.fulfilled;
 
-        balance = await fundingVault.getBalance();
+        const balance = await fundingVault.getBalance();
         balance.should.be.bignumber.equal(value);
     });
 
     it("should rejects non fundingService address from depositing ETH", async () => {
 
-        await fundingVault.depositEth({value: value, from: randomAddress}).should.be.rejectedWith('revert'); //TODO add test constants such as REVERT
+        await fundingVault.depositEth({value: value, from: unregistedAccount}).should.be.rejectedWith('revert'); //TODO add test constants such as REVERT
     });
 
     it("should allow fundingService contract to withdraw ETH", async () => {
-        oldBalance = await fundingVault.getBalance({from: randomAddress});
-        await fundingVault.withdrawEth(value, fundingServiceAddress, {from: fundingServiceAddress}).should.be.fulfilled;
+        const oldBalance = await fundingVault.getBalance.call();
+        await fundingVault.withdrawEth(value, testAccount, {from: testAccount}).should.be.fulfilled;
 
-        newBalance = await fundingVault.getBalance({from: randomAddress});
+        const newBalance = await fundingVault.getBalance.call();
         newBalance.should.be.bignumber.equal(oldBalance-value);
     });
 
-    it("should rejects non fundingService address from withdrawing ETH", async () => {
-        await fundingVault.withdrawEth(value, randomAddress, {from: randomAddress}).should.be.rejected;
-    });
-
-    it("should allow owner to set fundingService contract address", async () => {
-        await fundingVault.setFundingServiceContract(randomAddress, {from: owner}).should.be.fulfilled;
-    });
-
-    it("should rejects none owner user from setting fundingService contract address", async () => {
-        await fundingVault.setFundingServiceContract(randomAddress, {from: randomAddress}).should.be.rejected;
+    it("should reject non fundingService address from withdrawing ETH", async () => {
+        await fundingVault.withdrawEth(value, unregistedAccount, {from: unregistedAccount}).should.be.rejected;
     });
 
     it("should rejects the traditional(fallback) depositing of ETH", async () => {
-        await fundingVault.send({value: value, from: randomAddress}).should.be.rejected;
+        await fundingVault.send({value: value, from: unregistedAccount}).should.be.rejected;
     });
 });

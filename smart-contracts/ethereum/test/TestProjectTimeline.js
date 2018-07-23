@@ -40,7 +40,7 @@ contract('ProjectTimeline', function(accounts) {
 
         let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 

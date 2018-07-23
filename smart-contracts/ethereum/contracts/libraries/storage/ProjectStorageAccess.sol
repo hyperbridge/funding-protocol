@@ -558,7 +558,7 @@ library ProjectStorageAccess {
 
 
 
-    // // Setters
+    // Setters
 
     function incrementNextProjectId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("project.nextId"));
@@ -841,7 +841,7 @@ library ProjectStorageAccess {
 
 
 
-    // // ContributionTier
+    // ContributionTier
 
     function setContributionTiersLength(address _fundingStorage, uint _projectId, uint _length) internal {
         return FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.contributionTiers.length", _projectId)), _length);

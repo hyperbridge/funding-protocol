@@ -1,8 +1,11 @@
 const FundingStorage = artifacts.require("FundingStorage");
+const FundingVault = artifacts.require("FundingVault");
 const ProjectRegistration = artifacts.require("ProjectRegistration");
 const ProjectTimeline = artifacts.require("ProjectTimeline");
 const ProjectContributionTier = artifacts.require("ProjectContributionTier");
 const Developer = artifacts.require("Developer");
+const Curation = artifacts.require("Curation");
+const Contribution = artifacts.require("Contribution");
 
 const blankAddress = 0x0000000000000000000000000000000000000000;
 const projectTitle = "BlockHub";
@@ -36,7 +39,7 @@ contract('ProjectCreation', function(accounts) {
 
         let watcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 
@@ -51,7 +54,7 @@ contract('ProjectCreation', function(accounts) {
 
             let watcher = projectRegistrationContract.ProjectCreated().watch(function (error, result) {
                 if (!error) {
-                    projectId = result.args.projectId;
+                    projectId = result.args.projectId.toNumber();
                 }
             });
 
@@ -121,7 +124,7 @@ contract('ProjectEditing', function(accounts) {
 
         let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 
@@ -131,7 +134,7 @@ contract('ProjectEditing', function(accounts) {
 
         let projWatcher = projectRegistrationContract.ProjectCreated().watch(function (error, result) {
             if (!error) {
-                projectId = result.args.projectId;
+                projectId = result.args.projectId.toNumber();
             }
         });
 
@@ -218,8 +221,9 @@ contract('ProjectEditing', function(accounts) {
     });
 });
 
-contract('ProjectReview', function(accounts) {
+contract('ProjectStatus', function(accounts) {
     let fundingStorage;
+    let fundingVault;
     let projectRegistrationContract;
     let projectTimelineContract;
     let projectContributionTierContract;
@@ -227,9 +231,15 @@ contract('ProjectReview', function(accounts) {
     let developerAccount;
     let developerId;
     let projectId;
+    let curationContract;
+    let curatorAddress;
+    let contributionContract;
+    let contributorAccount;
 
     before(async () => {
         fundingStorage = await FundingStorage.deployed();
+        fundingVault = await FundingVault.deployed();
+        await fundingStorage.registerContract("FundingVault", blankAddress, fundingVault.address);
 
         projectRegistrationContract = await ProjectRegistration.deployed();
         await fundingStorage.registerContract("ProjectRegistration", blankAddress, projectRegistrationContract.address);
@@ -241,6 +251,18 @@ contract('ProjectReview', function(accounts) {
         projectContributionTierContract = await ProjectContributionTier.deployed();
         await fundingStorage.registerContract("ProjectContributionTier", blankAddress, projectContributionTierContract.address);
 
+        contributionContract = await Contribution.deployed();
+        await fundingStorage.registerContract("Contribution", blankAddress, contributionContract.address);
+        contributorAccount = accounts[3];
+
+        curationContract = await Curation.deployed();
+        curatorAddress = accounts[2];
+        await fundingStorage.registerContract("Curation", blankAddress, curationContract.address);
+        await curationContract.setCurationThreshold(1);
+        await curationContract.initialize();
+
+        await curationContract.createCurator({ from: curatorAddress });
+
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
         await developerContract.initialize();
@@ -249,7 +271,7 @@ contract('ProjectReview', function(accounts) {
 
         let devWatcher = developerContract.DeveloperCreated().watch(function (error, result) {
             if (!error) {
-                developerId = result.args.developerId;
+                developerId = result.args.developerId.toNumber();
             }
         });
 
@@ -293,6 +315,10 @@ contract('ProjectReview', function(accounts) {
 
             const project = await projectRegistrationContract.getProject(projectId);
             assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Pending.");
+
+            const draftCuration = await curationContract.getDraftCuration(projectId);
+
+            assert.equal(draftCuration[2], true, "Draft curation should be active.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -347,4 +373,46 @@ contract('ProjectReview', function(accounts) {
             assert.fail();
         }
     });
+
+    // TODO - These tests are held up by timing requirements (mandatory 4 weeks in Pending status), however they pass when time check is removed
+    // it("project can be transitioned from Contributable to InDevelopment if funding goals met", async () => {
+    //     try {
+    //         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+    //         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+    //         await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+    //         await curationContract.curate(projectId, true, { from: curatorAddress });
+    //         await curationContract.publishProject(projectId, { from: developerAccount });
+    //         await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
+    //         await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+    //         const project = await projectRegistrationContract.getProject(projectId);
+    //         assert.equal(project[1].toNumber(), 3, "Project should be set to Status: InDevelopment.");
+    //     } catch (e) {
+    //         console.log(e.message);
+    //         assert.fail();
+    //     }
+    // });
+    //
+    // it("project can be transitioned from Contributable to Refundable if funding goals are not met", async () => {
+    //     try {
+    //         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+    //
+    //         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+    //
+    //         await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+    //
+    //         await curationContract.curate(projectId, true, { from: curatorAddress });
+    //
+    //         await curationContract.publishProject(projectId, { from: developerAccount });
+    //
+    //         await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal - 1 });
+    //
+    //         await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+    //
+    //         const project = await projectRegistrationContract.getProject(projectId);
+    //         assert.equal(project[1].toNumber(), 4, "Project should be set to Status: Refundable.");
+    //     } catch (e) {
+    //         console.log(e.message);
+    //         assert.fail();
+    //     }
+    // });
 });
