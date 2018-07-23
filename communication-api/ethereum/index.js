@@ -1,5 +1,5 @@
 import * as truffleContract from 'truffle-contract'
-import * as abiDecoder from '../lib/abi-decoder'
+import * as abiDecoder from './lib/abi-decoder'
 
 const provider = new window.Web3.providers.HttpProvider("http://localhost:8545")
 
@@ -13,37 +13,37 @@ export let state = {
         FundingStorage: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
             address: null
         },
         DeveloperStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/DeveloperStorageAccess.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/DeveloperStorageAccess.json'),
             address: null
         },
         ProjectStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectStorageAccess.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectStorageAccess.json'),
             address: null
         },
         ContributionStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ContributionStorageAccess.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ContributionStorageAccess.json'),
             address: null
         },
         FundingVault: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
             address: null
         },
         Developer: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/Developer.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/Developer.json'),
             address: null,
             links: [
                 {
@@ -54,7 +54,7 @@ export let state = {
         Contribution: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/Contribution.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/Contribution.json'),
             address: null,
             links: [
                 {
@@ -68,7 +68,7 @@ export let state = {
         ProjectBase: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectBase.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectBase.json'),
             address: null,
             links: [
                 {
@@ -85,13 +85,13 @@ export let state = {
         ProjectTimeline: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectTimeline.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimeline.json'),
             address: null
         },
         ProjectTimelineHelpersLibrary: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectTimelineHelpersLibrary.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimelineHelpersLibrary.json'),
             address: null,
             links: [
                 {
@@ -102,7 +102,7 @@ export let state = {
         ProjectTimelineProposal: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectTimelineProposal.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimelineProposal.json'),
             address: null,
             links: [
                 {
@@ -113,7 +113,7 @@ export let state = {
         ProjectContributionTierHelpersLibrary: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectContributionTierHelpersLibrary.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectContributionTierHelpersLibrary.json'),
             address: null,
             links: [
                 {
@@ -124,7 +124,7 @@ export let state = {
         ProjectMilestoneCompletion: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectMilestoneCompletion.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectMilestoneCompletion.json'),
             address: null,
             links: [
                 {
@@ -135,7 +135,7 @@ export let state = {
         ProjectRegistration: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
             address: null,
             links: [
                 {
@@ -149,13 +149,13 @@ export let state = {
         CurationStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/CurationStorageAccess.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/CurationStorageAccess.json'),
             address: null
         },
         Curation: {
             contract: null,
             deployed: null,
-            meta: require('../../../smart-contracts/ethereum/build/contracts/Curation.json'),
+            meta: require('../../smart-contracts/ethereum/build/contracts/Curation.json'),
             address: null,
             links: [
                 {
@@ -211,51 +211,7 @@ export const setContractAddress = async (contractName, address) => {
             resolve(deployed)
         }).catch(reject)
     })
-
-    // const meta = state.contracts[contractName].meta
-    // const contract = new web3.eth.Contract(meta.abi, address, {
-    //     from: state.fromAddress,
-    //     gas: 6500000
-    // })
-
-    // state.contracts[contractName].deployed = contract
-    // state.contracts[contractName].deployed._address = address
-    // state.contracts[contractName].deployed.options.address = address
 }
-
-
-// await deployer.deploy(FundingStorage);
-// const fs = await FundingStorage.deployed();
-
-// await deployer.deploy(ProjectStorageAccess);
-// await deployer.link(ProjectStorageAccess, [ProjectBase, ProjectTimelineHelpersLibrary, ProjectContributionTierHelpersLibrary, Contribution, Curation]);
-
-// await deployer.deploy(DeveloperStorageAccess);
-// await deployer.link(DeveloperStorageAccess, [Developer, ProjectBase]);
-
-// await deployer.deploy(ContributionStorageAccess);
-// await deployer.link(ContributionStorageAccess, [Contribution, ProjectBase]);
-
-// await deployer.deploy(CurationStorageAccess);
-// await deployer.link(CurationStorageAccess, Curation);
-
-// await deployer.deploy(ProjectTimelineHelpersLibrary);
-// await deployer.link(ProjectTimelineHelpersLibrary, [ProjectTimelineProposal, ProjectRegistration, ProjectMilestoneCompletion]);
-
-// await deployer.deploy(ProjectContributionTierHelpersLibrary);
-// await deployer.link(ProjectContributionTierHelpersLibrary, ProjectRegistration);
-
-// await deployer.deploy(ProjectRegistration, fs.address);
-// await deployer.deploy(ProjectTimeline, fs.address);
-// await deployer.deploy(ProjectContributionTier, fs.address);
-// await deployer.deploy(ProjectMilestoneCompletion, fs.address);
-// await deployer.deploy(ProjectTimelineProposal, fs.address);
-
-// await deployer.deploy(Developer, fs.address);
-// await deployer.deploy(Contribution, fs.address);
-// await deployer.deploy(Curation, fs.address);
-
-
 
 export const deployContract = async (contractName, links, params) => {
     console.log('[FundingProtocol] Deploying contract for: ' + contractName)
@@ -285,20 +241,6 @@ export const deployContract = async (contractName, links, params) => {
 
             resolve(deployed)
         })
-
-        // contract.deploy({
-        //     data: data,
-        //     arguments: params
-        // }).send({
-        //     from: state.fromAddress,
-        //     gas: 6500000
-        // }).then((res) => {
-        //     state.contracts[contractName].deployed = contract
-        //     state.contracts[contractName].deployed._address = res._address
-        //     state.contracts[contractName].deployed.options.address = res._address
-
-        //     resolve(res)
-        // })
     })
 }
 
@@ -318,48 +260,3 @@ export const call = async (contractName, methodName, params) => {
         })
     }
 }
-
-
-
-// export const createProject = async (title, description, about, contributionGoal, noRefunds, noTimeline) => {
-//     console.log('Calling Project.createProject with arguments: ', arguments)
-
-//     return await new Promise((resolve) => {
-//         const data = state.contracts.ProjectRegistration.methods
-//             .createProject(title, description, about, contributionGoal, noRefunds, noTimeline)
-//             .call({ from: state.fromAddress, gas: 3000000 }, (err, res) => {
-//                 if (err) throw err
-//                 resolve(res)
-//             })
-//     })
-// }
-
-// export const getProject = async (id) => {
-//     console.log('Calling Project.getProject with arguments: ', arguments)
-
-//     return await new Promise((resolve) => {
-//         const data = state.contracts.ProjectRegistration.methods
-//             .getProject(id)
-//             .call({ from: state.fromAddress, gas: 3000000 }, (err, res) => {
-//                 if (err) throw err
-//                 resolve(res)
-//             })
-//     })
-// }
-
-// export const getTimelineMilestone = async (projectId, milestoneId) => {
-//     console.log('Calling Project.getTimelineMilestone with arguments: ', arguments)
-
-//     return await new Promise((resolve) => {
-//         const data = state.contracts.ProjectRegistration.methods
-//             .getTimelineMilestone(projectId, milestoneId)
-//             .call({ from: state.fromAddress, gas: 3000000 }, (err, res) => {
-//                 if (err) throw err
-//                 resolve(res)
-//             })
-//     })
-// }
-
-// export const submitMilestoneCompletion = async (_projectId, _report) => {
-
-// }
