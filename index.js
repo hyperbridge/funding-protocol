@@ -1,16 +1,7 @@
-import * as funding from './communication-api/ethereum/modules/funding'
-import * as project from './communication-api/ethereum/modules/project'
+import * as ethereum from './communication-api/ethereum'
 
 export default {
-    ethereum: {
-        contracts: {
-            ProjectRegistration: require('./smart-contracts/ethereum/build/ProjectRegistration.json'),
-            ProjectTimeline: require('./smart-contracts/ethereum/build/ProjectTimeline.json'),
-            ProjectTimelineProposal: require('./smart-contracts/ethereum/build/ProjectTimelineProposal.json')
-        },
-        modules: {
-            funding: funding,
-            project: project
-        }
+    api: {
+        ethereum
     }
 }
