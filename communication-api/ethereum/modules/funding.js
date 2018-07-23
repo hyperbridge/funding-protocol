@@ -22,7 +22,7 @@ export const init = (fromAddress, toAddress) => {
     state.toAddress = toAddress
 }
 
-export const setContractAddress = (contractName, address) => {
+export const setContractAddress = async (contractName, address) => {
     state.contracts[contractName].address = address
 }
 
@@ -42,6 +42,12 @@ export const deployContract = async (contractName, params) => {
 
             resolve(res)
         })
+
+        // .on('confirmation', function(confirmationNumber, receipt){ 
+        //     console.log(confirmationNumber); tokencontract.options.address =
+        //         receipt.contractAddress;
+        // }).on('receipt', function (receipt)
+        // { console.log(receipt) })
     })
 }
 
