@@ -4,7 +4,7 @@ import "./project/ProjectBase.sol";
 import "./libraries/storage/CurationStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
 
-contract Curation is Ownable {
+contract Curation is Ownable, Testable {
 
     using CurationStorageAccess for address;
     using ProjectStorageAccess for address;
@@ -21,10 +21,11 @@ contract Curation is Ownable {
     }
 
     address public fundingStorage;
+    bool private inTest;
 
     event CuratorCreated(address curatorAddress, uint curatorId);
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
     
@@ -67,7 +68,7 @@ contract Curation is Ownable {
 
     function publishProject(uint _projectId) external onlyDeveloper(_projectId) {
         require(fundingStorage.getDraftCurationIsActive(_projectId), "This project is not open for curation.");
-        require(now > fundingStorage.getDraftCurationTimestamp(_projectId) + 4 weeks, "The project curation window has not closed.");
+        require(getCurrentTime() > fundingStorage.getDraftCurationTimestamp(_projectId) + 4 weeks, "The project curation window has not closed.");
 
         uint approvalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
         uint curationThreshold = fundingStorage.getCurationThreshold();

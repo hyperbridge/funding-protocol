@@ -5,16 +5,17 @@ import "./libraries/storage/ProjectStorageAccess.sol";
 import "./FundingVault.sol";
 import "./project/ProjectBase.sol";
 
-contract Contribution {
+contract Contribution is Testable {
 
     using ContributionStorageAccess for address;
     using ProjectStorageAccess for address;
 
     address public fundingStorage;
+    bool private inTest;
 
     event ContributorCreated(address contributorAddress, uint contributorId);
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 
@@ -37,7 +38,7 @@ contract Contribution {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(now <= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() <= periodStart + contributionPeriod * 1 weeks);
         // The maximum contribution goal must not be reached
         uint maxGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
         uint currentFunds = fundingStorage.getProjectFundsRaised(_projectId);

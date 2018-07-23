@@ -3,8 +3,9 @@ pragma solidity ^0.4.24;
 import "../libraries/storage/ProjectStorageAccess.sol";
 import "../libraries/storage/DeveloperStorageAccess.sol";
 import "../libraries/storage/ContributionStorageAccess.sol";
+import "../Testable.sol";
 
-contract ProjectBase {
+contract ProjectBase is Testable {
 
     using ProjectStorageAccess for address;
     using DeveloperStorageAccess for address;

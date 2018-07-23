@@ -1,8 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "./libraries/storage/DeveloperStorageAccess.sol";
+import "./Testable.sol";
 
-contract Developer {
+contract Developer is Testable {
 
     using DeveloperStorageAccess for address;
 
@@ -12,10 +13,11 @@ contract Developer {
     }
 
     address public fundingStorage;
+    bool private inTest;
 
     event DeveloperCreated(address developerAddress, uint developerId);
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 

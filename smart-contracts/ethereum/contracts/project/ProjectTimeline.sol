@@ -5,7 +5,7 @@ import "./ProjectBase.sol";
 
 contract ProjectTimeline is ProjectBase {
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 

@@ -10,7 +10,7 @@ contract ProjectMilestoneCompletion is ProjectBase {
 
     using ProjectTimelineHelpersLibrary for address;
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 
@@ -56,7 +56,7 @@ contract ProjectMilestoneCompletion is ProjectBase {
     function hasPassedMilestoneCompletionVote(uint _projectId) private view returns (bool) {
         uint numContributors = fundingStorage.getProjectContributorListLength(_projectId);
         uint approvalCount = fundingStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
-        bool isTwoWeeksLater = now >= fundingStorage.getMilestoneCompletionSubmissionTimestamp(_projectId) + 2 weeks;
+        bool isTwoWeeksLater = getCurrentTime() >= fundingStorage.getMilestoneCompletionSubmissionTimestamp(_projectId) + 2 weeks;
 
         // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
         require(((approvalCount > numContributors * 75 / 100) || isTwoWeeksLater),

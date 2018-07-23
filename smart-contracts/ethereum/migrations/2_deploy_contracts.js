@@ -46,15 +46,15 @@ async function doDeploy(deployer, network) {
     await deployer.deploy(ProjectContributionTierHelpersLibrary);
     await deployer.link(ProjectContributionTierHelpersLibrary, ProjectRegistration);
 
-    await deployer.deploy(ProjectRegistration, fs.address);
-    await deployer.deploy(ProjectTimeline, fs.address);
-    await deployer.deploy(ProjectContributionTier, fs.address);
-    await deployer.deploy(ProjectMilestoneCompletion, fs.address);
-    await deployer.deploy(ProjectTimelineProposal, fs.address);
+    await deployer.deploy(ProjectRegistration, fs.address, true);
+    await deployer.deploy(ProjectTimeline, fs.address, true);
+    await deployer.deploy(ProjectContributionTier, fs.address, true);
+    await deployer.deploy(ProjectMilestoneCompletion, fs.address, true);
+    await deployer.deploy(ProjectTimelineProposal, fs.address, true);
 
-    await deployer.deploy(Developer, fs.address);
-    await deployer.deploy(Contribution, fs.address);
-    await deployer.deploy(Curation, fs.address);
+    await deployer.deploy(Developer, fs.address, true);
+    await deployer.deploy(Contribution, fs.address, true);
+    await deployer.deploy(Curation, fs.address, true);
 }
 
 module.exports = function(deployer, network) {

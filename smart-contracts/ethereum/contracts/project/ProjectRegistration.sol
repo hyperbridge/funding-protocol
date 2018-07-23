@@ -14,7 +14,7 @@ contract ProjectRegistration is ProjectBase {
 
     event ProjectCreated(uint projectId);
 
-    constructor(address _fundingStorage) public {
+    constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 
@@ -167,7 +167,7 @@ contract ProjectRegistration is ProjectBase {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(now <= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() <= periodStart + contributionPeriod * 1 weeks);
 
         uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
         uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
