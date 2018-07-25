@@ -54,9 +54,12 @@ contract('ProjectContributionTier', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
     });
 
     it("developer can add a pending contribution tier", async () => {
