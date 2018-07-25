@@ -17,6 +17,12 @@ const projectContributionPeriod = 4;
 const noRefunds = true;
 const noTimeline = true;
 
+function advanceTime(numWeeks) {
+    const week = 604800000;
+    const currentTime = new Date().getTime();
+    return new Date(currentTime + numWeeks * week).getTime();
+}
+
 contract('Contribution', function(accounts) {
     let fundingStorage;
     let fundingVault;
@@ -83,9 +89,12 @@ contract('Contribution', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
 
         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
 
@@ -107,6 +116,7 @@ contract('Contribution', function(accounts) {
 
     it("user should be able to contribute to a project", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
             const fundsToContribute = 10;
@@ -126,6 +136,7 @@ contract('Contribution', function(accounts) {
 
     it("user should be able to contribute to the same project more than once", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
             const fundsToContribute = 10;
@@ -146,6 +157,7 @@ contract('Contribution', function(accounts) {
 
     it("contribution value should be greater than 0", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
             const fundsToContribute = 0;
@@ -172,6 +184,7 @@ contract('Contribution', function(accounts) {
 
     it("should not be able to contribute an amount that would exceed maximum goal", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
             const fundsToContribute = projectMaxContributionGoal + 1;
@@ -184,17 +197,58 @@ contract('Contribution', function(accounts) {
         }
     });
 
-    // TODO - contributor should be able to refund money from Refundable project
+    it("contributor should be able to refund money from Refundable project.", async () => {
+        try {
+            await curationContract.setTestTime(advanceTime(4.1));
+            await curationContract.publishProject(projectId, { from: developerAccount });
 
-    // TODO - non-project contributor should not be able to refund money from Refundable project
+            const fundsToContribute = projectMinContributionGoal - 1;
+
+            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: fundsToContribute });
+
+            const initialContributorBalance = web3.eth.getBalance(contributorAccount);
+
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
+            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+
+            await contributionContract.refund(projectId, { from: contributorAccount });
+
+            const newContributorBalance = web3.eth.getBalance(contributorAccount);
+
+            assert.closeTo(newContributorBalance.toNumber(), initialContributorBalance.toNumber() + fundsToContribute, 6000000000000000, "Contributor balance incorrect after refund.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("non-project contributor should not be able to refund money from Refundable project.", async () => {
+        try {
+            await curationContract.setTestTime(advanceTime(4.1));
+            await curationContract.publishProject(projectId, { from: developerAccount });
+
+            const fundsToContribute = projectMinContributionGoal - 1;
+
+            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: fundsToContribute });
+
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
+            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+
+            await contributionContract.refund(projectId, { from: accounts[4] });
+            assert.fail();
+        } catch (e) {
+            console.log(e.message);
+        }
+    });
 
     it("contributor should not be able to refund money from non-Refundable project.", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: 10000 });
 
-            await contributionContract.refund(_projectId, { from: contributorAccount });
+            await contributionContract.refund(projectId, { from: contributorAccount });
             assert.fail();
         } catch (e) {
             console.log(e.message);
