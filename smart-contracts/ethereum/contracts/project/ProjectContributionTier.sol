@@ -18,6 +18,7 @@ contract ProjectContributionTier is ProjectBase {
     )
         external
         onlyProjectDeveloper(_projectId)
+        onlyDraftProject(_projectId)
     {
         fundingStorage.pushPendingContributionTier(_projectId, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
@@ -32,11 +33,12 @@ contract ProjectContributionTier is ProjectBase {
     )
         external
         onlyProjectDeveloper(_projectId)
+        onlyDraftProject(_projectId)
     {
         fundingStorage.setPendingContributionTier(_projectId, _index, _contributorLimit, _maxContribution, _minContribution, _rewards);
     }
 
-    function clearPendingContributionTiers(uint _projectId) external onlyProjectDeveloper(_projectId) {
+    function clearPendingContributionTiers(uint _projectId) external onlyProjectDeveloper(_projectId) onlyDraftProject(_projectId) {
         fundingStorage.setPendingContributionTiersLength(_projectId, 0);
     }
 

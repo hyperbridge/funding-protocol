@@ -2,24 +2,15 @@ pragma solidity ^0.4.24;
 
 import "../libraries/storage/ProjectStorageAccess.sol";
 import "../libraries/storage/DeveloperStorageAccess.sol";
-import "../libraries/storage/ContributionStorageAccess.sol";
 import "../Testable.sol";
 
 contract ProjectBase is Testable {
 
     using ProjectStorageAccess for address;
     using DeveloperStorageAccess for address;
-    using ContributionStorageAccess for address;
 
     modifier onlyProjectDeveloper(uint _projectId) {
         require(msg.sender == fundingStorage.getProjectDeveloper(_projectId), "You must be the project developer to perform this action.");
-        _;
-    }
-
-    modifier onlyProjectContributor(uint _projectId) {
-        uint contributorId = fundingStorage.getContributorId(msg.sender);
-        require(contributorId != 0, "This address is not a contributor.");
-        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address is not a contributor to this project.");
         _;
     }
 
@@ -28,12 +19,27 @@ contract ProjectBase is Testable {
         _;
     }
 
-    modifier onlyProjectInDevelopment(uint _projectId) {
-        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.InDevelopment, "This action can only be performed on a published project.");
+    modifier onlyPendingProject(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Pending, "This action can only be performed on a pending project.");
         _;
     }
 
-    enum Status {Draft, Pending, Contributable, InDevelopment, Refundable, Removed, Rejected}
+    modifier onlyContributableProject(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Contributable, "This action can only be performed on a contributable project.");
+        _;
+    }
+
+    modifier onlyInDevelopmentProject(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.InDevelopment, "This action can only be performed on a project in development.");
+        _;
+    }
+
+    modifier onlyRefundableProject(uint _projectId) {
+        require(Status(fundingStorage.getProjectStatus(_projectId)) == Status.Refundable, "This action can only be performed on a refundable project.");
+        _;
+    }
+
+    enum Status {Inactive, Draft, Pending, Contributable, InDevelopment, Refundable, Rejected}
 
     address fundingStorage;
 }

@@ -3,12 +3,13 @@ pragma solidity ^0.4.24;
 import "./project/ProjectBase.sol";
 import "./libraries/storage/CurationStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
+import "./libraries/storage/ContributionStorageAccess.sol";
 
 contract Curation is Ownable, Testable {
 
     using CurationStorageAccess for address;
-    using ProjectStorageAccess for address;
     using ContributionStorageAccess for address;
+    using ProjectStorageAccess for address;
 
     modifier onlyCurator() {
         require(fundingStorage.getCuratorId(msg.sender) != 0, "You must be a curator to perform this action.");

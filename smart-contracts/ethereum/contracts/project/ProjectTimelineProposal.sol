@@ -3,16 +3,25 @@ pragma solidity ^0.4.24;
 import "../FundingStorage.sol";
 import "./ProjectBase.sol";
 import "../libraries/ProjectTimelineHelpersLibrary.sol";
+import "../libraries/storage/ContributionStorageAccess.sol";
 
 contract ProjectTimelineProposal is ProjectBase {
 
     using ProjectTimelineHelpersLibrary for address;
+    using ContributionStorageAccess for address;
+
+    modifier onlyProjectContributor(uint _projectId) {
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
+        require(contributorId != 0, "This address is not a contributor.");
+        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address is not a contributor to this project.");
+        _;
+    }
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 
-    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyProjectInDevelopment(_projectId) {
+    function proposeNewTimeline(uint _projectId) external onlyProjectDeveloper(_projectId) onlyInDevelopmentProject(_projectId) {
         // Can only suggest new timeline if there is not already a timeline proposal active
         require(!fundingStorage.getTimelineProposalIsActive(_projectId), "New timeline cannot be proposed if there is already an active timeline proposal.");
         // Can only suggest new timeline if there is not currently a vote on milestone completion

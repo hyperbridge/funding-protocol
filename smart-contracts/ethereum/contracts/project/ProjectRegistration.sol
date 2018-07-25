@@ -5,12 +5,17 @@ import "./ProjectBase.sol";
 import "../libraries/storage/CurationStorageAccess.sol";
 import "../libraries/ProjectTimelineHelpersLibrary.sol";
 import "../libraries/ProjectContributionTierHelpersLibrary.sol";
+import "../libraries/ProjectMilestoneCompletionHelpersLibrary.sol";
+import "../libraries/ProjectRegistrationHelpersLibrary.sol";
 
 contract ProjectRegistration is ProjectBase {
 
+    using ProjectRegistrationHelpersLibrary for address;
     using ProjectTimelineHelpersLibrary for address;
     using ProjectContributionTierHelpersLibrary for address;
+    using ProjectMilestoneCompletionHelpersLibrary for address;
     using CurationStorageAccess for address;
+    using ContributionStorageAccess for address;
 
     event ProjectCreated(uint projectId);
 
@@ -28,12 +33,7 @@ contract ProjectRegistration is ProjectBase {
     function createProject(
         string _title,
         string _description,
-        string _about,
-        uint _minContributionGoal,
-        uint _maxContributionGoal,
-        uint _contributionPeriod,
-        bool _noRefunds,
-        bool _noTimeline
+        string _about
     )
         external
     {
@@ -44,36 +44,36 @@ contract ProjectRegistration is ProjectBase {
         // Get next ID from storage + increment next ID
         uint projectId = fundingStorage.generateNewProjectId();
 
-        // Minimum goal must be less than maximum goal
-        require(_minContributionGoal < _maxContributionGoal, "Minimum goal must be less than maximum goal.");
-
-        // Contribution period must be greater than 0
-        require(_contributionPeriod > 0, "Contribution period must be at least 1 week.");
-
         // Set new project attributes
-        fundingStorage.setProjectStatus(projectId, uint(Status.Draft));
-        fundingStorage.setProjectTitle(projectId, _title);
-        fundingStorage.setProjectDescription(projectId, _description);
-        fundingStorage.setProjectAbout(projectId, _about);
-        fundingStorage.setProjectMinContributionGoal(projectId, _minContributionGoal);
-        fundingStorage.setProjectMaxContributionGoal(projectId, _maxContributionGoal);
-        fundingStorage.setProjectContributionPeriod(projectId, _contributionPeriod);
-        fundingStorage.setProjectNoRefunds(projectId, _noRefunds);
-        fundingStorage.setProjectNoTimeline(projectId, _noTimeline);
-        fundingStorage.setProjectDeveloper(projectId, msg.sender);
-        fundingStorage.setProjectDeveloperId(projectId, developerId);
+        fundingStorage.setProjectInfo(projectId, uint(Status.Draft), _title, _description, _about, msg.sender, developerId);
 
         emit ProjectCreated(projectId);
     }
 
-    function editProject(
+    function setProjectContributionGoals(
         uint _projectId,
-        string _title,
-        string _description,
-        string _about,
-        uint _minContributionGoal,
-        uint _maxContributionGoal,
-        uint _contributionPeriod,
+        uint _minGoal,
+        uint _maxGoal,
+        uint _contributionPeriod
+    )
+        external
+        onlyProjectDeveloper(_projectId)
+        onlyDraftProject(_projectId)
+    {
+        // Minimum goal must be greater than 0
+        require(_minGoal > 0, "Minimum goal must be greater than 0.");
+
+        // Minimum goal must be less than maximum goal
+        require(_minGoal < _maxGoal, "Minimum goal must be less than maximum goal.");
+
+        // Contribution period must be greater than 0
+        require(_contributionPeriod > 0, "Contribution period must be at least 1 week.");
+
+        fundingStorage.setProjectContributionGoals(_projectId, _minGoal, _maxGoal, _contributionPeriod);
+    }
+
+    function setProjectTerms(
+        uint _projectId,
         bool _noRefunds,
         bool _noTimeline
     )
@@ -81,21 +81,23 @@ contract ProjectRegistration is ProjectBase {
         onlyProjectDeveloper(_projectId)
         onlyDraftProject(_projectId)
     {
-        // Minimum goal must be less than maximum goal
-        require(_minContributionGoal < _maxContributionGoal, "Minimum goal must be less than maximum goal.");
+        fundingStorage.setProjectTerms(_projectId, _noRefunds, _noTimeline);
+    }
 
-        // Contribution period must be greater than 0
-        require(_contributionPeriod > 0, "Contribution period must be at least 1 week.");
-
+    function editProjectInfo(
+        uint _projectId,
+        string _title,
+        string _description,
+        string _about
+    )
+        external
+        onlyProjectDeveloper(_projectId)
+        onlyDraftProject(_projectId)
+    {
         // Set project attributes
-        fundingStorage.setProjectTitle(_projectId, _title);
-        fundingStorage.setProjectDescription(_projectId, _description);
-        fundingStorage.setProjectAbout(_projectId, _about);
-        fundingStorage.setProjectMinContributionGoal(_projectId, _minContributionGoal);
-        fundingStorage.setProjectMaxContributionGoal(_projectId, _maxContributionGoal);
-        fundingStorage.setProjectContributionPeriod(_projectId, _contributionPeriod);
-        fundingStorage.setProjectNoRefunds(_projectId, _noRefunds);
-        fundingStorage.setProjectNoTimeline(_projectId, _noTimeline);
+        uint developerId = fundingStorage.getProjectDeveloperId(_projectId);
+
+        fundingStorage.setProjectInfo(_projectId, uint(Status.Draft), _title, _description, _about, msg.sender, developerId);
     }
 
     function getProject(
@@ -137,6 +139,11 @@ contract ProjectRegistration is ProjectBase {
     function submitProjectForReview(uint _projectId) external onlyProjectDeveloper(_projectId) onlyDraftProject(_projectId) {
         bool noTimeline = fundingStorage.getProjectNoTimeline(_projectId);
 
+        // Verify that project has outlined contribution goals
+        uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
+        uint maxGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
+        require(minGoal != 0 && maxGoal != 0);
+
         // Make sure project has outlined contribution tiers
         verifyProjectTiers(_projectId);
 
@@ -161,9 +168,7 @@ contract ProjectRegistration is ProjectBase {
         require(tiersLength > 0, "Project has no contribution tiers.");
     }
 
-    function beginProjectDevelopment(uint _projectId) external onlyProjectDeveloper(_projectId) {
-        require(fundingStorage.getProjectStatus(_projectId) == uint(Status.Contributable), "This project is not currently accepting contributions.");
-
+    function beginProjectDevelopment(uint _projectId) external onlyProjectDeveloper(_projectId) onlyContributableProject(_projectId) {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
@@ -174,7 +179,7 @@ contract ProjectRegistration is ProjectBase {
 
         if (fundsRaised >= minGoal) {
             fundingStorage.setProjectStatus(_projectId, uint(Status.InDevelopment));
-            fundingStorage.releaseMilestoneFunds(_projectId, 0);
+            //fundingStorage.releaseMilestoneFunds(_projectId, 0);
         } else {
             fundingStorage.setProjectStatus(_projectId, uint(Status.Refundable));
         }

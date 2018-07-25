@@ -2,19 +2,26 @@ pragma solidity ^0.4.24;
 
 import "../FundingStorage.sol";
 import "./ProjectBase.sol";
-import "../Developer.sol";
 import "../FundingVault.sol";
-import "../libraries/ProjectTimelineHelpersLibrary.sol";
+import "../libraries/ProjectMilestoneCompletionHelpersLibrary.sol";
 
 contract ProjectMilestoneCompletion is ProjectBase {
 
-    using ProjectTimelineHelpersLibrary for address;
+    using ProjectMilestoneCompletionHelpersLibrary for address;
+    using ContributionStorageAccess for address;
+
+    modifier onlyProjectContributor(uint _projectId) {
+        uint contributorId = fundingStorage.getContributorId(msg.sender);
+        require(contributorId != 0, "This address is not a contributor.");
+        require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address is not a contributor to this project.");
+        _;
+    }
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
     }
 
-    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) onlyProjectInDevelopment(_projectId) {
+    function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) onlyInDevelopmentProject(_projectId) {
         // Can only submit for milestone completion if there is not already a vote on milestone completion
         require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "There is already a vote on milestone completion active.");
         // Can only submit for milestone completion if there is not already a vote on a timeline proposal
@@ -46,10 +53,15 @@ contract ProjectMilestoneCompletion is ProjectBase {
         require(fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");
 
         if (hasPassedMilestoneCompletionVote(_projectId)) {
-            succeedMilestoneCompletion(_projectId);
+            //fundingStorage.succeedMilestoneCompletion(_projectId);
         } else {
+            // Set milestone completion submission to inactive
+            fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, false);
+
             // Set milestone completion submission has failed
             fundingStorage.setMilestoneCompletionSubmissionHasFailed(_projectId, true);
+
+            fundingStorage.setProjectStatus(_projectId, uint(Status.Refundable));
         }
     }
 
@@ -67,44 +79,6 @@ contract ProjectMilestoneCompletion is ProjectBase {
         uint votingThreshold = numVoters * 75 / 100;
 
         return (approvalCount > votingThreshold);
-    }
-
-    function succeedMilestoneCompletion(uint _projectId) private {
-        uint activeIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
-        fundingStorage.setTimelineMilestoneIsComplete(_projectId, activeIndex, true);
-
-        // Set milestone completion submission to inactive
-        fundingStorage.setMilestoneCompletionSubmissionIsActive(_projectId, false);
-
-        // Update completedMilestones, remove any pending milestones, and add the completed milestones + current active
-        // milestone to the start of the pending timeline. This is to ensure that any future timeline proposals take
-        // into account the milestones that have already released their funds.
-
-        // Add current milestone to completed milestones list
-        uint completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
-
-        ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
-
-        fundingStorage.setCompletedMilestone(_projectId, completedMilestonesLength, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
-
-        fundingStorage.setCompletedMilestonesLength(_projectId, completedMilestonesLength + 1);
-
-        fundingStorage.moveCompletedMilestonesIntoPendingTimeline(_projectId);
-
-        // Increment active milestone and release funds if this was not the last milestone
-        if (activeIndex < fundingStorage.getTimelineLength(_projectId) - 1) {
-            // Increment the active milestone
-            fundingStorage.setActiveMilestoneIndex(_projectId, ++activeIndex);
-
-            // Add currently active milestone to pendingTimeline
-            ProjectStorageAccess.Milestone memory currentMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
-            completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
-
-            fundingStorage.setPendingTimelineMilestone(_projectId, completedMilestonesLength, currentMilestone.title, currentMilestone.description, currentMilestone.percentage, currentMilestone.isComplete);
-            fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
-
-            fundingStorage.releaseMilestoneFunds(_projectId, activeIndex);
-        }
     }
 
     function getMilestoneCompletionSubmission(uint _projectId) external view returns (uint timestamp, uint approvalCount, uint disapprovalCount, string report, bool isActive, bool hasFailed) {
