@@ -1,14 +1,12 @@
 pragma solidity ^0.4.24;
 
 import "./storage/ProjectStorageAccess.sol";
-import "./storage/ContributionStorageAccess.sol";
 import "../FundingVault.sol";
 import "../FundingStorage.sol";
 
 library ProjectTimelineHelpersLibrary {
 
     using ProjectStorageAccess for address;
-    using ContributionStorageAccess for address;
 
     function moveTimelineIntoTimelineHistory(address _fundingStorage, uint _projectId) external {
         uint historyLength = _fundingStorage.getTimelineHistoryLength(_projectId);
@@ -64,15 +62,5 @@ library ProjectTimelineHelpersLibrary {
         }
 
         require(percentageAcc == 100, "Milestone percentages must add to 100.");
-    }
-
-    function releaseMilestoneFunds(address _fundingStorage, uint _projectId, uint _index) external {
-        uint fundsRaised = _fundingStorage.getProjectFundsRaised(_projectId);
-        uint percentageToSend = _fundingStorage.getTimelineMilestonePercentage(_projectId, _index);
-        uint amountToSend = fundsRaised * percentageToSend / 100;
-        address developer = _fundingStorage.getProjectDeveloper(_projectId);
-        FundingStorage fs = FundingStorage(_fundingStorage);
-        FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
-        fv.withdrawEth(amountToSend, developer);
     }
 }

@@ -581,14 +581,6 @@ library ProjectStorageAccess {
         FundingStorage(_fundingStorage).setString(keccak256(abi.encodePacked("project.about", _projectId)), _about);
     }
 
-    function setProjectDeveloper(address _fundingStorage, uint _projectId, address _developer) internal {
-        FundingStorage(_fundingStorage).setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
-    }
-
-    function setProjectDeveloperId(address _fundingStorage, uint _projectId, uint _developerId) internal {
-        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
-    }
-
     function setProjectMinContributionGoal(address _fundingStorage, uint _projectId, uint _goal) internal {
         FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.minContributionGoal", _projectId)), _goal);
     }
@@ -607,6 +599,14 @@ library ProjectStorageAccess {
 
     function setProjectNoTimeline(address _fundingStorage, uint _projectId, bool _noTimeline) internal {
         FundingStorage(_fundingStorage).setBool(keccak256(abi.encodePacked("project.noTimeline", _projectId)), _noTimeline);
+    }
+
+    function setProjectDeveloper(address _fundingStorage, uint _projectId, address _developer) internal {
+        FundingStorage(_fundingStorage).setAddress(keccak256(abi.encodePacked("project.developer", _projectId)), _developer);
+    }
+
+    function setProjectDeveloperId(address _fundingStorage, uint _projectId, uint _developerId) internal {
+        FundingStorage(_fundingStorage).setUint(keccak256(abi.encodePacked("project.developerId", _projectId)), _developerId);
     }
 
     function setActiveMilestoneIndex(address _fundingStorage, uint _projectId, uint _index) internal {
