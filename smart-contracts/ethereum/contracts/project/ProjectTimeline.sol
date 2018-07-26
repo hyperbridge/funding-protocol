@@ -2,8 +2,11 @@ pragma solidity ^0.4.24;
 
 import "../FundingStorage.sol";
 import "./ProjectBase.sol";
+import "../libraries/ProjectTimelineHelpersLibrary.sol";
 
 contract ProjectTimeline is ProjectBase {
+
+    using ProjectTimelineHelpersLibrary for address;
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
         fundingStorage = _fundingStorage;
@@ -88,35 +91,15 @@ contract ProjectTimeline is ProjectBase {
 
         if (status == Status.InDevelopment) {
 
-            uint completedMilestonesLength = fundingStorage.getCompletedMilestonesLength(_projectId);
-
-            for (uint i = 0; i < completedMilestonesLength; i++) {
-                ProjectStorageAccess.Milestone memory completedMilestone = fundingStorage.getCompletedMilestone(_projectId, i);
-                fundingStorage.setPendingTimelineMilestone(
-                    _projectId,
-                    i,
-                    completedMilestone.title,
-                    completedMilestone.description,
-                    completedMilestone.percentage,
-                    completedMilestone.isComplete
-                );
-            }
+            fundingStorage.moveCompletedMilestonesIntoPendingTimeline(_projectId);
 
             Status status = Status(fundingStorage.getProjectStatus(_projectId));
 
             uint activeMilestoneIndex = fundingStorage.getActiveMilestoneIndex(_projectId);
 
             ProjectStorageAccess.Milestone memory activeMilestone = fundingStorage.getTimelineMilestone(_projectId, activeMilestoneIndex);
-            fundingStorage.setPendingTimelineMilestone(
-                _projectId,
-                completedMilestonesLength,
-                activeMilestone.title,
-                activeMilestone.description,
-                activeMilestone.percentage,
-                activeMilestone.isComplete
-            );
 
-            fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength + 1);
+            fundingStorage.pushPendingTimelineMilestone(_projectId, activeMilestone.title, activeMilestone.description, activeMilestone.percentage, activeMilestone.isComplete);
         }
     }
 }

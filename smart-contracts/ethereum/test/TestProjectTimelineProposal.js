@@ -19,6 +19,12 @@ const projectContributionPeriod = 4;
 const noRefunds = true;
 const noTimeline = true;
 
+function advanceTime(numWeeks) {
+    const week = 604800000;
+    const currentTime = new Date().getTime();
+    return new Date(currentTime + numWeeks * week).getTime();
+}
+
 contract('ProjectTimelineProposal', function(accounts) {
     let fundingStorage;
     let fundingVault;
@@ -59,6 +65,7 @@ contract('ProjectTimelineProposal', function(accounts) {
 
         contributionContract = await Contribution.deployed();
         await fundingStorage.registerContract("Contribution", blankAddress, contributionContract.address);
+        await contributionContract.initialize();
         contributorAccount = accounts[3];
 
         curationContract = await Curation.deployed();
@@ -93,9 +100,11 @@ contract('ProjectTimelineProposal', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
-
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
 
         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
@@ -105,8 +114,10 @@ contract('ProjectTimelineProposal', function(accounts) {
 
     it("developer can propose new timeline", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
             await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
 
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
@@ -125,6 +136,7 @@ contract('ProjectTimelineProposal', function(accounts) {
 
     it("developer cannot propose new timeline unless project is InDevelopment", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
 
@@ -141,24 +153,20 @@ contract('ProjectTimelineProposal', function(accounts) {
 
     it("developer cannot propose new timeline if there is an active vote for milestone completion", async () => {
         try {
-            console.log(1);
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
-            console.log(1);
+
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            console.log(1);
+
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
             await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-            console.log(1);
 
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            console.log(1);
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            console.log(1);
 
-            await projectMilestoneCompletionContract.submitMilestoneCompletion(projectId, { from: developerAccount });
-            console.log(1);
+            await projectMilestoneCompletionContract.submitMilestoneCompletion(projectId, "Report", { from: developerAccount });
 
             await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-            console.log(1);
 
             assert.fail();
         } catch (e) {
@@ -168,8 +176,10 @@ contract('ProjectTimelineProposal', function(accounts) {
 
     it("developer cannot propose new timeline if there is an active timeline proposal", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
             await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
 
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
@@ -187,8 +197,10 @@ contract('ProjectTimelineProposal', function(accounts) {
 
     it("developer cannot propose new timeline if pending milestone percentages are invalid", async () => {
         try {
+            await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
             await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
 
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 51, { from: developerAccount });
@@ -199,132 +211,6 @@ contract('ProjectTimelineProposal', function(accounts) {
             assert.fail();
         } catch (e) {
             console.log(e.message);
-        }
-    });
-
-    it("project contributor can vote for timeline proposal", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-
-            await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-
-            let proposal = await projectTimelineProposalContract.getTimelineProposal(projectId);
-            const initialApprovalCount = proposal[1].toNumber();
-
-            await projectTimelineProposalContract.voteOnTimelineProposal(projectId, true, { from: contributorAccount });
-
-            proposal = await projectTimelineProposalContract.getTimelineProposal(projectId);
-
-            assert.equal(proposal[1].toNumber(), initialApprovalCount + 1, "Vote was not registered.");
-        } catch (e) {
-            console.log(e.message);
-            assert.fail();
-        }
-    });
-
-    it("project contributor can vote against timeline proposal", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-
-            await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-
-            let proposal = await projectTimelineProposalContract.getTimelineProposal(projectId);
-            const initialDisapprovalCount = proposal[2].toNumber();
-
-            await projectTimelineProposalContract.voteOnTimelineProposal(projectId, false, { from: contributorAccount });
-
-            proposal = await projectTimelineProposalContract.getTimelineProposal(projectId);
-
-            assert.equal(proposal[2].toNumber(), initialDisapprovalCount + 1, "Vote was not registered.");
-        } catch (e) {
-            console.log(e.message);
-            assert.fail();
-        }
-    });
-
-    it("project contributor cannot vote twice", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-
-            await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-
-            await projectTimelineProposalContract.voteOnTimelineProposal(projectId, true, { from: contributorAccount });
-            await projectTimelineProposalContract.voteOnTimelineProposal(projectId, true, { from: contributorAccount });
-
-            assert.fail();
-        } catch (e) {
-            console.log(e.message);
-        }
-    });
-
-    it("developer cannot finalize timeline proposal if no proposal is active", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineProposalContract.finalizeTimelineProposal(projectId, { from: developerAccount });
-            assert.fail();
-        } catch (e) {
-            console.log(e.message);
-        }
-    });
-
-    it("developer cannot finalize timeline proposal early if approval is less than 75% of total contributors", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-
-            await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-
-            await projectTimelineProposalContract.finalizeTimelineProposal(projectId, { from: developerAccount });
-
-            assert.fail();
-        } catch (e) {
-            console.log(e.message);
-        }
-    });
-
-    it("developer can finalize timeline proposal early if approval is greater than 75% of total contributors", async () => {
-        try {
-            await curationContract.publishProject(projectId, { from: developerAccount });
-            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
-
-            await projectTimelineProposalContract.proposeNewTimeline(projectId, { from: developerAccount });
-
-            await projectTimelineProposalContract.voteOnTimelineProposal(projectId, true, { from: contributorAccount });
-
-            await projectTimelineProposalContract.finalizeTimelineProposal(projectId, { from: developerAccount });
-
-            const timelineLength = await projectTimelineContract.getTimelineLength(projectId);
-
-            assert.equal(timelineLength, 2, "Proposed timeline was not moved into active timeline.")
-        } catch (e) {
-            console.log(e.message);
-            assert.fail();
         }
     });
 });

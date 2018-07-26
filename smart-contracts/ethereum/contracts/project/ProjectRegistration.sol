@@ -172,14 +172,14 @@ contract ProjectRegistration is ProjectBase {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(getCurrentTime() <= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() >= periodStart + contributionPeriod * 1 weeks);
 
         uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
         uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
 
         if (fundsRaised >= minGoal) {
             fundingStorage.setProjectStatus(_projectId, uint(Status.InDevelopment));
-            //fundingStorage.releaseMilestoneFunds(_projectId, 0);
+            fundingStorage.releaseMilestoneFunds(_projectId, 0);
         } else {
             fundingStorage.setProjectStatus(_projectId, uint(Status.Refundable));
         }

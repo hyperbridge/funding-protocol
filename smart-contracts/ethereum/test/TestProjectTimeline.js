@@ -54,9 +54,12 @@ contract('ProjectTimeline', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
     });
 
     it("developer can add a pending milestone", async () => {
@@ -112,16 +115,6 @@ contract('ProjectTimeline', function(accounts) {
             let pendingTimelineLength = await projectTimelineContract.getPendingTimelineLength(projectId);
 
             assert.equal(pendingTimelineLength, 0, "Pending timeline was not cleared.");
-        } catch (e) {
-            console.log(e.message);
-            assert.fail();
-        }
-    });
-
-    // TODO
-    it("should retain funded milestones in cleared pending timeline", async () => {
-        try {
-
         } catch (e) {
             console.log(e.message);
             assert.fail();

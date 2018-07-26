@@ -17,6 +17,12 @@ const projectContributionPeriod = 4;
 const noRefunds = true;
 const noTimeline = true;
 
+function advanceTime(numWeeks) {
+    const week = 604800000;
+    const currentTime = new Date().getTime();
+    return new Date(currentTime + numWeeks * week).getTime();
+}
+
 contract('ProjectCreation', function(accounts) {
     let fundingStorage;
     let projectRegistrationContract;
@@ -58,15 +64,18 @@ contract('ProjectCreation', function(accounts) {
                 }
             });
 
-            await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, noTimeline, { from: developerAccount });
+            await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
             watcher.stopWatching();
+
+            await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+            await projectRegistrationContract.setProjectTerms(projectId, noRefunds, noTimeline, { from: developerAccount });
 
             const project = await projectRegistrationContract.getProject(projectId);
 
             assert.notEqual(project[0].toNumber(), 0, "Project ID 0 should be reserved.");
             assert.equal(project[0].toNumber(), projectId, "Project ID is incorrect.");
-            assert.equal(project[1].toNumber(), 0, "Project should be set to Status: Draft.");
+            assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Draft.");
             assert.equal(project[2], projectTitle, "Project title is incorrect.");
             assert.equal(project[3], projectDescription, "Project description is incorrect.");
             assert.equal(project[4], projectAbout, "Project about is incorrect.");
@@ -85,7 +94,7 @@ contract('ProjectCreation', function(accounts) {
 
     it("non-developer should not be able to create a project", async () => {
         try {
-            await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, noTimeline, { from: accounts[2] });
+            await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: accounts[2] });
             assert.fail();
         } catch (e) {
             console.log(e.message);
@@ -138,9 +147,12 @@ contract('ProjectEditing', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, noTimeline, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
     });
 
     it("project developer should be able to edit a draft project", async () => {
@@ -154,13 +166,15 @@ contract('ProjectEditing', function(accounts) {
         const newNoTimeline = false;
         
         try {
-            await projectRegistrationContract.editProject(projectId, newTitle, newDescription, newAbout, newMinContributionGoal, newMaxContributionGoal, newContributionPeriod, newNoRefunds, newNoTimeline, { from: developerAccount });
+            await projectRegistrationContract.editProjectInfo(projectId, newTitle, newDescription, newAbout, { from: developerAccount });
+            await projectRegistrationContract.setProjectContributionGoals(projectId, newMinContributionGoal, newMaxContributionGoal, newContributionPeriod, { from: developerAccount });
+            await projectRegistrationContract.setProjectTerms(projectId, newNoRefunds, newNoTimeline, { from: developerAccount });
 
             const project = await projectRegistrationContract.getProject(projectId);
 
             assert.notEqual(project[0].toNumber(), 0, "Project ID 0 should be reserved.");
             assert.equal(project[0].toNumber(), projectId, "Project ID is incorrect.");
-            assert.equal(project[1].toNumber(), 0, "Project should be set to Status: Draft.");
+            assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Draft.");
             assert.equal(project[2], newTitle, "Project title is incorrect.");
             assert.equal(project[3], newDescription, "Project description is incorrect.");
             assert.equal(project[4], newAbout, "Project about is incorrect.");
@@ -181,14 +195,9 @@ contract('ProjectEditing', function(accounts) {
         const newTitle = "New Improved BlockHub";
         const newDescription = "This is a new improved description of BlockHub.";
         const newAbout = "This is all about New Improved BlockHub.";
-        const newMinContributionGoal = 3000;
-        const newMaxContributionGoal = 30000;
-        const newContributionPeriod = 6;
-        const newNoRefunds = true;
-        const newNoTimeline = true;
         
         try {
-            await projectRegistrationContract.editProject(projectId, newTitle, newDescription, newAbout, newMinContributionGoal, newMaxContributionGoal, newContributionPeriod, newNoRefunds, newNoTimeline, { from: accounts[2] });
+            await projectRegistrationContract.editProjectInfo(projectId, newTitle, newDescription, newAbout, { from: accounts[2] });
 
             assert.fail();
         } catch (e) {
@@ -200,11 +209,6 @@ contract('ProjectEditing', function(accounts) {
         const newTitle = "New Improved BlockHub";
         const newDescription = "This is a new improved description of BlockHub.";
         const newAbout = "This is all about New Improved BlockHub.";
-        const newMinContributionGoal = 3000;
-        const newMaxContributionGoal = 30000;
-        const newContributionPeriod = 6;
-        const newNoRefunds = true;
-        const newNoTimeline = true;
 
         try {
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
@@ -212,7 +216,7 @@ contract('ProjectEditing', function(accounts) {
 
             await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
 
-            await projectRegistrationContract.editProject(projectId, newTitle, newDescription, newAbout, newMinContributionGoal, newMaxContributionGoal, newContributionPeriod, newNoRefunds, newNoTimeline, { from: developerAccount });
+            await projectRegistrationContract.editProjectInfo(projectId, newTitle, newDescription, newAbout, { from: developerAccount });
 
             assert.fail();
         } catch (e) {
@@ -253,6 +257,7 @@ contract('ProjectStatus', function(accounts) {
 
         contributionContract = await Contribution.deployed();
         await fundingStorage.registerContract("Contribution", blankAddress, contributionContract.address);
+        await contributionContract.initialize();
         contributorAccount = accounts[3];
 
         curationContract = await Curation.deployed();
@@ -287,9 +292,12 @@ contract('ProjectStatus', function(accounts) {
             }
         });
 
-        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.createProject(projectTitle, projectDescription, projectAbout, { from: developerAccount });
 
         projWatcher.stopWatching();
+
+        await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
     });
 
     it("project can be submitted for review", async () => {
@@ -314,7 +322,7 @@ contract('ProjectStatus', function(accounts) {
             assert.equal(newTimelineLength.toNumber(), initialPendingTimelineLength.toNumber(), "Pending milestones were not moved into active timeline.");
 
             const project = await projectRegistrationContract.getProject(projectId);
-            assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Pending.");
+            assert.equal(project[1].toNumber(), 2, "Project should be set to Status: Pending.");
 
             const draftCuration = await curationContract.getDraftCuration(projectId);
 
@@ -337,7 +345,7 @@ contract('ProjectStatus', function(accounts) {
 
             const project = await projectRegistrationContract.getProject(projectId);
 
-            assert.equal(project[1].toNumber(), 0, "Project status should still be Status: Pending.");
+            assert.equal(project[1].toNumber(), 1, "Project status should still be Status: Draft.");
         }
     });
 
@@ -354,65 +362,68 @@ contract('ProjectStatus', function(accounts) {
 
             const project = await projectRegistrationContract.getProject(projectId);
 
-            assert.equal(project[1].toNumber(), 0, "Project status should still be Status: Pending.");
+            assert.equal(project[1].toNumber(), 1, "Project status should still be Status: Draft.");
         }
     });
 
     it("project with noTimeline term set can be submitted for review with no milestones", async () => {
         try {
-            await projectRegistrationContract.editProject(projectId, projectTitle, projectDescription, projectAbout, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, noRefunds, true, { from: developerAccount });
+            await projectRegistrationContract.setProjectTerms(projectId, noRefunds, true, { from: developerAccount });
 
             await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
 
             await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
 
             const project = await projectRegistrationContract.getProject(projectId);
-            assert.equal(project[1].toNumber(), 1, "Project should be set to Status: Pending.");
+            assert.equal(project[1].toNumber(), 2, "Project should be set to Status: Pending.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
         }
     });
 
-    // TODO - These tests are held up by timing requirements (mandatory 4 weeks in Pending status), however they pass when time check is removed
-    // it("project can be transitioned from Contributable to InDevelopment if funding goals met", async () => {
-    //     try {
-    //         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
-    //         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
-    //         await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
-    //         await curationContract.curate(projectId, true, { from: curatorAddress });
-    //         await curationContract.publishProject(projectId, { from: developerAccount });
-    //         await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
-    //         await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-    //         const project = await projectRegistrationContract.getProject(projectId);
-    //         assert.equal(project[1].toNumber(), 3, "Project should be set to Status: InDevelopment.");
-    //     } catch (e) {
-    //         console.log(e.message);
-    //         assert.fail();
-    //     }
-    // });
-    //
-    // it("project can be transitioned from Contributable to Refundable if funding goals are not met", async () => {
-    //     try {
-    //         await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
-    //
-    //         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
-    //
-    //         await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
-    //
-    //         await curationContract.curate(projectId, true, { from: curatorAddress });
-    //
-    //         await curationContract.publishProject(projectId, { from: developerAccount });
-    //
-    //         await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal - 1 });
-    //
-    //         await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
-    //
-    //         const project = await projectRegistrationContract.getProject(projectId);
-    //         assert.equal(project[1].toNumber(), 4, "Project should be set to Status: Refundable.");
-    //     } catch (e) {
-    //         console.log(e.message);
-    //         assert.fail();
-    //     }
-    // });
+    it("project can be transitioned from Contributable to InDevelopment if funding goals met", async () => {
+        try {
+            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+            await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+            await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+            await curationContract.curate(projectId, true, { from: curatorAddress });
+            await curationContract.setTestTime(advanceTime(4.1));
+            await curationContract.publishProject(projectId, { from: developerAccount });
+            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal });
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
+            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+            const project = await projectRegistrationContract.getProject(projectId);
+            assert.equal(project[1].toNumber(), 4, "Project should be set to Status: InDevelopment.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("project can be transitioned from Contributable to Refundable if funding goals are not met", async () => {
+        try {
+            await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+
+            await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
+
+            await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
+
+            await curationContract.curate(projectId, true, { from: curatorAddress });
+
+            await curationContract.setTestTime(advanceTime(4.1));
+            await curationContract.publishProject(projectId, { from: developerAccount });
+
+            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: projectMinContributionGoal - 1 });
+
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
+            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+
+            const project = await projectRegistrationContract.getProject(projectId);
+            assert.equal(project[1].toNumber(), 5, "Project should be set to Status: Refundable.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
 });

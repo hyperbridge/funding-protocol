@@ -45,6 +45,7 @@ contract('Contribution', function(accounts) {
 
         contributionContract = await Contribution.deployed();
         await fundingStorage.registerContract("Contribution", blankAddress, contributionContract.address);
+        await contributionContract.initialize();
         contributorAccount = accounts[3];
 
         curationContract = await Curation.deployed();
