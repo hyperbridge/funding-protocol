@@ -39,14 +39,14 @@ The Funding Protocol project is broken up into 4 areas:
 
 ## Installation
 
-Use Yarn to install: `yarn install`.
+Use NPM to install: `npm install`.
 
 
 ## Getting Started
 
-Use this command to build: `yarn run build`.
+Use this command to build: `npm run build`.
 
-Use this command to run the test client: `yarn run client`.
+Use this command to run the test client: `npm run client`.
 
 
 ## Contribution
