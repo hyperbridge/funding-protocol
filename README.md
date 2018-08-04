@@ -61,7 +61,7 @@ See [CONTRIBUTING](CONTRIBUTING.md)
 
 ## Problems?
 
-Discuss Node Operator on our Gitter:
+Discuss Funding Protocol on our Gitter:
 https://gitter.im/Hyperbridge/Lobby
 
 Please post any bugs as Github issues.
