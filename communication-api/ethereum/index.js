@@ -132,12 +132,29 @@ export let state = {
                 }
             ]
         },
+        ProjectRegistrationHelpersLibrary: {
+            contract: null,
+            deployed: null,
+            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectRegistrationHelpersLibrary.json'),
+            address: null,
+            links: [
+                {
+                    name: 'ProjectStorageAccess', address: null
+                }
+            ]
+        },
         ProjectRegistration: {
             contract: null,
             deployed: null,
             meta: require('../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
             address: null,
             links: [
+                {
+                    name: 'FundingStorage', address: null
+                },
+                {
+                    name: 'ProjectRegistrationHelpersLibrary', address: null
+                },
                 {
                     name: 'ProjectTimelineHelpersLibrary', address: null
                 },
@@ -236,7 +253,7 @@ export const deployContract = async (contractName, links, params) => {
     }
 
     return await new Promise((resolve) => {
-        contract.new.apply(null, params).then((deployed) => {
+        contract.new(...params).then((deployed) => {
             state.contracts[contractName].deployed = deployed
 
             resolve(deployed)
