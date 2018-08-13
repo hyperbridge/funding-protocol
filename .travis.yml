@@ -24,6 +24,5 @@ install:
 
 
 script:
-  - cd smart-contracts/ethereum
   - npm run ganache &
   - npm run truffle test
