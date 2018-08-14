@@ -9,6 +9,10 @@ contract ProjectContributionTier is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function addContributionTier(
         uint _projectId,
         uint _contributorLimit,
