@@ -1,8 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "../../FundingStorage.sol";
+import "../../openzeppelin/SafeMath.sol";
 
 library ProjectStorageAccess {
+
+    using SafeMath for uint256;
 
     struct Timeline {
         Milestone[] milestones;
@@ -562,7 +565,7 @@ library ProjectStorageAccess {
 
     function incrementNextProjectId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("project.nextId"));
-        FundingStorage(_fundingStorage).setUint(keccak256("project.nextId"), currentId + 1);
+        FundingStorage(_fundingStorage).setUint(keccak256("project.nextId"), currentId.add(1));
     }
 
     function setProjectStatus(address _fundingStorage, uint _projectId, uint _status) internal {
@@ -676,7 +679,7 @@ library ProjectStorageAccess {
 
         setTimelineMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
 
-        setTimelineLength(_fundingStorage, _projectId, length + 1);
+        setTimelineLength(_fundingStorage, _projectId, length.add(1));
     }
 
     function setPendingTimelineMilestoneTitle(address _fundingStorage, uint _projectId, uint _index, string _title) internal {
@@ -726,7 +729,7 @@ library ProjectStorageAccess {
 
         setPendingTimelineMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
 
-        setPendingTimelineLength(_fundingStorage, _projectId, length + 1);
+        setPendingTimelineLength(_fundingStorage, _projectId, length.add(1));
     }
 
     function setCompletedMilestonesLength(address _fundingStorage, uint _projectId, uint _length) internal {
@@ -780,7 +783,7 @@ library ProjectStorageAccess {
 
         setCompletedMilestone(_fundingStorage, _projectId, length, _title, _description, _percentage, _isComplete);
 
-        setCompletedMilestonesLength(_fundingStorage, _projectId, length + 1);
+        setCompletedMilestonesLength(_fundingStorage, _projectId, length.add(1));
     }
 
     function setTimelineHistoryMilestonesLength(address _fundingStorage, uint _projectId, uint _timelineIndex, uint _length) internal {
@@ -836,7 +839,7 @@ library ProjectStorageAccess {
 
         setTimelineHistoryMilestone(_fundingStorage, _projectId, _timelineIndex, length, _title, _description, _percentage, _isComplete);
 
-        setTimelineHistoryMilestonesLength(_fundingStorage, _projectId, _timelineIndex, length + 1);
+        setTimelineHistoryMilestonesLength(_fundingStorage, _projectId, _timelineIndex, length.add(1));
     }
 
 
@@ -894,7 +897,7 @@ library ProjectStorageAccess {
 
         setContributionTier(_fundingStorage, _projectId, length, _contributorLimit, _maxContribution, _minContribution, _rewards);
 
-        setContributionTiersLength(_fundingStorage, _projectId, length + 1);
+        setContributionTiersLength(_fundingStorage, _projectId, length.add(1));
     }
 
     function setPendingContributionTiersLength(address _fundingStorage, uint _projectId, uint _length) internal {
@@ -948,7 +951,7 @@ library ProjectStorageAccess {
 
         setPendingContributionTier(_fundingStorage, _projectId, length, _contributorLimit, _maxContribution, _minContribution, _rewards);
 
-        setPendingContributionTiersLength(_fundingStorage, _projectId, length + 1);
+        setPendingContributionTiersLength(_fundingStorage, _projectId, length.add(1));
     }
 
     // TimelineProposal

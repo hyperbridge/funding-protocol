@@ -4,9 +4,11 @@ import "./project/ProjectBase.sol";
 import "./libraries/storage/CurationStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
 import "./libraries/storage/ContributionStorageAccess.sol";
+import "./openzeppelin/SafeMath.sol";
 
 contract Curation is Ownable, Testable {
 
+    using SafeMath for uint256;
     using CurationStorageAccess for address;
     using ContributionStorageAccess for address;
     using ProjectStorageAccess for address;
@@ -59,10 +61,10 @@ contract Curation is Ownable, Testable {
         uint currentApprovalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
 
         if (_isApproved) {
-            fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount + 1);
+            fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount.add(1));
         } else {
             uint newCount;
-            (currentApprovalCount > 0) ? newCount = currentApprovalCount - 1 : newCount = 0;
+            (currentApprovalCount > 0) ? newCount = currentApprovalCount.sub(1) : newCount = 0;
             fundingStorage.setDraftCurationApprovalCount(_projectId, newCount);
         }
     }

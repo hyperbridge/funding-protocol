@@ -7,9 +7,11 @@ import "../libraries/ProjectTimelineHelpersLibrary.sol";
 import "../libraries/ProjectContributionTierHelpersLibrary.sol";
 import "../libraries/ProjectMilestoneCompletionHelpersLibrary.sol";
 import "../libraries/ProjectRegistrationHelpersLibrary.sol";
+import "../openzeppelin/SafeMath.sol";
 
 contract ProjectRegistration is ProjectBase {
 
+    using SafeMath for uint256;
     using ProjectRegistrationHelpersLibrary for address;
     using ProjectTimelineHelpersLibrary for address;
     using ProjectContributionTierHelpersLibrary for address;

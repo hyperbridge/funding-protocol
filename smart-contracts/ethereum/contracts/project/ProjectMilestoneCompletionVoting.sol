@@ -5,9 +5,11 @@ import "./ProjectBase.sol";
 import "../libraries/ProjectMilestoneCompletionHelpersLibrary.sol";
 import "../IVoting.sol";
 import "../libraries/ProjectTimelineHelpersLibrary.sol";
+import "../openzeppelin/SafeMath.sol";
 
 contract ProjectMilestoneCompletionVoting is ProjectBase, IVoting {
 
+    using SafeMath for uint256;
     using ProjectMilestoneCompletionHelpersLibrary for address;
     using ProjectTimelineHelpersLibrary for address;
     using ContributionStorageAccess for address;
@@ -36,10 +38,10 @@ contract ProjectMilestoneCompletionVoting is ProjectBase, IVoting {
 
         if (_approved) {
             uint currentApprovalCount = fundingStorage.getMilestoneCompletionSubmissionApprovalCount(_projectId);
-            fundingStorage.setMilestoneCompletionSubmissionApprovalCount(_projectId, currentApprovalCount + 1);
+            fundingStorage.setMilestoneCompletionSubmissionApprovalCount(_projectId, currentApprovalCount.add(1));
         } else {
             uint currentDisapprovalCount = fundingStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
-            fundingStorage.setMilestoneCompletionSubmissionDisapprovalCount(_projectId, currentDisapprovalCount + 1);
+            fundingStorage.setMilestoneCompletionSubmissionDisapprovalCount(_projectId, currentDisapprovalCount.add(1));
         }
 
         fundingStorage.setMilestoneCompletionSubmissionHasVoted(_projectId, msg.sender, true);
@@ -70,12 +72,12 @@ contract ProjectMilestoneCompletionVoting is ProjectBase, IVoting {
         bool isTwoWeeksLater = getCurrentTime() >= fundingStorage.getMilestoneCompletionSubmissionTimestamp(_projectId) + 2 weeks;
 
         // Proposal needs >75% total approval, or for 2 days to have passed and >75% approval among voters
-        require(((approvalCount >= numContributors * 75 / 100) || isTwoWeeksLater),
+        require(((approvalCount >= numContributors.mul(75).div(100)) || isTwoWeeksLater),
             "Conditions for finalizing milestone completion have not yet been achieved.");
 
         uint disapprovalCount = fundingStorage.getMilestoneCompletionSubmissionDisapprovalCount(_projectId);
-        uint numVoters = approvalCount + disapprovalCount;
-        uint votingThreshold = numVoters * 75 / 100;
+        uint numVoters = approvalCount.add(disapprovalCount);
+        uint votingThreshold = numVoters.mul(75).div(100);
 
         return (approvalCount >= votingThreshold);
     }
@@ -99,9 +101,10 @@ contract ProjectMilestoneCompletionVoting is ProjectBase, IVoting {
         fundingStorage.moveCompletedMilestonesIntoPendingTimeline(_projectId);
 
         // Increment active milestone and release funds if this was not the last milestone
-        if (activeIndex < fundingStorage.getTimelineLength(_projectId) - 1) {
+        if (activeIndex < fundingStorage.getTimelineLength(_projectId).sub(1)) {
             // Increment the active milestone
-            fundingStorage.setActiveMilestoneIndex(_projectId, ++activeIndex);
+            activeIndex = activeIndex.add(1);
+            fundingStorage.setActiveMilestoneIndex(_projectId, activeIndex);
 
             // Add currently active milestone to pendingTimeline
             ProjectStorageAccess.Milestone memory currentMilestone = fundingStorage.getTimelineMilestone(_projectId, activeIndex);
