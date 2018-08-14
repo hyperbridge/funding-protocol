@@ -5,10 +5,10 @@ import "./storage/ContributionStorageAccess.sol";
 
 library ProjectContributionTierHelpersLibrary {
 
-    using ProjectStorageAccess for address;
-    using ContributionStorageAccess for address;
+    using ProjectStorageAccess for FundingStorage;
+    using ContributionStorageAccess for FundingStorage;
 
-    function movePendingContributionTiersIntoActiveContributionTiers(address _fundingStorage, uint _projectId) external {
+    function movePendingContributionTiersIntoActiveContributionTiers(FundingStorage _fundingStorage, uint _projectId) external {
         uint length = _fundingStorage.getPendingContributionTiersLength(_projectId);
 
         for (uint i = 0; i < length; i++) {

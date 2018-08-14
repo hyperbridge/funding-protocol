@@ -6,9 +6,9 @@ import "../FundingStorage.sol";
 
 library ProjectTimelineHelpersLibrary {
 
-    using ProjectStorageAccess for address;
+    using ProjectStorageAccess for FundingStorage;
 
-    function moveTimelineIntoTimelineHistory(address _fundingStorage, uint _projectId) external {
+    function moveTimelineIntoTimelineHistory(FundingStorage _fundingStorage, uint _projectId) external {
         uint historyLength = _fundingStorage.getTimelineHistoryLength(_projectId);
         uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
@@ -22,7 +22,7 @@ library ProjectTimelineHelpersLibrary {
         _fundingStorage.setTimelineLength(_projectId, 0);
     }
 
-    function movePendingMilestonesIntoTimeline(address _fundingStorage, uint _projectId) external {
+    function movePendingMilestonesIntoTimeline(FundingStorage _fundingStorage, uint _projectId) external {
         uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
 
         for (uint j = 0; j < pendingTimelineLength; j++) {
@@ -34,7 +34,7 @@ library ProjectTimelineHelpersLibrary {
         _fundingStorage.setPendingTimelineLength(_projectId, 0);
     }
 
-    function moveCompletedMilestonesIntoPendingTimeline(address _fundingStorage, uint _projectId) external {
+    function moveCompletedMilestonesIntoPendingTimeline(FundingStorage _fundingStorage, uint _projectId) external {
         uint completedMilestonesLength = _fundingStorage.getCompletedMilestonesLength(_projectId);
 
         // Add the completed milestones to the start of the pending timeline
@@ -46,7 +46,7 @@ library ProjectTimelineHelpersLibrary {
         _fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
     }
 
-    function verifyPendingMilestones(address _fundingStorage, uint _projectId) external view {
+    function verifyPendingMilestones(FundingStorage _fundingStorage, uint _projectId) external view {
         // Verify:
         // - Milestones are present
         // - Milestone percentages add up to 100

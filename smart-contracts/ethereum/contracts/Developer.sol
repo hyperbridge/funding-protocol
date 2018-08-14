@@ -5,20 +5,20 @@ import "./Testable.sol";
 
 contract Developer is Testable {
 
-    using DeveloperStorageAccess for address;
+    using DeveloperStorageAccess for FundingStorage;
 
     modifier onlyLatestFundingContract() {
         require(FundingStorage(fundingStorage).getBool(keccak256(abi.encodePacked("contract.address", msg.sender))));
         _;
     }
 
-    address public fundingStorage;
+    FundingStorage public fundingStorage;
     bool private inTest;
 
     event DeveloperCreated(address developerAddress, uint developerId);
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function () public payable {

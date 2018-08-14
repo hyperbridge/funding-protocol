@@ -10,17 +10,17 @@ import "../libraries/ProjectRegistrationHelpersLibrary.sol";
 
 contract ProjectRegistration is ProjectBase {
 
-    using ProjectRegistrationHelpersLibrary for address;
-    using ProjectTimelineHelpersLibrary for address;
-    using ProjectContributionTierHelpersLibrary for address;
-    using ProjectMilestoneCompletionHelpersLibrary for address;
-    using CurationStorageAccess for address;
-    using ContributionStorageAccess for address;
+    using ProjectRegistrationHelpersLibrary for FundingStorage;
+    using ProjectTimelineHelpersLibrary for FundingStorage;
+    using ProjectContributionTierHelpersLibrary for FundingStorage;
+    using ProjectMilestoneCompletionHelpersLibrary for FundingStorage;
+    using CurationStorageAccess for FundingStorage;
+    using ContributionStorageAccess for FundingStorage;
 
     event ProjectCreated(uint projectId);
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function initialize() external {

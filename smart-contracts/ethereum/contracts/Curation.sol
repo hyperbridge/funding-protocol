@@ -7,9 +7,9 @@ import "./libraries/storage/ContributionStorageAccess.sol";
 
 contract Curation is Ownable, Testable {
 
-    using CurationStorageAccess for address;
-    using ContributionStorageAccess for address;
-    using ProjectStorageAccess for address;
+    using CurationStorageAccess for FundingStorage;
+    using ContributionStorageAccess for FundingStorage;
+    using ProjectStorageAccess for FundingStorage;
 
     modifier onlyCurator() {
         require(fundingStorage.getCuratorId(msg.sender) != 0, "You must be a curator to perform this action.");
@@ -21,13 +21,13 @@ contract Curation is Ownable, Testable {
         _;
     }
 
-    address public fundingStorage;
+    FundingStorage public fundingStorage;
     bool private inTest;
 
     event CuratorCreated(address curatorAddress, uint curatorId);
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
     
     function () public payable {

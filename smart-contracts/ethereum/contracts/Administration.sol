@@ -5,12 +5,12 @@ import "./libraries/storage/ProjectStorageAccess.sol";
 
 contract Administration is Ownable {
 
-    using ProjectStorageAccess for address;
+    using ProjectStorageAccess for FundingStorage;
 
-    address fundingStorage;
+    FundingStorage public fundingStorage;
 
     constructor(address _fundingStorage) public {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function setProjectStatus(uint _projectId, uint _status) external onlyOwner {

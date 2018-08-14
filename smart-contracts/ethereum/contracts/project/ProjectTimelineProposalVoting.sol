@@ -8,8 +8,8 @@ import "../IVoting.sol";
 
 contract ProjectTimelineProposalVoting is ProjectBase, IVoting {
 
-    using ProjectTimelineHelpersLibrary for address;
-    using ContributionStorageAccess for address;
+    using ProjectTimelineHelpersLibrary for FundingStorage;
+    using ContributionStorageAccess for FundingStorage;
 
     modifier onlyProjectContributor(uint _projectId) {
         uint contributorId = fundingStorage.getContributorId(msg.sender);
@@ -19,7 +19,7 @@ contract ProjectTimelineProposalVoting is ProjectBase, IVoting {
     }
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function vote(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
