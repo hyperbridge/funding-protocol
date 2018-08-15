@@ -9,6 +9,10 @@ contract ProjectMilestoneCompletion is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function submitMilestoneCompletion(uint _projectId, string _report) external onlyProjectDeveloper(_projectId) onlyInDevelopmentProject(_projectId) {
         // Can only submit for milestone completion if there is not already a vote on milestone completion
         require(!fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "There is already a vote on milestone completion active.");

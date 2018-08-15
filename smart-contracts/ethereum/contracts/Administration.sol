@@ -13,6 +13,10 @@ contract Administration is Ownable {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function setProjectStatus(uint _projectId, uint _status) external onlyOwner {
         fundingStorage.setProjectStatus(_projectId, _status);
     }

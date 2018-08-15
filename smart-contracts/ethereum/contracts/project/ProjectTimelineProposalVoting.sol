@@ -22,6 +22,10 @@ contract ProjectTimelineProposalVoting is ProjectBase, IVoting {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function vote(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
         // TimelineProposal must be active
         require(fundingStorage.getTimelineProposalIsActive(_projectId), "No timeline proposal active.");

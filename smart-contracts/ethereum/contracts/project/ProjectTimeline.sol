@@ -12,6 +12,10 @@ contract ProjectTimeline is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function addMilestone(
         uint _projectId,
         string _title,

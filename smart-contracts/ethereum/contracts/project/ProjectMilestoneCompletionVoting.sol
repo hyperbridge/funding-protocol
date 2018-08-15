@@ -23,6 +23,10 @@ contract ProjectMilestoneCompletionVoting is ProjectBase, IVoting {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function vote(uint _projectId, bool _approved) external onlyProjectContributor(_projectId) {
         // MilestoneCompletionSubmission must be active
         require(fundingStorage.getMilestoneCompletionSubmissionIsActive(_projectId), "No vote on milestone completion active.");

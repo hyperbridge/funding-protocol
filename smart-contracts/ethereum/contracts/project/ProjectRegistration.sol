@@ -23,6 +23,10 @@ contract ProjectRegistration is ProjectBase {
         fundingStorage = _fundingStorage;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function initialize() external {
         require(FundingStorage(fundingStorage).getContractIsValid(this), "This contract is not registered in FundingStorage.");
 
