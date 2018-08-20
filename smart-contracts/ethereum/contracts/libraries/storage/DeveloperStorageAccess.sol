@@ -120,4 +120,13 @@ library DeveloperStorageAccess {
     function setDeveloperOwnedProject(FundingStorage _fundingStorage, uint _developerId, uint _index, uint _projectId) internal {
         _fundingStorage.setUint(keccak256(abi.encodePacked("developer.projectIds", _index, _developerId)), _projectId);
     }
+
+    function pushDeveloperOwnedProject(FundingStorage _fundingStorage, uint _developerId, uint _projectId) internal {
+        uint nextIndex = getDeveloperOwnedProjectsLength(_fundingStorage, _developerId);
+
+        setDeveloperOwnedProject(_fundingStorage, _developerId, nextIndex, _projectId);
+        setDeveloperOwnedProjectsLength(_fundingStorage, _developerId, nextIndex + 1);
+
+        setDeveloperOwnsProject(_fundingStorage, _developerId, _projectId, true);
+    }
 }
