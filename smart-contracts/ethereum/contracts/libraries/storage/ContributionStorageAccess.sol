@@ -1,8 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "../../FundingStorage.sol";
+import "../../openzeppelin/SafeMath.sol";
 
 library ContributionStorageAccess {
+
+    using SafeMath for uint256;
 
     struct Contributor {
         uint id;
@@ -114,6 +117,7 @@ library ContributionStorageAccess {
     function incrementNextContributorId(FundingStorage _fundingStorage) internal {
         uint currentId = _fundingStorage.getUint(keccak256("contribution.nextContributorId"));
         _fundingStorage.setUint(keccak256("contribution.nextContributorId"), currentId + 1);
+
     }
 
     function setContributorId(FundingStorage _fundingStorage, address _contributorAddress, uint _contributorId) internal {

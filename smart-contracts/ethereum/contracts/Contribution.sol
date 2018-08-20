@@ -4,9 +4,11 @@ import "./libraries/storage/ContributionStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
 import "./FundingVault.sol";
 import "./project/ProjectBase.sol";
+import "./openzeppelin/SafeMath.sol";
 
 contract Contribution is Testable {
 
+    using SafeMath for uint256;
     using ContributionStorageAccess for FundingStorage;
     using ProjectStorageAccess for FundingStorage;
 
@@ -38,11 +40,11 @@ contract Contribution is Testable {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(getCurrentTime() <= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() <= contributionPeriod.mul(1 weeks).add(periodStart));
         // The maximum contribution goal must not be reached
         uint maxGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
         uint currentFunds = fundingStorage.getProjectFundsRaised(_projectId);
-        require(currentFunds + msg.value <= maxGoal);
+        require(currentFunds.add(msg.value) <= maxGoal);
 
         uint contributorId = fundingStorage.getContributorId(msg.sender);
 
@@ -61,7 +63,7 @@ contract Contribution is Testable {
             fundingStorage.setContributesToProject(contributorId, _projectId, true);
             uint index = fundingStorage.getContributorFundedProjectsLength(contributorId);
             fundingStorage.setContributorFundedProject(contributorId, index, _projectId);
-            fundingStorage.setContributorFundedProjectsLength(contributorId, index + 1);
+            fundingStorage.setContributorFundedProjectsLength(contributorId, index.add(1));
         }
 
         uint currentContribution = fundingStorage.getContributionAmount(_projectId, contributorId);
@@ -70,12 +72,12 @@ contract Contribution is Testable {
         if (currentContribution == 0) {
             uint length = fundingStorage.getProjectContributorListLength(_projectId);
             fundingStorage.setProjectContributor(_projectId, length, contributorId);
-            fundingStorage.setProjectContributorListLength(_projectId, length + 1);
+            fundingStorage.setProjectContributorListLength(_projectId, length.add(1));
         }
 
         // add contribution amount to project
-        fundingStorage.setContributionAmount(_projectId, contributorId, currentContribution + msg.value);
-        fundingStorage.setProjectFundsRaised(_projectId, currentFunds + msg.value);
+        fundingStorage.setContributionAmount(_projectId, contributorId, currentContribution.add(msg.value));
+        fundingStorage.setProjectFundsRaised(_projectId, currentFunds.add(msg.value));
 
         FundingStorage fs = FundingStorage(fundingStorage);
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));

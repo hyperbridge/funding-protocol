@@ -3,9 +3,11 @@ pragma solidity ^0.4.24;
 import "./storage/ProjectStorageAccess.sol";
 import "../FundingVault.sol";
 import "../FundingStorage.sol";
+import "../openzeppelin/SafeMath.sol";
 
 library ProjectTimelineHelpersLibrary {
 
+    using SafeMath for uint256;
     using ProjectStorageAccess for FundingStorage;
 
     function moveTimelineIntoTimelineHistory(FundingStorage _fundingStorage, uint _projectId) external {
@@ -17,7 +19,7 @@ library ProjectTimelineHelpersLibrary {
             _fundingStorage.setTimelineHistoryMilestone(_projectId, historyLength, i, milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
         }
 
-        _fundingStorage.setTimelineHistoryLength(_projectId, historyLength + 1);
+        _fundingStorage.setTimelineHistoryLength(_projectId, historyLength.add(1));
         _fundingStorage.setTimelineHistoryMilestonesLength(_projectId, historyLength, timelineLength);
         _fundingStorage.setTimelineLength(_projectId, 0);
     }
@@ -58,7 +60,7 @@ library ProjectTimelineHelpersLibrary {
         uint percentageAcc = 0;
         for (uint i = 0; i < timelineLength; i++) {
             uint percentage = _fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
-            percentageAcc = percentageAcc + percentage;
+            percentageAcc = percentageAcc.add(percentage);
         }
 
         require(percentageAcc == 100, "Milestone percentages must add to 100.");

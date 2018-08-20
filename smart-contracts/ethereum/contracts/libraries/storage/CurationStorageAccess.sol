@@ -1,8 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "../../FundingStorage.sol";
+import "../../openzeppelin/SafeMath.sol";
 
 library CurationStorageAccess {
+
+    using SafeMath for uint256;
 
     struct DraftCuration {
         uint timestamp;

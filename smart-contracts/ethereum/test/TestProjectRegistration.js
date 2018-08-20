@@ -385,6 +385,7 @@ contract('ProjectStatus', function(accounts) {
     it("project can be transitioned from Contributable to InDevelopment if funding goals met", async () => {
         try {
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+
             await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
             await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
             await curationContract.curate(projectId, true, { from: curatorAddress });
