@@ -86,6 +86,11 @@ contract('ProjectCreation', function(accounts) {
             assert.equal(project[9], noTimeline, "Project should not be set to no timeline.");
             assert.equal(project[10], developerAccount, "Project developer is incorrect.");
             assert.equal(project[11].toNumber(), developerId, "Project developer ID is incorrect.");
+
+            const developer = await developerContract.getDeveloper(developerId);
+
+            assert.equal(developer[3].length, 1, "Developer's owned projects length is incorrect.");
+            assert.equal(developer[3][0], projectId, "Project should be in developer's owned projects.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
