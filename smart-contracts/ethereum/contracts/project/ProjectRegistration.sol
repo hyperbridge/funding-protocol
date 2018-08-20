@@ -7,9 +7,11 @@ import "../libraries/ProjectTimelineHelpersLibrary.sol";
 import "../libraries/ProjectContributionTierHelpersLibrary.sol";
 import "../libraries/ProjectMilestoneCompletionHelpersLibrary.sol";
 import "../libraries/ProjectRegistrationHelpersLibrary.sol";
+import "../openzeppelin/SafeMath.sol";
 
 contract ProjectRegistration is ProjectBase {
 
+    using SafeMath for uint256;
     using ProjectRegistrationHelpersLibrary for address;
     using ProjectTimelineHelpersLibrary for address;
     using ProjectContributionTierHelpersLibrary for address;
@@ -176,7 +178,7 @@ contract ProjectRegistration is ProjectBase {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(getCurrentTime() >= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() >= contributionPeriod.mul(1 weeks).add(periodStart));
 
         uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
         uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);

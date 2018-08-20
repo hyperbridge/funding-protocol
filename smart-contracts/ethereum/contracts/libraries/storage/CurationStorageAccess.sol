@@ -1,8 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "../../FundingStorage.sol";
+import "../../openzeppelin/SafeMath.sol";
 
 library CurationStorageAccess {
+
+    using SafeMath for uint256;
 
     struct DraftCuration {
         uint timestamp;
@@ -77,7 +80,7 @@ library CurationStorageAccess {
 
     function incrementNextCuratorId(address _fundingStorage) internal {
         uint currentId = FundingStorage(_fundingStorage).getUint(keccak256("curation.nextCuratorId"));
-        FundingStorage(_fundingStorage).setUint(keccak256("curation.nextCuratorId"), currentId + 1);
+        FundingStorage(_fundingStorage).setUint(keccak256("curation.nextCuratorId"), currentId.add(1));
     }
 
     function setCuratorId(address _fundingStorage, address _curatorAddress, uint _curatorId) internal {
