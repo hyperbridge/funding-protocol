@@ -71,7 +71,7 @@ contract Curation is Ownable, Testable {
 
     function publishProject(uint _projectId) external onlyDeveloper(_projectId) {
         require(fundingStorage.getDraftCurationIsActive(_projectId), "This project is not open for curation.");
-        require(getCurrentTime() > fundingStorage.getDraftCurationTimestamp(_projectId) + 4 weeks, "The project curation window has not closed.");
+        require(getCurrentTime() > fundingStorage.getDraftCurationTimestamp(_projectId).add(4 weeks), "The project curation window has not closed.");
 
         uint approvalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
         uint curationThreshold = fundingStorage.getCurationThreshold();

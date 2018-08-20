@@ -40,7 +40,7 @@ contract Contribution is Testable {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(getCurrentTime() <= periodStart.add(contributionPeriod) * 1 weeks);
+        require(getCurrentTime() <= contributionPeriod.mul(1 weeks).add(periodStart));
         // The maximum contribution goal must not be reached
         uint maxGoal = fundingStorage.getProjectMaxContributionGoal(_projectId);
         uint currentFunds = fundingStorage.getProjectFundsRaised(_projectId);
@@ -85,7 +85,7 @@ contract Contribution is Testable {
     }
 
     function refund(uint _projectId) external {
-        //require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Refundable), "This project is not refundable.");
+        require(fundingStorage.getProjectStatus(_projectId) == uint(ProjectBase.Status.Refundable), "This project is not refundable.");
         uint contributorId = fundingStorage.getContributorId(msg.sender);
         require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address has not contributed to this project.");
 

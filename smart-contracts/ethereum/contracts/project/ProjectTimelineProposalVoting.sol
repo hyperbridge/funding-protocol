@@ -60,7 +60,7 @@ contract ProjectTimelineProposalVoting is ProjectBase, IVoting {
     function hasPassedTimelineProposalVote(uint _projectId) private view returns (bool) {
         uint numContributors = fundingStorage.getProjectContributorListLength(_projectId);
         uint approvalCount = fundingStorage.getTimelineProposalApprovalCount(_projectId);
-        bool isTwoWeeksLater = getCurrentTime() >= fundingStorage.getTimelineProposalTimestamp(_projectId) + 2 weeks;
+        bool isTwoWeeksLater = getCurrentTime() >= fundingStorage.getTimelineProposalTimestamp(_projectId).add(2 weeks);
 
         // Proposal needs >75% total approval, or for 2 weeks to have passed and >75% approval among voters
         require(((approvalCount >= numContributors.mul(75).div(100)) || isTwoWeeksLater),

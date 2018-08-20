@@ -178,7 +178,7 @@ contract ProjectRegistration is ProjectBase {
         // It must be within the contribution period set by the developer
         uint contributionPeriod = fundingStorage.getProjectContributionPeriod(_projectId);
         uint periodStart = fundingStorage.getProjectContributionPeriodStart(_projectId);
-        require(getCurrentTime() >= periodStart + contributionPeriod * 1 weeks);
+        require(getCurrentTime() >= contributionPeriod.mul(1 weeks).add(periodStart));
 
         uint fundsRaised = fundingStorage.getProjectFundsRaised(_projectId);
         uint minGoal = fundingStorage.getProjectMinContributionGoal(_projectId);
