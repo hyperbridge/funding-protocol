@@ -9,16 +9,16 @@ import "./openzeppelin/SafeMath.sol";
 contract Contribution is Testable {
 
     using SafeMath for uint256;
-    using ContributionStorageAccess for address;
-    using ProjectStorageAccess for address;
+    using ContributionStorageAccess for FundingStorage;
+    using ProjectStorageAccess for FundingStorage;
 
-    address public fundingStorage;
+    FundingStorage public fundingStorage;
     bool private inTest;
 
     event ContributorCreated(address contributorAddress, uint contributorId);
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function () public payable {

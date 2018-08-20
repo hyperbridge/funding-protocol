@@ -6,8 +6,8 @@ import "../Testable.sol";
 
 contract ProjectBase is Testable {
 
-    using ProjectStorageAccess for address;
-    using DeveloperStorageAccess for address;
+    using ProjectStorageAccess for FundingStorage;
+    using DeveloperStorageAccess for FundingStorage;
 
     modifier onlyProjectDeveloper(uint _projectId) {
         require(msg.sender == fundingStorage.getProjectDeveloper(_projectId), "You must be the project developer to perform this action.");
@@ -41,5 +41,5 @@ contract ProjectBase is Testable {
 
     enum Status {Inactive, Draft, Pending, Contributable, InDevelopment, Refundable, Rejected}
 
-    address fundingStorage;
+    FundingStorage public fundingStorage;
 }

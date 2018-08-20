@@ -6,7 +6,7 @@ import "./ProjectBase.sol";
 contract ProjectMilestoneCompletion is ProjectBase {
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function () public payable {

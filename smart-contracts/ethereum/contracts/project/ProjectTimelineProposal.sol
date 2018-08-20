@@ -6,10 +6,10 @@ import "../libraries/ProjectTimelineHelpersLibrary.sol";
 
 contract ProjectTimelineProposal is ProjectBase {
 
-    using ProjectTimelineHelpersLibrary for address;
+    using ProjectTimelineHelpersLibrary for FundingStorage;
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
 
     function () public payable {
