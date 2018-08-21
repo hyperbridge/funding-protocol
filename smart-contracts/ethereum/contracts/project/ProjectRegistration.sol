@@ -53,6 +53,9 @@ contract ProjectRegistration is ProjectBase {
         // Set new project attributes
         fundingStorage.setProjectInfo(projectId, uint(Status.Draft), _title, _description, _about, msg.sender, developerId);
 
+        // Add project to developer
+        fundingStorage.pushDeveloperOwnedProject(developerId, projectId);
+
         emit ProjectCreated(projectId);
     }
 
