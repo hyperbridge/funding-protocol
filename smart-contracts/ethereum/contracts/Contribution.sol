@@ -91,8 +91,8 @@ contract Contribution is Testable {
 
         uint contributedAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
         uint percentageFundsReleased = fundingStorage.getProjectPercentageFundsReleased(_projectId);
-        uint maxPercentage = 100;
-        uint fundsToRefund = contributedAmount.mul(maxPercentage.sub(percentageFundsReleased)).div(100);
+        uint percentageFundsRemaining = 100 - percentageFundsReleased;
+        uint fundsToRefund = contributedAmount.mul(percentageFundsRemaining).div(100);
 
         FundingStorage fs = FundingStorage(fundingStorage);
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
