@@ -6,7 +6,11 @@ import "./ProjectBase.sol";
 contract ProjectContributionTier is ProjectBase {
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
+    }
+
+    function () public payable {
+        revert();
     }
 
     function addContributionTier(

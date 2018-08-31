@@ -4,9 +4,9 @@ import "./storage/ProjectStorageAccess.sol";
 
 library ProjectRegistrationHelpersLibrary {
 
-    using ProjectStorageAccess for address;
+    using ProjectStorageAccess for FundingStorage;
 
-    function setProjectInfo(address _fundingStorage, uint _projectId, uint _status, string _title, string _description, string _about, address _developer, uint _developerId) external {
+    function setProjectInfo(FundingStorage _fundingStorage, uint _projectId, uint _status, string _title, string _description, string _about, address _developer, uint _developerId) external {
         _fundingStorage.setProjectStatus(_projectId, _status);
         _fundingStorage.setProjectTitle(_projectId, _title);
         _fundingStorage.setProjectDescription(_projectId, _description);
@@ -15,13 +15,13 @@ library ProjectRegistrationHelpersLibrary {
         _fundingStorage.setProjectDeveloperId(_projectId, _developerId);
     }
 
-    function setProjectContributionGoals(address _fundingStorage, uint _projectId, uint _minGoal, uint _maxGoal, uint _contributionPeriod) external {
+    function setProjectContributionGoals(FundingStorage _fundingStorage, uint _projectId, uint _minGoal, uint _maxGoal, uint _contributionPeriod) external {
         _fundingStorage.setProjectMinContributionGoal(_projectId, _minGoal);
         _fundingStorage.setProjectMaxContributionGoal(_projectId, _maxGoal);
         _fundingStorage.setProjectContributionPeriod(_projectId, _contributionPeriod);
     }
 
-    function setProjectTerms(address _fundingStorage, uint _projectId, bool _noRefunds, bool _noTimeline) external {
+    function setProjectTerms(FundingStorage _fundingStorage, uint _projectId, bool _noRefunds, bool _noTimeline) external {
         _fundingStorage.setProjectNoRefunds(_projectId, _noRefunds);
         _fundingStorage.setProjectNoTimeline(_projectId, _noTimeline);
     }

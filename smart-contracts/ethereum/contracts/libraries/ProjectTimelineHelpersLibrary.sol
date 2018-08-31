@@ -3,12 +3,14 @@ pragma solidity ^0.4.24;
 import "./storage/ProjectStorageAccess.sol";
 import "../FundingVault.sol";
 import "../FundingStorage.sol";
+import "../openzeppelin/SafeMath.sol";
 
 library ProjectTimelineHelpersLibrary {
 
-    using ProjectStorageAccess for address;
+    using SafeMath for uint256;
+    using ProjectStorageAccess for FundingStorage;
 
-    function moveTimelineIntoTimelineHistory(address _fundingStorage, uint _projectId) external {
+    function moveTimelineIntoTimelineHistory(FundingStorage _fundingStorage, uint _projectId) external {
         uint historyLength = _fundingStorage.getTimelineHistoryLength(_projectId);
         uint timelineLength = _fundingStorage.getTimelineLength(_projectId);
 
@@ -17,12 +19,12 @@ library ProjectTimelineHelpersLibrary {
             _fundingStorage.setTimelineHistoryMilestone(_projectId, historyLength, i, milestone.title, milestone.description, milestone.percentage, milestone.isComplete);
         }
 
-        _fundingStorage.setTimelineHistoryLength(_projectId, historyLength + 1);
+        _fundingStorage.setTimelineHistoryLength(_projectId, historyLength.add(1));
         _fundingStorage.setTimelineHistoryMilestonesLength(_projectId, historyLength, timelineLength);
         _fundingStorage.setTimelineLength(_projectId, 0);
     }
 
-    function movePendingMilestonesIntoTimeline(address _fundingStorage, uint _projectId) external {
+    function movePendingMilestonesIntoTimeline(FundingStorage _fundingStorage, uint _projectId) external {
         uint pendingTimelineLength = _fundingStorage.getPendingTimelineLength(_projectId);
 
         for (uint j = 0; j < pendingTimelineLength; j++) {
@@ -34,7 +36,7 @@ library ProjectTimelineHelpersLibrary {
         _fundingStorage.setPendingTimelineLength(_projectId, 0);
     }
 
-    function moveCompletedMilestonesIntoPendingTimeline(address _fundingStorage, uint _projectId) external {
+    function moveCompletedMilestonesIntoPendingTimeline(FundingStorage _fundingStorage, uint _projectId) external {
         uint completedMilestonesLength = _fundingStorage.getCompletedMilestonesLength(_projectId);
 
         // Add the completed milestones to the start of the pending timeline
@@ -46,7 +48,7 @@ library ProjectTimelineHelpersLibrary {
         _fundingStorage.setPendingTimelineLength(_projectId, completedMilestonesLength);
     }
 
-    function verifyPendingMilestones(address _fundingStorage, uint _projectId) external view {
+    function verifyPendingMilestones(FundingStorage _fundingStorage, uint _projectId) external view {
         // Verify:
         // - Milestones are present
         // - Milestone percentages add up to 100
@@ -58,7 +60,7 @@ library ProjectTimelineHelpersLibrary {
         uint percentageAcc = 0;
         for (uint i = 0; i < timelineLength; i++) {
             uint percentage = _fundingStorage.getPendingTimelineMilestonePercentage(_projectId, i);
-            percentageAcc = percentageAcc + percentage;
+            percentageAcc = percentageAcc.add(percentage);
         }
 
         require(percentageAcc == 100, "Milestone percentages must add to 100.");

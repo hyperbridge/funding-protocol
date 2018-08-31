@@ -4,12 +4,14 @@ import "./project/ProjectBase.sol";
 import "./libraries/storage/CurationStorageAccess.sol";
 import "./libraries/storage/ProjectStorageAccess.sol";
 import "./libraries/storage/ContributionStorageAccess.sol";
+import "./openzeppelin/SafeMath.sol";
 
 contract Curation is Ownable, Testable {
 
-    using CurationStorageAccess for address;
-    using ContributionStorageAccess for address;
-    using ProjectStorageAccess for address;
+    using SafeMath for uint256;
+    using CurationStorageAccess for FundingStorage;
+    using ContributionStorageAccess for FundingStorage;
+    using ProjectStorageAccess for FundingStorage;
 
     modifier onlyCurator() {
         require(fundingStorage.getCuratorId(msg.sender) != 0, "You must be a curator to perform this action.");
@@ -21,13 +23,13 @@ contract Curation is Ownable, Testable {
         _;
     }
 
-    address public fundingStorage;
+    FundingStorage public fundingStorage;
     bool private inTest;
 
     event CuratorCreated(address curatorAddress, uint curatorId);
 
     constructor(address _fundingStorage, bool _inTest) public Testable(_inTest) {
-        fundingStorage = _fundingStorage;
+        fundingStorage = FundingStorage(_fundingStorage);
     }
     
     function () public payable {
@@ -59,17 +61,17 @@ contract Curation is Ownable, Testable {
         uint currentApprovalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
 
         if (_isApproved) {
-            fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount + 1);
+            fundingStorage.setDraftCurationApprovalCount(_projectId, currentApprovalCount.add(1));
         } else {
             uint newCount;
-            (currentApprovalCount > 0) ? newCount = currentApprovalCount - 1 : newCount = 0;
+            (currentApprovalCount > 0) ? newCount = currentApprovalCount.sub(1) : newCount = 0;
             fundingStorage.setDraftCurationApprovalCount(_projectId, newCount);
         }
     }
 
     function publishProject(uint _projectId) external onlyDeveloper(_projectId) {
         require(fundingStorage.getDraftCurationIsActive(_projectId), "This project is not open for curation.");
-        require(getCurrentTime() > fundingStorage.getDraftCurationTimestamp(_projectId) + 4 weeks, "The project curation window has not closed.");
+        require(getCurrentTime() > fundingStorage.getDraftCurationTimestamp(_projectId).add(4 weeks), "The project curation window has not closed.");
 
         uint approvalCount = fundingStorage.getDraftCurationApprovalCount(_projectId);
         uint curationThreshold = fundingStorage.getCurationThreshold();

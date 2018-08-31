@@ -86,6 +86,11 @@ contract('ProjectCreation', function(accounts) {
             assert.equal(project[9], noTimeline, "Project should not be set to no timeline.");
             assert.equal(project[10], developerAccount, "Project developer is incorrect.");
             assert.equal(project[11].toNumber(), developerId, "Project developer ID is incorrect.");
+
+            const developer = await developerContract.getDeveloper(developerId);
+
+            assert.equal(developer[3].length, 1, "Developer's owned projects length is incorrect.");
+            assert.equal(developer[3][0], projectId, "Project should be in developer's owned projects.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
@@ -385,6 +390,7 @@ contract('ProjectStatus', function(accounts) {
     it("project can be transitioned from Contributable to InDevelopment if funding goals met", async () => {
         try {
             await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
+
             await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
             await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
             await curationContract.curate(projectId, true, { from: curatorAddress });
