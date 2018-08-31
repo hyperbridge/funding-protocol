@@ -14,6 +14,7 @@
 
 This is the funding protocol specification for the Hyperbridge ecosystem, built primarily in Solidity and Web3.js
 
+[![Overview](https://user-images.githubusercontent.com/156768/44893241-130fd500-ad25-11e8-8198-36967bc28d6e.png)](https://youtu.be/jMgRihjR8kw)
 
 ## Quick Links
 
