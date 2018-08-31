@@ -2,7 +2,6 @@
   "name": "ethereum",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle-config.js",
   "directories": {
     "test": "test"
   },
