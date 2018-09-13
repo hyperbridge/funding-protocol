@@ -6,16 +6,20 @@ const ProjectTimeline = artifacts.require("ProjectTimeline");
 const ProjectContributionTier = artifacts.require("ProjectContributionTier");
 const Developer = artifacts.require("Developer");
 const Curation = artifacts.require("Curation");
+const ProjectMilestoneCompletion = artifacts.require("ProjectMilestoneCompletion");
+const ProjectMilestoneCompletionVoting = artifacts.require("ProjectMilestoneCompletionVoting");
 
 const blankAddress = 0x0000000000000000000000000000000000000000;
 const projectTitle = "BlockHub";
 const projectDescription = "This is a description of BlockHub.";
 const projectAbout = "This is all about BlockHub.";
-const projectMinContributionGoal = 1000;
-const projectMaxContributionGoal = 10000;
+const projectMinContributionGoal = 1000000000000000000;
+const projectMaxContributionGoal = 10000000000000000000;
 const projectContributionPeriod = 4;
-const noRefunds = true;
-const noTimeline = true;
+const noRefunds = false;
+const noTimeline = false;
+
+const projectMilestone0Percentage = 20;
 
 function advanceTime(numWeeks) {
     const week = 604800000;
@@ -33,6 +37,8 @@ contract('Contribution', function(accounts) {
     let projectRegistrationContract;
     let projectTimelineContract;
     let projectContributionTierContract;
+    let projectMilestoneCompletionContract;
+    let projectMilestoneCompletionVotingContract;
     let developerContract;
     let developerAccount;
     let developerId;
@@ -66,6 +72,12 @@ contract('Contribution', function(accounts) {
         projectContributionTierContract = await ProjectContributionTier.deployed();
         await fundingStorage.registerContract("ProjectContributionTier", blankAddress, projectContributionTierContract.address);
 
+        projectMilestoneCompletionContract = await ProjectMilestoneCompletion.deployed();
+        await fundingStorage.registerContract("ProjectMilestoneCompletion", blankAddress, projectMilestoneCompletionContract.address);
+
+        projectMilestoneCompletionVotingContract = await ProjectMilestoneCompletionVoting.deployed();
+        await fundingStorage.registerContract("ProjectMilestoneCompletionVoting", blankAddress, projectMilestoneCompletionVotingContract.address);
+
         developerContract = await Developer.deployed();
         await fundingStorage.registerContract("Developer", blankAddress, developerContract.address);
         await developerContract.initialize();
@@ -95,14 +107,13 @@ contract('Contribution', function(accounts) {
         projWatcher.stopWatching();
 
         await projectRegistrationContract.setProjectContributionGoals(projectId, projectMinContributionGoal, projectMaxContributionGoal, projectContributionPeriod, { from: developerAccount });
-        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, false, { from: developerAccount });
+        await projectRegistrationContract.setProjectTerms(projectId, noRefunds, noTimeline, { from: developerAccount });
 
-        await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 100, { from: developerAccount });
-
+        await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", projectMilestone0Percentage, { from: developerAccount });
+        await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 30, { from: developerAccount });
+        await projectTimelineContract.addMilestone(projectId, "Milestone Title", "Milestone Description", 50, { from: developerAccount });
         await projectContributionTierContract.addContributionTier(projectId, 1000, 100, 10, "Rewards!", { from: developerAccount });
-
         await projectRegistrationContract.submitProjectForReview(projectId, { from: developerAccount });
-
         await curationContract.curate(projectId, true, { from: curatorAddress });
     });
 
@@ -198,12 +209,12 @@ contract('Contribution', function(accounts) {
         }
     });
 
-    it("contributor should be able to refund money from Refundable project.", async () => {
+    it("contributor should be able to refund full contribution from Refundable project that does not meet funding goal.", async () => {
         try {
             await curationContract.setTestTime(advanceTime(4.1));
             await curationContract.publishProject(projectId, { from: developerAccount });
 
-            const fundsToContribute = projectMinContributionGoal - 1;
+            const fundsToContribute = projectMinContributionGoal - 100;
 
             await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: fundsToContribute });
 
@@ -212,11 +223,81 @@ contract('Contribution', function(accounts) {
             await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
             await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
 
+            let refundRecipient;
+            let refundAmount;
+
+            let vaultWatcher = fundingVault.EthWithdrawn().watch(function (error, result) {
+                if (!error) {
+                    refundRecipient = result.args.receiver;
+                    refundAmount = result.args.amount.toNumber();
+                }
+            });
+
             await contributionContract.refund(projectId, { from: contributorAccount });
+
+            vaultWatcher.stopWatching();
+
+            assert.equal(refundRecipient, contributorAccount, "Refund went to wrong recipient.");
+            assert.equal(refundAmount, fundsToContribute, "Refund was for wrong amount.");
 
             const newContributorBalance = web3.eth.getBalance(contributorAccount);
 
             assert.closeTo(newContributorBalance.toNumber(), initialContributorBalance.toNumber() + fundsToContribute, 6000000000000000, "Contributor balance incorrect after refund.");
+        } catch (e) {
+            console.log(e.message);
+            assert.fail();
+        }
+    });
+
+    it("contributor should be able to refund a portion of contribution from Refundable project that has already used some funds.", async () => {
+        try {
+            await curationContract.setTestTime(advanceTime(4.1));
+            await curationContract.publishProject(projectId, { from: developerAccount });
+
+            const fundsToContribute = projectMinContributionGoal;
+
+            await contributionContract.contributeToProject(projectId, { from: contributorAccount, value: fundsToContribute });
+            await contributionContract.contributeToProject(projectId, { from: accounts[4], value: fundsToContribute });
+            await contributionContract.contributeToProject(projectId, { from: accounts[5], value: fundsToContribute });
+            await contributionContract.contributeToProject(projectId, { from: accounts[6], value: fundsToContribute });
+
+            const initialContributorBalance = web3.eth.getBalance(contributorAccount);
+
+            await projectRegistrationContract.setTestTime(advanceTime(projectContributionPeriod + 0.1));
+            await projectRegistrationContract.beginProjectDevelopment(projectId, { from: developerAccount });
+
+            await projectMilestoneCompletionContract.submitMilestoneCompletion(projectId, "Report", { from: developerAccount });
+
+            await projectMilestoneCompletionVotingContract.vote(projectId, false, { from: contributorAccount });
+            await projectMilestoneCompletionVotingContract.vote(projectId, false, { from: accounts[4] });
+            await projectMilestoneCompletionVotingContract.vote(projectId, false, { from: accounts[5] });
+            await projectMilestoneCompletionVotingContract.vote(projectId, false, { from: accounts[6] });
+
+            await projectMilestoneCompletionVotingContract.setTestTime(advanceTime(2.1));
+            await projectMilestoneCompletionVotingContract.finalizeVoting(projectId, { from: developerAccount });
+
+            let refundRecipient;
+            let refundAmount;
+
+            let vaultWatcher = fundingVault.EthWithdrawn().watch(function (error, result) {
+                if (!error) {
+                    refundRecipient = result.args.receiver;
+                    refundAmount = result.args.amount.toNumber();
+                }
+            });
+
+            await contributionContract.refund(projectId, { from: contributorAccount });
+
+            vaultWatcher.stopWatching();
+
+            let expectedRefundAmount = fundsToContribute * (100 - projectMilestone0Percentage) / 100;
+
+            assert.equal(refundRecipient, contributorAccount, "Refund went to wrong recipient.");
+            assert.equal(refundAmount, expectedRefundAmount, "Refund was for wrong amount.");
+
+            const newContributorBalance = web3.eth.getBalance(contributorAccount);
+
+            assert.closeTo(newContributorBalance.toNumber(), initialContributorBalance.toNumber() + expectedRefundAmount, 14518000000000000, "Contributor balance incorrect after refund.");
         } catch (e) {
             console.log(e.message);
             assert.fail();
