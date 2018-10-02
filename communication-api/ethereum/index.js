@@ -1,9 +1,9 @@
 import * as truffleContract from 'truffle-contract'
 import * as abiDecoder from './lib/abi-decoder'
 
-const provider = new window.Web3.providers.HttpProvider("http://localhost:8545")
+// const provider = new window.Web3.providers.HttpProvider("http://localhost:8545")
 
-window.web3 = new window.Web3(provider)
+// window.web3 = new window.Web3(provider)
 
 
 export let state = {
@@ -13,37 +13,37 @@ export let state = {
         FundingStorage: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/FundingStorage.json'),
             address: null
         },
         DeveloperStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/DeveloperStorageAccess.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/DeveloperStorageAccess.json'),
             address: null
         },
         ProjectStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectStorageAccess.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectStorageAccess.json'),
             address: null
         },
         ContributionStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ContributionStorageAccess.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ContributionStorageAccess.json'),
             address: null
         },
         FundingVault: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/FundingVault.json'),
             address: null
         },
         Developer: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/Developer.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/Developer.json'),
             address: null,
             links: [
                 {
@@ -54,7 +54,7 @@ export let state = {
         Contribution: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/Contribution.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/Contribution.json'),
             address: null,
             links: [
                 {
@@ -68,7 +68,7 @@ export let state = {
         ProjectBase: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectBase.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectBase.json'),
             address: null,
             links: [
                 {
@@ -85,13 +85,13 @@ export let state = {
         ProjectTimeline: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimeline.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectTimeline.json'),
             address: null
         },
         ProjectTimelineHelpersLibrary: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimelineHelpersLibrary.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectTimelineHelpersLibrary.json'),
             address: null,
             links: [
                 {
@@ -102,7 +102,7 @@ export let state = {
         ProjectTimelineProposal: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectTimelineProposal.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectTimelineProposal.json'),
             address: null,
             links: [
                 {
@@ -113,7 +113,7 @@ export let state = {
         ProjectContributionTierHelpersLibrary: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectContributionTierHelpersLibrary.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectContributionTierHelpersLibrary.json'),
             address: null,
             links: [
                 {
@@ -124,7 +124,7 @@ export let state = {
         ProjectMilestoneCompletion: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectMilestoneCompletion.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectMilestoneCompletion.json'),
             address: null,
             links: [
                 {
@@ -135,7 +135,7 @@ export let state = {
         ProjectRegistrationHelpersLibrary: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectRegistrationHelpersLibrary.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectRegistrationHelpersLibrary.json'),
             address: null,
             links: [
                 {
@@ -146,7 +146,7 @@ export let state = {
         ProjectRegistration: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/ProjectRegistration.json'),
             address: null,
             links: [
                 {
@@ -166,13 +166,13 @@ export let state = {
         CurationStorageAccess: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/CurationStorageAccess.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/CurationStorageAccess.json'),
             address: null
         },
         Curation: {
             contract: null,
             deployed: null,
-            meta: require('../../smart-contracts/ethereum/build/contracts/Curation.json'),
+            meta: require(__dirname + '/../../../smart-contracts/ethereum/build/contracts/Curation.json'),
             address: null,
             links: [
                 {

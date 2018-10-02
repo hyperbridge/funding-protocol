@@ -1,7 +1,5 @@
-import * as ethereum from './communication-api/ethereum'
-
-export default {
+module.exports = {
     api: {
-        ethereum
+        ethereum: require('./build/communication-api/ethereum')
     }
 }

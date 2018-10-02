@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd test-client && node server.js",
+    "build-api": "rm -rf build && mkdir build && cp -R communication-api/ build/communication-api/ && ./node_modules/.bin/babel communication-api --out-dir build/communication-api",
     "build": "cd smart-contracts/ethereum && truffle compile",
     "format": "yarn run prettier --write 'test-client/**/*.js'"
   },
@@ -18,6 +19,19 @@
     "node": "~8.11.1"
   },
   "dependencies": {
+    "@babel/cli": "^7.1.0",
+    "@babel/core": "^7.1.0",
+    "@babel/polyfill": "^7.0.0",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
+    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-transform-async-to-generator": "^7.1.0",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/preset-stage-1": "^7.0.0",
+    "@babel/register": "^7.0.0",
     "fs-extra": "^7.0.0",
     "ganache-cli": "^6.1.0",
     "mocha": "^5.1.1",
@@ -26,7 +40,7 @@
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "semantic-ui-css": "^2.3.1",
-    "semantic-ui-react": "^0.82.2",
+    "semantic-ui-react": "^0.82.3",
     "solc": "^0.4.23",
     "truffle-contract": "^3.0.5",
     "truffle-hdwallet-provider": "0.0.6",
