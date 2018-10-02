@@ -26,6 +26,7 @@ library ContributionStorageAccess {
             mapping(uint (projID) => mapping (uint (id) => uint)) contributionAmount    (contribution.contributionAmount)
             mapping(uint (projID) => address[]) contributorList                         (contribution.contributorList)
             mapping(uint (projID) => uint fundsRaised)                                  (contribution.fundsRaised)
+            mapping(uint (projID) => uint percentageFundsReleased)                      (contribution.percentageFundsReleased)
 
         There is a registry of contributors:
             mapping(address => uint (id)) contributorMap                                (contribution.contributorMap)
@@ -110,6 +111,10 @@ library ContributionStorageAccess {
         return _fundingStorage.getUint(keccak256(abi.encodePacked("contribution.fundsRaised", _projectId)));
     }
 
+    function getProjectPercentageFundsReleased(FundingStorage _fundingStorage, uint _projectId) internal view returns (uint) {
+        return _fundingStorage.getUint(keccak256(abi.encodePacked("contribution.percentageFundsReleased", _projectId)));
+    }
+
 
 
     // Setters
@@ -158,5 +163,9 @@ library ContributionStorageAccess {
 
     function setProjectFundsRaised(FundingStorage _fundingStorage, uint _projectId, uint _fundsRaised) internal {
         _fundingStorage.setUint(keccak256(abi.encodePacked("contribution.fundsRaised", _projectId)), _fundsRaised);
+    }
+
+    function setProjectPercentageFundsReleased(FundingStorage _fundingStorage, uint _projectId, uint _fundsReleased) internal {
+        _fundingStorage.setUint(keccak256(abi.encodePacked("contribution.percentageFundsReleased", _projectId)), _fundsReleased);
     }
 }

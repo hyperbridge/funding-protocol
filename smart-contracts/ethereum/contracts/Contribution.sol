@@ -90,10 +90,13 @@ contract Contribution is Testable {
         require(fundingStorage.getContributesToProject(contributorId, _projectId), "This address has not contributed to this project.");
 
         uint contributedAmount = fundingStorage.getContributionAmount(_projectId, contributorId);
+        uint percentageFundsReleased = fundingStorage.getProjectPercentageFundsReleased(_projectId);
+        uint percentageFundsRemaining = 100 - percentageFundsReleased;
+        uint fundsToRefund = contributedAmount.mul(percentageFundsRemaining).div(100);
 
         FundingStorage fs = FundingStorage(fundingStorage);
         FundingVault fv = FundingVault(fs.getContractAddress("FundingVault"));
-        fv.withdrawEth(contributedAmount, msg.sender);
+        fv.withdrawEth(fundsToRefund, msg.sender);
     }
 
     function getProjectFundsRaised(uint _projectId) external view returns (uint) {
